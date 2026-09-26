@@ -3,10 +3,10 @@ Orvio Studio is free, with publishing and creative tools in one desktop workspac
 - Removed the subscription, Paddle checkout and hosted-service connection error.
 - Connect Facebook Pages and linked Instagram professional profiles with Meta Graph API. See available pictures and profile counts.
 - Publish photos and videos now or schedule them on the new calendar. The background queue continues while the window is hidden in the tray, with pause, cancellation and protection against repeating uncertain posts.
-- Select JPG, PNG, MP4 or MOV files from your PC through an optional Cloudinary media connector, or provide a public media URL.
-- Chat with three agents for writing, planning and studio help. Choose Gemini, OpenAI-compatible AI or local Ollama in Settings. Use chat commands to open publishing tools.
+- Upload Facebook Page photos directly from your computer without Cloudinary. Instagram local media and Page videos can use a Cloudinary connection with only a cloud name and unsigned preset, or an existing public URL.
+- Chat with three agents for writing, planning and studio help. Discover available Gemini, OpenAI-compatible and installed Ollama models in the new Settings picker. Use chat commands to open publishing tools.
 - Connect compatible local AI clients to Orvio's read-only MCP server.
-- Custom desktop window controls, a different Hugeicons notification icon, refreshed Integrations area, and explicit seven-size Windows installer/app icons.
+- Focused Settings sections with clearer connection steps, custom desktop window controls, a different Hugeicons notification icon, refreshed Integrations area, and explicit seven-size Windows installer/app icons.
 - Windows automatic update metadata and Mac manual update discovery included.
 
 **Meta limits:** Facebook Groups no longer support official third party publishing; Groups are not an automated destination. You need your own Meta app/token and applicable permissions. Instagram photos require a publicly hosted JPEG delivery URL; local file selection uses your Cloudinary account. Orvio must be running on an awake, online computer for scheduled posts. Provider hosting/AI usage may have its own fees. Live provider operations were tested with simulated responses; no real account posts or paid AI calls were made.

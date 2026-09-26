@@ -1,4 +1,6 @@
 // All Meta calls run in the main process. Tokens never enter URLs or renderer state.
+const {openAsBlob}=require('node:fs');
+const path=require('node:path');
 function graphClient({accessToken,version,fetchImpl=fetch}){
  if(!accessToken||!/^v\d+\.\d+$/.test(version||''))throw new Error('A Meta access token and Graph API version are required');
  const origin=`https://graph.facebook.com/${version}/`;
@@ -17,6 +19,15 @@ function graphClient({accessToken,version,fetchImpl=fetch}){
   containerStatus:containerId=>request(id(containerId),{fields:'status_code,status'}),
   publishContainer:({accountId,containerId})=>request(`${id(accountId)}/media_publish`,{creation_id:id(containerId)},'POST'),
   publishPage:({pageId,mediaType,imageUrl,caption,title})=>request(`${id(pageId)}/${mediaType==='video'?'videos':'photos'}`,mediaType==='video'?{file_url:imageUrl,description:caption,title}:{url:imageUrl,caption},'POST'),
+  async publishPagePhotoLocal({pageId,filePath,caption}){
+   const body=new FormData();
+   body.set('source',await openAsBlob(filePath,{type:path.extname(filePath).toLowerCase()==='.png'?'image/png':'image/jpeg'}),path.basename(filePath));
+   body.set('caption',caption);
+   const response=await fetchImpl(new URL(`${id(pageId)}/photos`,origin).href,{method:'POST',headers:{Authorization:`Bearer ${accessToken}`},body,redirect:'error',signal:AbortSignal.timeout(120000)});
+   const result=await response.json();
+   if(!response.ok||result.error)throw new Error(`Meta request failed (${result.error?.code||response.status}). Check Page posting permission and token expiry.`);
+   return result;
+  },
  };
 }
 module.exports={graphClient};
