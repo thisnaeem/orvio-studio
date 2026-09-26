@@ -17,7 +17,7 @@ for(const name of ['latest.yml','latest-mac.yml']){
   console.log(`Verified ${entry.url} (${data.length} bytes)`);
  }
 }
-for(const name of fs.readdirSync(root).filter(name=>/\.(exe|dmg|zip|blockmap|yml)$/.test(name)&&!name.startsWith('builder-')).sort()){
+for(const name of fs.readdirSync(root).filter(name=>/\.(exe|dmg|zip|blockmap|yml)$/.test(name)&&!name.startsWith('builder-')&&(name.includes('-'+version+'-')||['latest.yml','latest-mac.yml'].includes(name))).sort()){
  const data=fs.readFileSync(path.join(root,name));sums.push(`${crypto.createHash('sha256').update(data).digest('hex')}  ${name}`);
 }
 fs.writeFileSync(path.join(root,'SHA256SUMS.txt'),sums.join('\n')+'\n');

@@ -1,0 +1,8 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import {McpServer} from '@modelcontextprotocol/server';
+import {serveStdio} from '@modelcontextprotocol/server/stdio';
+const folder=process.env.ORVIO_DATA_DIR||path.join(process.platform==='win32'?(process.env.APPDATA||path.join(os.homedir(),'AppData','Roaming')):process.platform==='darwin'?path.join(os.homedir(),'Library','Application Support'):path.join(os.homedir(),'.config'),'orvio-studio');
+function state(){const file=path.join(folder,'workspace-v3.json');if(!fs.existsSync(file))return {accounts:[],jobs:[],paused:false};const data=JSON.parse(fs.readFileSync(file,'utf8'));return {accounts:(data.accounts||[]).map(({id,kind,username,pageName,followers,mediaCount})=>({id,kind,username,pageName,followers,mediaCount})),jobs:(data.jobs||[]).map(({id,accountId,title,scheduledAt,status,mediaType,error})=>({id,accountId,title,scheduledAt,status,mediaType,error})),paused:!!data.paused};}
+serveStdio(()=>{const server=new McpServer({name:'orvio-studio',version:'0.3.0'});server.registerTool('list_accounts',{title:'List connected profiles',description:'Read connected Instagram profiles and Facebook Pages, without tokens.',inputSchema:{}},async()=>({content:[{type:'text',text:JSON.stringify(state().accounts)}]}));server.registerTool('list_posts',{title:'List publishing jobs',description:'Read scheduled and published jobs and their statuses.',inputSchema:{}},async()=>({content:[{type:'text',text:JSON.stringify(state().jobs)}]}));server.registerTool('publishing_status',{title:'Publishing status',description:'Check whether Orvio automatic publishing is paused.',inputSchema:{}},async()=>({content:[{type:'text',text:JSON.stringify({paused:state().paused})}]}));return server;});

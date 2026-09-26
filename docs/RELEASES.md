@@ -1,6 +1,6 @@
 # Release and update operation
 
-## v0.2.0
+## v0.3.0
 
 Artifacts are built locally with `npm run release:build` and published to https://github.com/thisnaeem/orvio-studio/releases.
 

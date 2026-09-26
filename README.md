@@ -1,37 +1,40 @@
 # Orvio Studio
 
-A multi-tool Electron workspace with a clean start. Self-hosted Unbounded typography, Hugeicons Free, a generated PNG app mark, a refreshed splash, first-launch onboarding, and persistent customization.
+A free Electron studio for Instagram and Facebook Page publishing. The app includes Unbounded typography, Hugeicons Free, a generated PNG brand mark, onboarding, customizable appearance, an integrated calendar and AI chat.
 
-## Run
+## Run and build
 
-Requires Node.js 22.12+ and npm.
+Node.js 22.12+ and npm are required.
 
 ```sh
 npm install
 npm run desktop
+npm test
+npm run release:build
+node scripts/verify-release.cjs
 ```
 
-Browser preview: `npm run dev` → http://127.0.0.1:5188. Production build: `npm run build`. Tests: `npm test`. Installers: `npm run release:build` (macOS arm64/x64 and Windows x64). See [release and update operation](docs/RELEASES.md) for unsigned-build limitations.
+Browser preview: `npm run dev` at http://127.0.0.1:5188. Connections, encrypted settings and background publishing require the Electron app.
 
-## Workspace
+## Features
 
-- Home launcher and searchable tool collection. Add new tools through `src/tools.ts` and implement their route.
-- First-launch tour: name/workspace, theme/accent/spacing, ready screen. Reopen from Settings.
-- Light, dark, and OS-synced appearance; Sunset, Iris, and Evergreen accent colors; comfortable/compact spacing. Preferences save automatically.
-- Instagram connection screen with honest empty states. No seeded accounts, metrics, sample posts, charts, or conversations.
-- Local drafts: create, edit, delete, persist. No fabricated publishing success.
-- Local comment-to-message workflow configurations, saved inactive until a service is connected.
-- A $9.99 USD/month Studio Pro screen and configurable Paddle checkout entry point.
-- Sandboxed Electron renderer, context isolation, narrow IPC, allowlisted external URLs, content security policy, and configured-release update lifecycle.
+- Free tools with no subscription or checkout.
+- Connect Facebook Pages and linked Instagram professional profiles through Meta Graph API. View profile pictures and available counts.
+- Compose an image or video post, publish immediately or schedule it in a monthly calendar. A persistent background queue avoids blind duplicate retries.
+- Choose media on your PC using a configured Cloudinary unsigned upload preset, or enter a public media URL. Instagram needs the public URL for Graph publishing.
+- Close to tray, pause/resume automations, optional start at login, single-instance handling and custom desktop window controls.
+- Three chat agents for studio help, captions and content strategy; use `/schedule`, `/connect` and `/calendar` to open tools from chat. AI providers: Gemini, OpenAI-compatible endpoints and local Ollama.
+- Read-only MCP server exposing connected profiles, publishing jobs and pause state to compatible local clients.
+- Windows installer/executable/shortcut icons and automatic updates. Unsigned macOS releases check for updates and offer a manual download.
 
-## Integrations
+Meta retired the official Facebook Groups publishing API, so Orvio does not auto-post to Groups. Other limits: the computer must be awake, online and running Orvio; Meta permissions and account eligibility apply; AI provider usage may cost money. Live Meta, Cloudinary and AI calls need your own credentials. Automated tests use simulated provider responses.
 
-Server-only helpers in `services/` provide Meta account discovery/image publishing and Paddle transaction creation/webhook verification/entitlement derivation. They are excluded from desktop packaging and tested with mocks.
+See [integration setup](docs/INTEGRATIONS.md), [MCP setup](docs/MCP.md) and [release operation](docs/RELEASES.md).
 
-Live account synchronization, publishing queues, messaging activation, billing enforcement, and OAuth require an authenticated hosted service with your Meta/Paddle credentials. The public GitHub update feed is configured. Windows automatic updates are implemented; unsigned macOS builds check for releases and offer a manual download. Signed/notarized macOS distribution is still needed for automatic installation. See [integration setup](docs/INTEGRATIONS.md). No real publishing or payments have been performed.
+## Security and data
 
-## Branding and assets
+Meta tokens and AI keys are encrypted with Electron safeStorage, stored under the app's user-data directory, and excluded from renderer responses. Account metadata, jobs and AI configuration are stored in `workspace-v3.json` with atomic writes; appearance, drafts and chat history use versioned localStorage. Credentials are bound to the original OS user. The renderer uses sandboxing, context isolation, narrow IPC, restricted navigation and a content security policy. Credentialed network calls run in the main process with timeouts and redirect rejection.
 
-The generated raster mark is `public/orvio-logo.png`; [the exact image-generation prompt](docs/LOGO.md) is saved with the project. Unbounded is bundled through `@fontsource-variable/unbounded` so fonts work offline. All UI icons use `@hugeicons/react` and `@hugeicons/core-free-icons`. No remote photography or dummy content is loaded. The old SVG logo and Lucide dependency have been removed.
+## Extending the studio
 
-Workspace data uses versioned localStorage keys. The first 0.2.0 launch clears the legacy demo posts/rules/theme keys to start fresh; new drafts, workflows and preferences persist under `orvio.v2.*`.
+Register new tools in `src/tools.ts` and add their routes. The source brand image is `public/orvio-logo.png`; the generation prompt is in [docs/LOGO.md](docs/LOGO.md). Windows uses a seven-size ICO at `build/icon.ico`.
