@@ -33,9 +33,13 @@ Settings → AI models:
 - **Google Gemini:** enter a Gemini API key and choose an automatically discovered text generation model. Orvio uses Google's `generateContent` endpoint.
 - **Ollama local:** run Ollama and pull a model, then select Ollama to discover installed models automatically. Orvio uses `http://127.0.0.1:11434/v1/chat/completions` and needs no cloud API key.
 
-The chat offers Studio assistant, Caption writer and Content strategist. Chat can use current account names and upcoming job titles as context. Type `/schedule`, `/connect` or `/calendar` to open a tool. Publishing always requires the composer; chat text alone does not publish. Conversations are stored locally in the app's browser storage. AI requests are sent only when you click Generate or Send. Remote provider usage may cost money and generated text should be reviewed.
+The chat offers Studio assistant, Caption writer and Content strategist, with searchable local conversation history. The plus menu opens the post composer, calendar, Meta connection and Google Drive within chat. The AI has a tool harness that can read connected accounts, publishing jobs and Orvio Drive files, and can prepare a post for review in the chat composer. The user confirms the final post there; AI text alone never publishes. Chat uses Gemini function calling or OpenAI-compatible tool calls when supported by the selected model. Conversations are stored locally in app storage. AI requests are sent only when you click Generate or Send. Remote provider usage may cost money and generated text should be reviewed.
 
 [OpenAI API guide](https://developers.openai.com/api/docs/guides/migrate-to-responses) · [Gemini generateContent](https://ai.google.dev/api/generate-content) · [Ollama compatibility](https://ollama.com/blog/openai-compatibility)
+
+## Google Drive
+
+The Google Drive connector uses [Google’s Desktop OAuth flow with PKCE](https://developers.google.com/identity/protocols/oauth2/native-app) in the system browser. Enable the Drive API in a Google Cloud project and create an OAuth **Desktop app** client ID. Enter that ID in Integrations or Chat → Google Drive; no Google password or client secret goes into Orvio. The app asks for the narrow `drive.file` scope, so it can list and manage files you add through Orvio, not every pre-existing Drive file. Refresh tokens are encrypted by the operating system. You can upload files under 25 MB, view them, refresh the list, and disconnect. Google may require OAuth consent-screen setup or verification for people outside your test users.
 
 ## MCP
 

@@ -5,7 +5,7 @@ export type StudioTool={id:string;name:Page;description:string;category:string;i
 export const studioTools:StudioTool[]=[
 {id:'instagram',name:'Instagram',description:'Connect your pages. Bring your content and community together.',category:'Social media',icon:'instagram',color:'rose',label:'Connect to get started'},
 
-{id:'chat',name:'Chat',description:'Think, write and plan with an AI agent connected to your studio.',category:'Productivity',icon:'sparkles',color:'purple',label:'Three creative agents'},
-{id:'integrations',name:'Integrations',description:'Bring Meta, media hosting, AI and MCP tools together.',category:'Productivity',icon:'link',color:'green',label:'Connect your tools'},
-{id:'automations',name:'Automations',description:'Schedule Instagram image posts. Let your studio take care of publishing.',category:'Productivity',icon:'workflow',color:'green',label:'Schedule your first post'},
+{id:'chat',name:'Chat',description:'Chat with an agent that can prepare posts and use connected tools.',category:'Productivity',icon:'sparkles',color:'purple',label:'Actions and chat history'},
+{id:'integrations',name:'Integrations',description:'Connect Meta, Google Drive, media and AI in one place.',category:'Productivity',icon:'link',color:'green',label:'Connect your tools'},
+{id:'automations',name:'Automations',description:'Publish or schedule Facebook Page and Instagram posts.',category:'Productivity',icon:'workflow',color:'green',label:'Schedule your first post'},
 ];
