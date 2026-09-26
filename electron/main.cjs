@@ -1,16 +1,20 @@
-const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, safeStorage, powerMonitor, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, safeStorage, powerMonitor, dialog, protocol, net, desktopCapturer, powerSaveBlocker } = require('electron');
 const path = require('node:path');
 const { autoUpdater } = require('electron-updater');
 const { externalURL } = require('./security.cjs');
 const { createUpdateController, RELEASES_URL } = require('./updates.cjs');
 const {createWorkspace}=require('./workspace.cjs');
+let localStudio,production;
+let productionBlocker=null,lastProductionStatus='';
+let captureUntil=0,captureSource='',captureSystemAudio=false;
+protocol.registerSchemesAsPrivileged([{scheme:"orvio-media",privileges:{standard:true,secure:true,supportFetchAPI:true,stream:true}}]);
 let mainWindow,tray,workspace,quitting=false;
 if(!app.requestSingleInstanceLock())app.quit();
 app.setAppUserModelId('com.orvio.studio');
 function showWindow(){if(!mainWindow||mainWindow.isDestroyed())openWindow();else{mainWindow.show();mainWindow.focus();}}
 app.on('second-instance',showWindow);
-app.on('before-quit',()=>{quitting=true;});
-function refreshTray(){if(!tray||!workspace)return;tray.setContextMenu(Menu.buildFromTemplate([{label:'Open Orvio Studio',click:showWindow},{label:'Pause automations',type:'checkbox',checked:workspace.snapshot().paused,click:item=>workspace.preferences({paused:item.checked})},{type:'separator'},{label:'Quit Orvio Studio',click:()=>app.quit()}]));}
+app.on('before-quit',()=>{quitting=true;localStudio?.cancel();production?.shutdown();});
+function refreshTray(){if(!tray||!workspace)return;tray.setContextMenu(Menu.buildFromTemplate([{label:'Open Orvio Studio',click:showWindow},{label:'Pause automations',type:'checkbox',checked:workspace.snapshot().paused,click:item=>workspace.preferences({paused:item.checked})},...(production?.state().recording?[{label:'Stop and save recording',click:()=>mainWindow?.webContents.send('recorder:stop')}]:[]),...(['connecting','sending','stopping'].includes(production?.state().live?.status)?[{label:'Stop YouTube stream',click:()=>production.stop()}]:[]),{type:'separator'},{label:'Quit Orvio Studio',click:()=>app.quit()}]));}
 const updates=createUpdateController({updater:autoUpdater,packaged:app.isPackaged,platform:process.platform,macSigned:false,send:state=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('update:status',state);}});
 function openWindow() {
  mainWindow = new BrowserWindow({width:1280,height:850,minWidth:800,minHeight:650,title:'Orvio Studio',icon:path.join(__dirname,'../dist/orvio-logo.png'),backgroundColor:'#f8f9fb',show:false,...(process.platform==='darwin'?{titleBarStyle:'hiddenInset'}:{frame:false}),webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
@@ -18,9 +22,10 @@ function openWindow() {
  mainWindow.once('ready-to-show',()=>mainWindow.show());
  mainWindow.webContents.setWindowOpenHandler(({url})=>{try{shell.openExternal(externalURL(url));}catch{}return {action:'deny'};});
  mainWindow.webContents.on('will-navigate',(event,url)=>{if(url!==mainWindow.webContents.getURL())event.preventDefault();});
- mainWindow.webContents.session.setPermissionRequestHandler((_contents,_permission,callback)=>callback(false));
- mainWindow.webContents.session.setPermissionCheckHandler(()=>false);
- mainWindow.webContents.session.webRequest.onHeadersReceived((details,callback)=>{callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':["default-src 'self'; script-src 'self'"+(app.isPackaged?'':" 'unsafe-inline'")+"; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; connect-src 'self' ws://127.0.0.1:5188; object-src 'none'; base-uri 'self'; frame-src 'none'"]}})});
+ mainWindow.webContents.session.setPermissionRequestHandler((contents,permission,callback)=>callback(contents===mainWindow.webContents&&Date.now()<captureUntil&&['media','display-capture'].includes(permission)));
+ mainWindow.webContents.session.setPermissionCheckHandler((contents,permission)=>contents===mainWindow.webContents&&Date.now()<captureUntil&&['media','display-capture'].includes(permission));
+ mainWindow.webContents.session.setDisplayMediaRequestHandler(async(request,callback)=>{if(request.frame!==mainWindow.webContents.mainFrame||Date.now()>captureUntil||!captureSource)return callback({});try{const sources=await desktopCapturer.getSources({types:['screen','window']});const source=sources.find(s=>s.id===captureSource);if(!source)return callback({});callback({video:source,...(captureSystemAudio&&process.platform==='win32'?{audio:'loopback'}:{})});captureSource=''}catch{callback({})}},{useSystemPicker:false});
+ mainWindow.webContents.session.webRequest.onHeadersReceived((details,callback)=>{callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':["default-src 'self'; script-src 'self'"+(app.isPackaged?'':" 'unsafe-inline'")+"; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; media-src 'self' orvio-media:; connect-src 'self' ws://127.0.0.1:5188; object-src 'none'; base-uri 'self'; frame-src 'none'"]}})});
  if(app.isPackaged)mainWindow.loadFile(path.join(__dirname,'../dist/index.html'));else mainWindow.loadURL('http://127.0.0.1:5188');
 }
 function handle(channel,action){ipcMain.handle(channel,(event,...args)=>{if(!mainWindow||event.sender!==mainWindow.webContents||event.senderFrame!==mainWindow.webContents.mainFrame)throw new Error('Untrusted request');return action(...args);});}
@@ -30,6 +35,33 @@ handle('window:maximize',()=>{if(mainWindow.isMaximized())mainWindow.unmaximize(
 handle('window:close',()=>mainWindow.close());
 handle('media:save',input=>workspace.saveMedia(input));
 handle('media:choose',async accountId=>{const result=await dialog.showOpenDialog(mainWindow,{properties:['openFile'],filters:[{name:'Images and videos',extensions:['jpg','jpeg','png','mp4','mov']}]});if(result.canceled)return null;return workspace.prepareMedia(result.filePaths[0],accountId);});
+handle('media:generated',(id,accountId)=>workspace.prepareGenerated(id,accountId));
+handle('images:models',input=>workspace.listImageModels(input));
+handle('images:generate',input=>workspace.generateImage(input));
+handle('videos:list',accountId=>workspace.listAccountVideos(accountId));
+handle('videos:download',input=>workspace.downloadVideo(input));
+handle('local:session',async clear=>{if(clear)return localStudio.setSession(null);const result=await dialog.showOpenDialog(mainWindow,{properties:['openFile'],filters:[{name:'Your exported account cookies',extensions:['txt']}]});if(!result.canceled)localStudio.setSession(result.filePaths[0]);});
+handle('production:state',()=>production.state());
+handle('production:start',input=>production.start(input));
+handle('production:stop',()=>production.stop());
+handle('recorder:sources',async()=>{const sources=await desktopCapturer.getSources({types:['screen','window'],thumbnailSize:{width:240,height:135}});return sources.map(s=>({id:s.id,name:s.name,thumbnail:s.thumbnail.toDataURL()}))});
+handle('recorder:arm',input=>{captureUntil=Date.now()+60000;captureSource=typeof input.source==='string'?input.source:'';captureSystemAudio=!!input.systemAudio;return true});
+handle('recorder:begin',()=>production.beginRecording());
+handle('recorder:append',(id,chunk)=>production.appendRecording(id,chunk));
+handle('recorder:finish',id=>{captureUntil=0;return production.finishRecording(id)});
+handle('recorder:abort',id=>{captureUntil=0;return production.abortRecording(id)});
+handle('local:captions',input=>localStudio.captions(input));
+handle('local:state',()=>localStudio.state());
+handle('local:install',id=>localStudio.install(id));
+handle('local:cancel',()=>localStudio.cancel());
+handle('local:download',input=>localStudio.download(input));
+handle('local:voice',input=>localStudio.voice(input));
+handle('local:transcribe',id=>localStudio.transcribe(id));
+handle('local:clip',input=>localStudio.clip(input));
+handle('local:prepare',(id,accountId)=>workspace.prepareMedia(localStudio.file(id),accountId));
+handle('local:import',async kind=>{const audio=kind==='audio';const result=await dialog.showOpenDialog(mainWindow,{properties:['openFile'],filters:[{name:audio?'Voice reference':'Video',extensions:audio?['wav','mp3','m4a','flac']:['mp4','mov','webm','mkv']}]});return result.canceled?null:localStudio.import(result.filePaths[0],audio?'audio':'video');});
+handle('local:save',async id=>{const source=localStudio.file(id);const result=await dialog.showSaveDialog(mainWindow,{defaultPath:path.join(app.getPath('downloads'),path.basename(source))});if(!result.canceled){await require('node:fs/promises').copyFile(source,result.filePath);return true}return false;});
+handle('local:highlights',input=>workspace.suggestClips(input));
 handle('ai:models',input=>workspace.listModels(input));
 handle('drive:connect',input=>workspace.connectDrive(input));
 handle('drive:disconnect',()=>workspace.disconnectDrive());
@@ -40,6 +72,7 @@ handle('meta:connect',input=>workspace.connect(input));
 handle('meta:disconnect',id=>workspace.disconnect(id));
 handle('jobs:schedule',input=>{const result=workspace.schedule(input);setImmediate(()=>workspace.tick().catch(()=>{}));return result;});
 handle('jobs:cancel',id=>workspace.cancel(id));
+handle('jobs:edit',(id,input)=>workspace.editJob(id,input));
 handle('workspace:preferences',input=>{if(typeof input.startAtLogin==='boolean'){if(!app.isPackaged)throw new Error('Startup settings are available in the installed app.');app.setLoginItemSettings({openAtLogin:input.startAtLogin});}return workspace.preferences(input);});
 handle('ai:save',input=>workspace.saveAI(input));
 handle('ai:generate',prompt=>workspace.generate(prompt));
@@ -49,7 +82,13 @@ ipcMain.handle('updates:install',()=>updates.install());
 ipcMain.handle('updates:releases',()=>shell.openExternal(RELEASES_URL));
 ipcMain.handle('app:version',()=>app.getVersion());
 app.whenReady().then(()=>{
- workspace=createWorkspace({directory:app.getPath('userData'),safeStorage,openExternal:url=>shell.openExternal(url),notify:state=>{refreshTray();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('workspace:changed',state);}});
+ const resources=app.isPackaged?path.join(process.resourcesPath,'runtime'):path.join(__dirname,'../runtime');
+ const python=path.join(app.isPackaged?process.resourcesPath:path.join(__dirname,'../.runtime-cache',`${process.platform}-${process.arch}`),'python',process.platform==='win32'?'python.exe':'bin/python3');
+ localStudio=require('./local-studio.cjs').createLocalStudio({directory:app.getPath('userData'),resources,python,notify:state=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('local:changed',state)}});
+ production=require('./production.cjs').createProduction({directory:app.getPath('userData'),localStudio,notify:state=>{const working=!!state.recording||state.starting||['connecting','sending','stopping'].includes(state.live?.status);if(working&&productionBlocker===null)productionBlocker=powerSaveBlocker.start('prevent-display-sleep');else if(!working&&productionBlocker!==null){powerSaveBlocker.stop(productionBlocker);productionBlocker=null}const status=String(state.recording?.id||'')+String(state.live?.status||'');if(status!==lastProductionStatus){lastProductionStatus=status;refreshTray()}if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('production:changed',state)}});
+ protocol.handle('orvio-media',request=>{try{const url=new URL(request.url);if(url.hostname!=='asset')throw Error();return net.fetch(require('node:url').pathToFileURL(localStudio.file(url.pathname.slice(1))).href,{headers:request.headers})}catch{return new Response('Not found',{status:404})}});
+
+ workspace=createWorkspace({localStudio,directory:app.getPath('userData'),downloadsDirectory:app.getPath('downloads'),safeStorage,openExternal:url=>shell.openExternal(url),notify:state=>{refreshTray();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('workspace:changed',state);}});
  tray=new Tray(nativeImage.createFromPath(path.join(__dirname,'../dist/orvio-logo.png')).resize({width:process.platform==='darwin'?22:32,height:process.platform==='darwin'?22:32}));
  tray.setToolTip('Orvio Studio • Free tools');tray.on('double-click',showWindow);refreshTray();
  openWindow();

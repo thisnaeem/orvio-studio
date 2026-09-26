@@ -44,3 +44,21 @@ The Google Drive connector uses [Google’s Desktop OAuth flow with PKCE](https:
 ## MCP
 
 The included [read-only MCP server](MCP.md) exposes profile metadata and publishing jobs to compatible local clients without credentials. It never publishes automatically.
+
+## Local ComfyUI image generation
+
+Run ComfyUI on your computer (default port 8188), install at least one checkpoint in its `models/checkpoints` directory, then open Image Studio in Orvio. The model list loads from ComfyUI automatically. Generation uses a basic text-to-image workflow and saves PNG output in Orvio's local app data. The 512-pixel option uses less memory; larger sizes depend on your hardware and checkpoint. ComfyUI's local HTTP endpoints are bound to loopback by Orvio.
+
+## Account-owned video downloads
+
+Connect the Instagram professional profile or Facebook Page that owns the video, then paste its Reel or video link in Video downloader. Orvio compares the link with recent videos returned by Meta Graph API and downloads the source from a Meta CDN into `Downloads/Orvio Studio`. It does not scrape arbitrary public posts, bypass private access, or expose Meta tokens to the renderer. A video absent from the account's recent API results cannot be downloaded through this tool.
+
+## Local voice, downloader and clipping (0.5)
+
+The installed application includes a checksum-verified CPython 3.11 runtime for Windows x64 and macOS Intel/Apple Silicon. Developers prepare their native runtime using `npm run runtime:prepare`. Each local engine gets an isolated environment; the app creates it and installs pinned dependencies on first download. No system Python is used. One task runs at a time, with cancellation. Output files and downloaded model weights stay in the app's local data folder until exported.
+
+Voice Studio offers seven Piper voices (English, Arabic, Hindi, Spanish, French, German and Russian) and Chatterbox multilingual cloning (23 languages, Windows and Apple Silicon). Users choose a reference recording and confirm permission to use it. The Chatterbox watermark is preserved. CPU generation can be slow. Consult `runtime/THIRD-PARTY.md` and the linked model cards for licenses.
+
+The general downloader now uses yt-dlp and accepts supported public video links without connecting a Meta account. The earlier Graph API downloader remains a fallback for non-desktop callers. Downloads are normalized to MP4 using FFmpeg. Private, DRM or login-protected sources may fail; there is no promise of support for every site. No browser cookies are read automatically. Users may explicitly select their own exported Netscape-format session file. Its contents remain in memory until quit; a private temporary file is created only during a download and removed afterward. Leftover temporary session files are removed on the next launch after a crash.
+
+Clipping Studio imports or downloads video, transcribes with Whisper Tiny on-device, and sends the transcript to the configured AI provider only when Find highlights is clicked. Suggested ranges are validated, editable and exportable in original or fitted 9:16 format. Manual clipping works without a configured AI provider. Video clips can be handed to the existing posting composer; Instagram and Facebook video publishing currently use the configured Cloudinary media connector. The publisher's 100 MB upload limit still applies.

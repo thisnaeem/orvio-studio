@@ -1,0 +1,37 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const os=require('node:os');
+const path=require('node:path');
+const {createComfyConnector}=require('../electron/comfy.cjs');
+const {parseVideoLink,matchesVideo,downloadSource}=require('../electron/video.cjs');
+const {createWorkspace}=require('../electron/workspace.cjs');
+
+test('ComfyUI discovers installed checkpoints and saves a generated image locally',async t=>{
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'orvio-comfy-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));let queued;
+ const png=Buffer.from([137,80,78,71,13,10,26,10,1,2,3]);
+ const fetchImpl=async(url,options)=>{if(url.endsWith('/models/checkpoints'))return Response.json(['model.safetensors']);if(url.endsWith('/prompt')){queued=JSON.parse(options.body);return Response.json({prompt_id:'job1'})}if(url.endsWith('/history/job1'))return Response.json({job1:{outputs:{'9':{images:[{filename:'test.png',subfolder:'',type:'output'}]}}}});if(url.includes('/view?'))return new Response(png,{headers:{'content-type':'image/png'}});throw new Error('unexpected request')};
+ const comfy=createComfyConnector({directory,fetchImpl,wait:async()=>{}});const result=await comfy.generate({port:8188,model:'model.safetensors',prompt:'blue vase',size:512});assert.equal(queued.prompt['4'].inputs.ckpt_name,'model.safetensors');assert.equal(queued.prompt['6'].inputs.text,'blue vase');assert.deepEqual(fs.readFileSync(comfy.filePath(result.id)),png);assert.ok(result.preview.startsWith('data:image/png;base64,'));await assert.rejects(()=>comfy.generate({port:8188,model:'missing',prompt:'x'}),/installed/);
+});
+
+test('Meta video links resolve only to account-owned video and trusted CDN',async t=>{
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'orvio-video-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));const instagram=parseVideoLink('https://www.instagram.com/reel/ABC_123/?igsh=xyz');assert.ok(matchesVideo(instagram,{id:'1',platform:'instagram',permalink:'https://www.instagram.com/reel/ABC_123/',source:'https://cdninstagram.com/video.mp4'}));assert.equal(matchesVideo(instagram,{id:'1',platform:'instagram',permalink:'https://www.instagram.com/reel/DIFFERENT/'}),false);assert.throws(()=>parseVideoLink('https://example.com/reel/ABC_123/'));
+ const result=await downloadSource({source:'https://video.fbcdn.net/a.mp4',id:'123',directory,fetchImpl:async()=>new Response(Buffer.from('video bytes'),{headers:{'content-type':'video/mp4'}})});assert.equal(fs.readFileSync(result.path,'utf8'),'video bytes');await assert.rejects(()=>downloadSource({source:'https://127.0.0.1/private',id:'123',directory,fetchImpl:async()=>new Response('oops')}),/untrusted/);
+});
+
+test('queued posts can be edited while published posts remain immutable',async t=>{
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'orvio-edit-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));const accountResponse={data:[{id:'11',name:'Page',access_token:'page-token',instagram_business_account:{id:'22',username:'studio'}}]};const w=createWorkspace({directory,safeStorage:{isEncryptionAvailable:()=>true,encryptString:value=>Buffer.from(value),decryptString:value=>value.toString()},fetchImpl:async()=>Response.json(accountResponse)});await w.connect({token:'valid-user-token',version:'v24.0'});w.schedule({accountId:'22',imageUrl:'https://example.com/photo.jpg',title:'Old',caption:'Old caption',scheduledAt:new Date(Date.now()+3600000).toISOString()});const id=w.snapshot().jobs[0].id;w.editJob(id,{title:'New',caption:'New caption',scheduledAt:new Date(Date.now()+7200000).toISOString()});assert.equal(w.snapshot().jobs[0].title,'New');assert.equal(createWorkspace({directory,safeStorage:{isEncryptionAvailable:()=>true,encryptString:value=>Buffer.from(value),decryptString:value=>value.toString()},fetchImpl:async()=>Response.json(accountResponse)}).snapshot().jobs[0].caption,'New caption');assert.throws(()=>w.editJob(id,{scheduledAt:new Date(Date.now()-1000).toISOString()}),/future/);w.cancel(id);assert.throws(()=>w.editJob(id,{title:'Too late'}),/queued/);
+});
+
+test('assistant schedules a complete request directly and edits only on explicit instruction',async t=>{
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'orvio-chat-actions-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));let tool='schedule_post',round=0;
+ const fetchImpl=async(url,options)=>{if(url.includes('/me/accounts'))return Response.json({data:[{id:'11',name:'Page',access_token:'page-token',instagram_business_account:{id:'22',username:'studio'}}]});if(url.includes('/chat/completions')){round++;if(round%2===1)return Response.json({choices:[{message:{tool_calls:[{id:'call1',type:'function',function:{name:tool,arguments:JSON.stringify(tool==='schedule_post'?{title:'Launch',caption:'Hello',accountId:'22',imageUrl:'https://example.com/photo.jpg',publishMode:'later',scheduledAt:new Date(Date.now()+3600000).toISOString()}:{postId:workspace.snapshot().jobs[0].id,title:'Launch updated'})}}]}}]});return Response.json({choices:[{message:{content:'Done.'}}]})}throw new Error('unexpected request')};
+ const workspace=createWorkspace({directory,safeStorage:{isEncryptionAvailable:()=>true,encryptString:value=>Buffer.from(value),decryptString:value=>value.toString()},fetchImpl});await workspace.connect({token:'valid-user-token',version:'v24.0'});workspace.saveAI({provider:'openai',model:'test-model'});
+ const scheduled=await workspace.chat({messages:[{role:'user',content:'Schedule a post called Launch for my studio page with this image and caption'}]});assert.equal(scheduled.text,'Done.');assert.equal(workspace.snapshot().jobs[0].title,'Launch');tool='edit_scheduled_post';const edited=await workspace.chat({messages:[{role:'user',content:'Edit my scheduled Launch post title'}]});assert.equal(edited.text,'Done.');assert.equal(workspace.snapshot().jobs[0].title,'Launch updated');
+});
+
+test('video downloader resolves an Instagram link through the connected account only',async t=>{
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'orvio-owned-video-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));const downloadFolder=path.join(directory,'Downloads');
+ const fetchImpl=async url=>{if(url.includes('/me/accounts'))return Response.json({data:[{id:'11',name:'Page',access_token:'page-token',instagram_business_account:{id:'22',username:'studio'}}]});if(url.includes('/22/media'))return Response.json({data:[{id:'34',permalink:'https://www.instagram.com/reel/MYVIDEO/',media_type:'VIDEO',media_url:'https://video.cdninstagram.com/myvideo.mp4'}]});if(url.startsWith('https://video.cdninstagram.com/'))return new Response(Buffer.from('my video'),{headers:{'content-type':'video/mp4'}});throw new Error('unexpected request')};
+ const w=createWorkspace({directory,downloadsDirectory:downloadFolder,safeStorage:{isEncryptionAvailable:()=>true,encryptString:value=>Buffer.from(value),decryptString:value=>value.toString()},fetchImpl});await w.connect({token:'valid-user-token',version:'v24.0'});const listed=await w.listAccountVideos('22');assert.equal(listed.length,1);assert.equal(listed[0].source,undefined);const saved=await w.downloadVideo({accountId:'22',url:'https://www.instagram.com/reel/MYVIDEO/'});assert.equal(fs.readFileSync(saved.path,'utf8'),'my video');await assert.rejects(()=>w.downloadVideo({accountId:'22',url:'https://www.instagram.com/reel/OTHER/'}),/not found/);
+});

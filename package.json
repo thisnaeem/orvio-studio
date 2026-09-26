@@ -1,6 +1,6 @@
 {
   "name": "orvio-studio",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "Your tools. Your flow. A growing creative workspace.",
   "main": "electron/main.cjs",
@@ -13,7 +13,8 @@
     "dist": "npm run build && electron-builder",
     "test": "node --test tests/*.test.cjs",
     "release:build": "npm run build && electron-builder --mac --win --publish never",
-    "mcp": "node mcp/server.mjs"
+    "mcp": "node mcp/server.mjs",
+    "runtime:prepare": "node scripts/bundle-python.cjs"
   },
   "dependencies": {
     "@fontsource-variable/unbounded": "^5.3.0",
@@ -67,7 +68,12 @@
       ],
       "category": "public.app-category.productivity",
       "icon": "public/orvio-logo.png",
-      "identity": null
+      "identity": null,
+      "extendInfo": {
+        "NSCameraUsageDescription": "Use your camera when you start a recording in Orvio Studio.",
+        "NSMicrophoneUsageDescription": "Record your microphone when you enable it in Recorder.",
+        "NSAudioCaptureUsageDescription": "Capture selected audio when recording your screen."
+      }
     },
     "win": {
       "target": [
@@ -133,7 +139,14 @@
     },
     "toolsets": {
       "nsis": "1.2.1"
-    }
+    },
+    "afterPack": "scripts/bundle-python.cjs",
+    "extraResources": [
+      {
+        "from": "runtime",
+        "to": "runtime"
+      }
+    ]
   },
   "repository": {
     "type": "git",
