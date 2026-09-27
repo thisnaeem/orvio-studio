@@ -3,16 +3,8 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
-const {createComfyConnector}=require('../electron/comfy.cjs');
 const {parseVideoLink,matchesVideo,downloadSource}=require('../electron/video.cjs');
 const {createWorkspace}=require('../electron/workspace.cjs');
-
-test('ComfyUI discovers installed checkpoints and saves a generated image locally',async t=>{
- const directory=fs.mkdtempSync(path.join(os.tmpdir(),'orvio-comfy-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));let queued;
- const png=Buffer.from([137,80,78,71,13,10,26,10,1,2,3]);
- const fetchImpl=async(url,options)=>{if(url.endsWith('/models/checkpoints'))return Response.json(['model.safetensors']);if(url.endsWith('/prompt')){queued=JSON.parse(options.body);return Response.json({prompt_id:'job1'})}if(url.endsWith('/history/job1'))return Response.json({job1:{outputs:{'9':{images:[{filename:'test.png',subfolder:'',type:'output'}]}}}});if(url.includes('/view?'))return new Response(png,{headers:{'content-type':'image/png'}});throw new Error('unexpected request')};
- const comfy=createComfyConnector({directory,fetchImpl,wait:async()=>{}});const result=await comfy.generate({port:8188,model:'model.safetensors',prompt:'blue vase',size:512});assert.equal(queued.prompt['4'].inputs.ckpt_name,'model.safetensors');assert.equal(queued.prompt['6'].inputs.text,'blue vase');assert.deepEqual(fs.readFileSync(comfy.filePath(result.id)),png);assert.ok(result.preview.startsWith('data:image/png;base64,'));await assert.rejects(()=>comfy.generate({port:8188,model:'missing',prompt:'x'}),/installed/);
-});
 
 test('Meta video links resolve only to account-owned video and trusted CDN',async t=>{
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'orvio-video-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));const instagram=parseVideoLink('https://www.instagram.com/reel/ABC_123/?igsh=xyz');assert.ok(matchesVideo(instagram,{id:'1',platform:'instagram',permalink:'https://www.instagram.com/reel/ABC_123/',source:'https://cdninstagram.com/video.mp4'}));assert.equal(matchesVideo(instagram,{id:'1',platform:'instagram',permalink:'https://www.instagram.com/reel/DIFFERENT/'}),false);assert.throws(()=>parseVideoLink('https://example.com/reel/ABC_123/'));

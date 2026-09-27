@@ -4,7 +4,7 @@ const { autoUpdater } = require('electron-updater');
 const { externalURL } = require('./security.cjs');
 const { createUpdateController, RELEASES_URL } = require('./updates.cjs');
 const {createWorkspace}=require('./workspace.cjs');
-let localStudio,production;
+let localStudio,production,modelHub,downloads,updateDownloadId;
 let productionBlocker=null,lastProductionStatus='';
 let captureUntil=0,captureSource='',captureSystemAudio=false;
 protocol.registerSchemesAsPrivileged([{scheme:"orvio-media",privileges:{standard:true,secure:true,supportFetchAPI:true,stream:true}}]);
@@ -13,9 +13,9 @@ if(!app.requestSingleInstanceLock())app.quit();
 app.setAppUserModelId('com.orvio.studio');
 function showWindow(){if(!mainWindow||mainWindow.isDestroyed())openWindow();else{mainWindow.show();mainWindow.focus();}}
 app.on('second-instance',showWindow);
-app.on('before-quit',()=>{quitting=true;localStudio?.cancel();production?.shutdown();});
+app.on('before-quit',()=>{quitting=true;localStudio?.shutdown();production?.shutdown();modelHub?.shutdown();});
 function refreshTray(){if(!tray||!workspace)return;tray.setContextMenu(Menu.buildFromTemplate([{label:'Open Orvio Studio',click:showWindow},{label:'Pause automations',type:'checkbox',checked:workspace.snapshot().paused,click:item=>workspace.preferences({paused:item.checked})},...(production?.state().recording?[{label:'Stop and save recording',click:()=>mainWindow?.webContents.send('recorder:stop')}]:[]),...(['connecting','sending','stopping'].includes(production?.state().live?.status)?[{label:'Stop YouTube stream',click:()=>production.stop()}]:[]),{type:'separator'},{label:'Quit Orvio Studio',click:()=>app.quit()}]));}
-const updates=createUpdateController({updater:autoUpdater,packaged:app.isPackaged,platform:process.platform,macSigned:false,send:state=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('update:status',state);}});
+const updates=createUpdateController({updater:autoUpdater,packaged:app.isPackaged,platform:process.platform,macSigned:false,send:state=>{if(downloads){if(state.phase==='downloading'){updateDownloadId ||= downloads.begin({title:'Orvio app update',kind:'update'});downloads.update(updateDownloadId,{message:state.message,received:state.received??state.percent,total:state.total??100,speed:state.speed})}else if(updateDownloadId&&['ready','error'].includes(state.phase)){downloads.finish(updateDownloadId,state.phase==='ready'?'completed':'failed',{message:state.message});updateDownloadId=null}}if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('update:status',state);}});
 function openWindow() {
  mainWindow = new BrowserWindow({width:1280,height:850,minWidth:800,minHeight:650,title:'Orvio Studio',icon:path.join(__dirname,'../dist/orvio-logo.png'),backgroundColor:'#f8f9fb',show:false,...(process.platform==='darwin'?{titleBarStyle:'hiddenInset'}:{frame:false}),webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
  mainWindow.on('close',event=>{if(!quitting){event.preventDefault();mainWindow.hide();}});
@@ -25,7 +25,7 @@ function openWindow() {
  mainWindow.webContents.session.setPermissionRequestHandler((contents,permission,callback)=>callback(contents===mainWindow.webContents&&Date.now()<captureUntil&&['media','display-capture'].includes(permission)));
  mainWindow.webContents.session.setPermissionCheckHandler((contents,permission)=>contents===mainWindow.webContents&&Date.now()<captureUntil&&['media','display-capture'].includes(permission));
  mainWindow.webContents.session.setDisplayMediaRequestHandler(async(request,callback)=>{if(request.frame!==mainWindow.webContents.mainFrame||Date.now()>captureUntil||!captureSource)return callback({});try{const sources=await desktopCapturer.getSources({types:['screen','window']});const source=sources.find(s=>s.id===captureSource);if(!source)return callback({});callback({video:source,...(captureSystemAudio&&process.platform==='win32'?{audio:'loopback'}:{})});captureSource=''}catch{callback({})}},{useSystemPicker:false});
- mainWindow.webContents.session.webRequest.onHeadersReceived((details,callback)=>{callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':["default-src 'self'; script-src 'self'"+(app.isPackaged?'':" 'unsafe-inline'")+"; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; media-src 'self' orvio-media:; connect-src 'self' ws://127.0.0.1:5188; object-src 'none'; base-uri 'self'; frame-src 'none'"]}})});
+ mainWindow.webContents.session.webRequest.onHeadersReceived((details,callback)=>{callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':["default-src 'self'; script-src 'self'"+(app.isPackaged?'':" 'unsafe-inline'")+"; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https: orvio-media:; media-src 'self' orvio-media:; connect-src 'self' ws://127.0.0.1:5188; object-src 'none'; base-uri 'self'; frame-src 'none'"]}})});
  if(app.isPackaged)mainWindow.loadFile(path.join(__dirname,'../dist/index.html'));else mainWindow.loadURL('http://127.0.0.1:5188');
 }
 function handle(channel,action){ipcMain.handle(channel,(event,...args)=>{if(!mainWindow||event.sender!==mainWindow.webContents||event.senderFrame!==mainWindow.webContents.mainFrame)throw new Error('Untrusted request');return action(...args);});}
@@ -41,6 +41,21 @@ handle('images:generate',input=>workspace.generateImage(input));
 handle('videos:list',accountId=>workspace.listAccountVideos(accountId));
 handle('videos:download',input=>workspace.downloadVideo(input));
 handle('local:session',async clear=>{if(clear)return localStudio.setSession(null);const result=await dialog.showOpenDialog(mainWindow,{properties:['openFile'],filters:[{name:'Your exported account cookies',extensions:['txt']}]});if(!result.canceled)localStudio.setSession(result.filePaths[0]);});
+handle('downloads:state',()=>downloads.state());
+handle('downloads:cancel',id=>downloads.cancel(id));
+handle('downloads:clear',()=>downloads.clear());
+handle('models:search',query=>modelHub.search(query));
+handle('models:files',repo=>modelHub.remoteFiles(repo));
+handle('models:remote',input=>modelHub.installRemote(input));
+handle('models:benchmark',id=>modelHub.benchmark(id));
+handle('models:hardware',async()=>{const hardware=await require('./hardware.cjs').detectHardware(app);modelHub.setHardware(hardware);return hardware});
+handle('models:state',()=>modelHub.state());
+handle('models:install',id=>modelHub.install(id));
+handle('models:remove',id=>modelHub.remove(id));
+handle('models:unload',()=>modelHub.unload());
+handle('models:cancel',()=>modelHub.cancel());
+handle('models:generate',input=>modelHub.generate(input));
+handle('models:import',async()=>{const result=await dialog.showOpenDialog(mainWindow,{properties:['openFile'],filters:[{name:'GGUF chat model',extensions:['gguf']}]});return result.canceled?null:modelHub.importGGUF(result.filePaths[0]);});
 handle('production:state',()=>production.state());
 handle('production:start',input=>production.start(input));
 handle('production:stop',()=>production.stop());
@@ -84,11 +99,14 @@ ipcMain.handle('app:version',()=>app.getVersion());
 app.whenReady().then(()=>{
  const resources=app.isPackaged?path.join(process.resourcesPath,'runtime'):path.join(__dirname,'../runtime');
  const python=path.join(app.isPackaged?process.resourcesPath:path.join(__dirname,'../.runtime-cache',`${process.platform}-${process.arch}`),'python',process.platform==='win32'?'python.exe':'bin/python3');
- localStudio=require('./local-studio.cjs').createLocalStudio({directory:app.getPath('userData'),resources,python,notify:state=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('local:changed',state)}});
+ downloads=require('./downloads.cjs').createDownloads({directory:app.getPath('userData'),notify:state=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('downloads:changed',state)}});
+ localStudio=require('./local-studio.cjs').createLocalStudio({directory:app.getPath('userData'),resources,python,downloads,notify:state=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('local:changed',state)}});
+ modelHub=require('./model-hub.cjs').createModelHub({directory:app.getPath('userData'),python,localStudio,downloads,notify:state=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('models:changed',state)}});
+ require('./hardware.cjs').detectHardware(app).then(hardware=>modelHub.setHardware(hardware)).catch(()=>{});
  production=require('./production.cjs').createProduction({directory:app.getPath('userData'),localStudio,notify:state=>{const working=!!state.recording||state.starting||['connecting','sending','stopping'].includes(state.live?.status);if(working&&productionBlocker===null)productionBlocker=powerSaveBlocker.start('prevent-display-sleep');else if(!working&&productionBlocker!==null){powerSaveBlocker.stop(productionBlocker);productionBlocker=null}const status=String(state.recording?.id||'')+String(state.live?.status||'');if(status!==lastProductionStatus){lastProductionStatus=status;refreshTray()}if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('production:changed',state)}});
  protocol.handle('orvio-media',request=>{try{const url=new URL(request.url);if(url.hostname!=='asset')throw Error();return net.fetch(require('node:url').pathToFileURL(localStudio.file(url.pathname.slice(1))).href,{headers:request.headers})}catch{return new Response('Not found',{status:404})}});
 
- workspace=createWorkspace({localStudio,directory:app.getPath('userData'),downloadsDirectory:app.getPath('downloads'),safeStorage,openExternal:url=>shell.openExternal(url),notify:state=>{refreshTray();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('workspace:changed',state);}});
+ workspace=createWorkspace({modelHub,localStudio,directory:app.getPath('userData'),downloadsDirectory:app.getPath('downloads'),safeStorage,openExternal:url=>shell.openExternal(url),notify:state=>{refreshTray();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('workspace:changed',state);}});
  tray=new Tray(nativeImage.createFromPath(path.join(__dirname,'../dist/orvio-logo.png')).resize({width:process.platform==='darwin'?22:32,height:process.platform==='darwin'?22:32}));
  tray.setToolTip('Orvio Studio • Free tools');tray.on('double-click',showWindow);refreshTray();
  openWindow();

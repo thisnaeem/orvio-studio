@@ -13,3 +13,12 @@ The following components are downloaded on request into the user's private local
 - imageio-ffmpeg: BSD-2-Clause wrapper, https://github.com/imageio/imageio-ffmpeg . Its FFmpeg binary has separate licensing/build configuration; source https://ffmpeg.org . FFmpeg is executed as a separate process.
 
 Package metadata, license files, and dependencies remain in each installed environment. No model weights are bundled with the installer. A model download includes its engine dependencies and may be substantially larger than the weight size shown.
+
+## Built-in chat, image and video engines (0.6)
+
+- llama.cpp b11146: MIT, checksum-verified native binaries from https://github.com/ggml-org/llama.cpp/releases/tag/b11146 . The runtime binds only to a randomly selected loopback port, requires a per-session API key, disables its web UI and unloads after idle time.
+- Qwen 2.5 Instruct GGUF: Apache 2.0; official model cards: https://huggingface.co/Qwen . Download size varies by quantization.
+- Hugging Face Diffusers: Apache 2.0, https://github.com/huggingface/diffusers . Only supported pipelines are exposed; remote repository Python code is not enabled.
+- Stable Diffusion Turbo: model-specific Stability AI license, https://huggingface.co/stabilityai/sd-turbo .
+- Stable Diffusion 1.5: CreativeML Open RAIL-M, https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5 .
+- AnimateDiff Lightning: Apache 2.0 adapter with the SD 1.5 base model's separate license, https://huggingface.co/ByteDance/AnimateDiff-Lightning .

@@ -1,5 +1,5 @@
 import type {IconName} from './icons';
-export type Page='Home'|'All tools'|'Instagram'|'Automations'|'Settings'|'Chat'|'Integrations'|'Images'|'Downloader'|'Voice'|'Clipping'|'Live'|'Captions'|'Recorder';
+export type Page='Home'|'All tools'|'Instagram'|'Automations'|'Settings'|'Chat'|'Integrations'|'Images'|'Downloader'|'Voice'|'Clipping'|'Live'|'Captions'|'Recorder'|'Models'|'Videos';
 export type StudioTool={id:string;name:Page;description:string;category:string;icon:IconName;color:string;label:string};
 // Extend this registry and add the tool's route to grow the workspace.
 export const studioTools:StudioTool[]=[
@@ -8,7 +8,9 @@ export const studioTools:StudioTool[]=[
 {id:'chat',name:'Chat',description:'Chat with an agent that can prepare posts and use connected tools.',category:'Productivity',icon:'sparkles',color:'purple',label:'Actions and chat history'},
 {id:'integrations',name:'Integrations',description:'Connect Meta, Google Drive, media and AI in one place.',category:'Productivity',icon:'link',color:'green',label:'Connect your tools'},
 {id:'automations',name:'Automations',description:'Publish or schedule Facebook Page and Instagram posts.',category:'Productivity',icon:'workflow',color:'green',label:'Schedule your first post'},
-{id:'images',name:'Images',description:'Generate an image with your locally running ComfyUI checkpoints.',category:'Creativity',icon:'image',color:'purple',label:'Local image generation'},
+{id:'images',name:'Images',description:'Generate images with models downloaded directly into Orvio.',category:'Creativity',icon:'image',color:'purple',label:'Local image generation'},
+{id:'models',name:'Models',description:'Download and manage built-in chat, image and video models.',category:'Creativity',icon:'sparkles',color:'purple',label:'Your local model library'},
+{id:'videos',name:'Videos',description:'Create short animations using built-in video models.',category:'Creativity',icon:'workflow',color:'rose',label:'Local video generation'},
 {id:'live',name:'Live',description:'Stream a local video to YouTube with quality and looping controls.',category:'Creativity',icon:'workflow',color:'rose',label:'Your broadcast studio'},
 {id:'captions',name:'Captions',description:'Automatic local transcription, editable timing and styled captions.',category:'Creativity',icon:'edit',color:'purple',label:'Make every word count'},
 {id:'recorder',name:'Recorder',description:'Record your screen, a window or camera with microphone audio.',category:'Creativity',icon:'image',color:'green',label:'Capture your next story'},

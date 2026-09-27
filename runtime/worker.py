@@ -8,10 +8,20 @@ def run(p):
     action=p['action']; root=pathlib.Path(p['models']); root.mkdir(parents=True,exist_ok=True)
     os.environ['HF_HOME']=str(root/'huggingface')
     os.environ['HF_HUB_DISABLE_XET']='1'
-    if action in ('voice','transcribe'): os.environ['HF_HUB_OFFLINE']='1'
+    if action in ('voice','transcribe','generate_model'): os.environ['HF_HUB_OFFLINE']='1'
+    if action in ('install_model','install_whisper') or (action=='install_voice' and p.get('model')=='chatterbox'):
+        from download_progress import install_hub_progress
+        install_hub_progress(emit)
+    if action in ('install_model','generate_model'):
+        from generate import generate
+        return generate(p,emit)
     if action in ('voice','install_voice'):
         model=p['model']
         if model=='chatterbox':
+            if action=='install_voice':
+                from huggingface_hub import snapshot_download
+                snapshot_download('ResembleAI/chatterbox',allow_patterns=['ve.pt','t3_mtl23ls_v2.safetensors','s3gen.pt','grapheme_mtl_merged_expanded_v1.json','conds.pt','Cangjie5_TC.json'])
+                return {'ready':True}
             import torch
             torch.set_num_threads(2)
             from chatterbox.mtl_tts import ChatterboxMultilingualTTS
@@ -21,11 +31,11 @@ def run(p):
                 audio=engine.generate(p['text'],language_id=p['language'],audio_prompt_path=p.get('reference'))
                 soundfile.write(p['output'],audio.squeeze().cpu().numpy(),engine.sr)
         else:
-            from piper.download_voices import download_voice
+            from download_progress import download_voice
             from piper import PiperVoice
             if not (root/(model+'.onnx')).exists() or not (root/(model+'.onnx.json')).exists():
                 with tempfile.TemporaryDirectory(dir=root) as staging:
-                    download_voice(model,pathlib.Path(staging))
+                    download_voice(model,pathlib.Path(staging),emit)
                     for suffix in ('.onnx','.onnx.json'):
                         os.replace(pathlib.Path(staging)/(model+suffix),root/(model+suffix))
             if action=='voice':
@@ -33,6 +43,10 @@ def run(p):
                 with wave.open(p['output'],'wb') as output: engine.synthesize_wav(p['text'],output)
         return {'ready':True}
     if action in ('transcribe','install_whisper'):
+        if action=='install_whisper':
+            from faster_whisper.utils import download_model
+            download_model('tiny',cache_dir=str(root/'whisper'))
+            return {'ready':True}
         from faster_whisper import WhisperModel
         engine=WhisperModel('tiny',device='cpu',compute_type='int8',cpu_threads=2,download_root=str(root/'whisper'))
         if action=='install_whisper': return {'ready':True}
@@ -53,7 +67,7 @@ def run(p):
             if d['status']=='downloading':
                 total=d.get('total_bytes') or d.get('total_bytes_estimate')
                 stream='audio' if d.get('info_dict',{}).get('vcodec')=='none' else 'video'
-                emit('PROGRESS',f"Downloading {stream} {int(d.get('downloaded_bytes',0)/total*100)}%" if total else f'Downloading {stream}…')
+                emit('PROGRESS',{'message':f'Downloading {stream}…','stage':stream,'file':stream+' stream','title':d.get('info_dict',{}).get('title','Video download'),'received':d.get('downloaded_bytes',0),'total':total,'speed':d.get('speed'),'eta':d.get('eta')})
         options={'outtmpl':p['output']+'.source.%(ext)s','format':'bv*[height<=1080]+ba/b[height<=1080]/bv*+ba/b/bv*','merge_output_format':'mkv','noplaylist':True,'max_filesize':2*1024**3,'quiet':True,'noprogress':True,'no_warnings':True,'progress_hooks':[progress],'ffmpeg_location':ffmpeg,'socket_timeout':30,'retries':2,'overwrites':True,'enable_file_urls':False}
         if p.get('jsRuntime'): options['js_runtimes']={'node':{'path':p['jsRuntime']}}
         if p.get('cookies'): options['cookiefile']=p['cookies']

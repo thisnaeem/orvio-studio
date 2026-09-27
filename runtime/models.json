@@ -1,0 +1,75 @@
+[
+  {
+    "id": "qwen-small",
+    "name": "Qwen 2.5 · 0.5B Instruct",
+    "kind": "chat",
+    "engine": "llama",
+    "size": "491 MB",
+    "ramGB": 4,
+    "description": "A compact multilingual chat model for simple writing. Larger models are better for tool use.",
+    "repo": "Qwen/Qwen2.5-0.5B-Instruct-GGUF",
+    "filename": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
+    "license": "Apache 2.0"
+  },
+  {
+    "id": "qwen-balanced",
+    "name": "Qwen 2.5 · 1.5B Instruct",
+    "kind": "chat",
+    "engine": "llama",
+    "size": "~1.1 GB",
+    "ramGB": 6,
+    "description": "Balanced local writing and conversation in a small download.",
+    "repo": "Qwen/Qwen2.5-1.5B-Instruct-GGUF",
+    "filename": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+    "license": "Apache 2.0"
+  },
+  {
+    "id": "qwen-tools",
+    "name": "Qwen 2.5 · 7B Instruct",
+    "kind": "chat",
+    "engine": "llama",
+    "size": "~4.7 GB",
+    "ramGB": 12,
+    "description": "A more capable option for assistant tools, planning and longer conversations.",
+    "repo": "Qwen/Qwen2.5-7B-Instruct-GGUF",
+    "filename": "qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf",
+    "license": "Apache 2.0",
+    "files": [
+      "qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf",
+      "qwen2.5-7b-instruct-q4_k_m-00002-of-00002.gguf"
+    ]
+  },
+  {
+    "id": "sd-turbo",
+    "name": "Stable Diffusion Turbo",
+    "kind": "image",
+    "engine": "diffusion",
+    "size": "~5 GB",
+    "ramGB": 8,
+    "description": "Fast 512-pixel image generation in a few steps. Runs directly inside Orvio.",
+    "repo": "stabilityai/sd-turbo",
+    "license": "Stability AI model license"
+  },
+  {
+    "id": "sd15",
+    "name": "Stable Diffusion 1.5",
+    "kind": "image",
+    "engine": "diffusion",
+    "size": "~5 GB",
+    "ramGB": 8,
+    "description": "A versatile base for 512-pixel illustrations, scenes and concepts.",
+    "repo": "stable-diffusion-v1-5/stable-diffusion-v1-5",
+    "license": "CreativeML Open RAIL-M"
+  },
+  {
+    "id": "animatediff",
+    "name": "AnimateDiff Lightning",
+    "kind": "video",
+    "engine": "diffusion",
+    "size": "~7 GB",
+    "ramGB": 16,
+    "description": "Generate a short 16-frame animation from a prompt. Uses the SD 1.5 base. GPU or Apple Silicon recommended; CPU can be very slow.",
+    "repo": "ByteDance/AnimateDiff-Lightning",
+    "license": "Apache 2.0 adapter + base model license"
+  }
+]
