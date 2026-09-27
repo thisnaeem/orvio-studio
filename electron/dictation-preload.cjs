@@ -1,0 +1,1 @@
+const {contextBridge,ipcRenderer}=require('electron');contextBridge.exposeInMainWorld('dictation',Object.freeze({arm:()=>ipcRenderer.invoke('dictation:arm'),finish:bytes=>ipcRenderer.invoke('dictation:finish',bytes),close:()=>ipcRenderer.invoke('dictation:cancel'),onFinish:fn=>{ipcRenderer.on('dictation:finish',fn);return()=>ipcRenderer.removeListener('dictation:finish',fn)}}));

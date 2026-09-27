@@ -9,6 +9,6 @@ function createPetWindow({app,BrowserWindow,screen,ipcMain,pets,open}){
  handle('pet:transcribe',bytes=>{if(!armedUntil)throw Error('Enable the microphone first.');return pets.transcribe(bytes)});
  handle('pet:arm',()=>{armedUntil=Date.now()+60000;return true});handle('pet:disarm',()=>{armedUntil=0});handle('pet:hide',hide);handle('pet:expand',expanded=>window.setBounds(bounds(!!expanded),false));
  handle('pet:open',page=>{if(!['Pets','Chat','Models'].includes(page))throw Error('Unknown page');open(page)});
- return {show,hide,permission:(contents,permission,details)=>!!window&&window.webContents===contents&&Date.now()<armedUntil&&permission==='media'&&(!details?.mediaTypes||details.mediaTypes.every(t=>t==='audio'))&&(!details?.mediaType||details.mediaType==='audio'),refresh(){if(window&&!window.isDestroyed())window.webContents.send('pet:changed',state())}};
+ return {show,hide,listen:value=>window?.webContents.send('pet:listen',value),permission:(contents,permission,details)=>!!window&&window.webContents===contents&&Date.now()<armedUntil&&permission==='media'&&(!details?.mediaTypes||details.mediaTypes.every(t=>t==='audio'))&&(!details?.mediaType||details.mediaType==='audio'),refresh(){if(window&&!window.isDestroyed())window.webContents.send('pet:changed',state())}};
 }
 module.exports={createPetWindow};

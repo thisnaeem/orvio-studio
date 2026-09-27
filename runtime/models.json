@@ -386,7 +386,7 @@
     "pipeline": "text-to-video",
     "size": "~7 GB",
     "ramGB": 24,
-    "description": "A separate text-to-video pipeline: 24 frames at 576 × 320. Noncommercial use; generation is demanding.",
+    "description": "A separate text-to-video pipeline: 24 frames at 576 × 320. Noncommercial use; generation is demanding. Requires the current PyTorch engine on Apple Silicon or Windows; unavailable on Intel Mac.",
     "repo": "cerspense/zeroscope_v2_576w",
     "license": "CC BY-NC 4.0 · noncommercial",
     "steps": 40,
@@ -394,7 +394,8 @@
     "width": 576,
     "height": 320,
     "frames": 24,
-    "fps": 8
+    "fps": 8,
+    "weights": "bin"
   },
   {
     "id": "modelscope",

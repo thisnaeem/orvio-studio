@@ -25,3 +25,11 @@ Package metadata, license files, and dependencies remain in each installed envir
 
 - DreamShaper 8: CreativeML Open RAIL-M, https://huggingface.co/Lykon/dreamshaper-8 .
 - SDXL Turbo: Stability AI non-commercial community license; review separate commercial terms on https://huggingface.co/stabilityai/sdxl-turbo .
+
+## Expanded model catalog and dictation
+
+The built-in catalog links each upstream model card and lists its terms. Qwen 3, Qwen Coder and SmolLM2 GGUF weights use Apache 2.0. OpenJourney, AbsoluteReality and SD 1.5 DreamShaper variants use CreativeML Open RAIL-M; SDXL Base and DreamShaper XL use Open RAIL++. Zeroscope uses CC BY-NC 4.0. ModelScope's model card has noncommercial research terms (its metadata and prose differ between NC and NC-ND); consult that card. AnimateDiff motion presets retain both adapter and base-model terms. Weights are downloaded separately.
+
+Meta MMS: https://huggingface.co/facebook/mms-1b-all — CC BY-NC 4.0 model weights. The checked-in language-adapter list is derived from that repository's public file metadata (1,198 script/dialect adapter names; the upstream card describes 1,162 languages). Transformers and PyTorch execute the local CTC model; PyAV decodes audio. Only the selected adapter and shared base weights are requested.
+
+Whisper / faster-whisper: MIT. The language-code list is derived from the installed faster-whisper tokenizer; Tiny/Base/Small support 99, Turbo supports 100. https://github.com/SYSTRAN/faster-whisper and https://github.com/openai/whisper. Recognition, voice, writing and generation model quality is not guaranteed across all languages or hardware.

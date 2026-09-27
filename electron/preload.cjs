@@ -1,6 +1,8 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('studio',Object.freeze({
  platform:process.platform,
+ workState:()=>ipcRenderer.invoke('work:state'),workChoose:()=>ipcRenderer.invoke('work:choose'),workCreate:name=>ipcRenderer.invoke('work:create',name),workSelect:id=>ipcRenderer.invoke('work:select',id),workRun:input=>ipcRenderer.invoke('work:run',input),workCancel:()=>ipcRenderer.invoke('work:cancel'),workApprove:(id,allow)=>ipcRenderer.invoke('work:approve',id,allow),workReview:id=>ipcRenderer.invoke('work:review',id),workUndo:id=>ipcRenderer.invoke('work:undo',id),onWork:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('work:changed',listener);return()=>ipcRenderer.removeListener('work:changed',listener)},
+ desktopSettings:()=>ipcRenderer.invoke('desktop:state'),saveDesktopSettings:input=>ipcRenderer.invoke('desktop:save',input),dictationAccess:()=>ipcRenderer.invoke('dictation:access'),
  petState:()=>ipcRenderer.invoke('pets:state'),savePet:input=>ipcRenderer.invoke('pets:save',input),showPet:()=>ipcRenderer.invoke('pets:show'),onPets:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('pets:changed',listener);return()=>ipcRenderer.removeListener('pets:changed',listener)},
  onNavigate:callback=>{const listener=(_event,page)=>callback(page);ipcRenderer.on('workspace:navigate',listener);return()=>ipcRenderer.removeListener('workspace:navigate',listener)},
  onOpenDownloads:callback=>{ipcRenderer.on('downloads:open',callback);return()=>ipcRenderer.removeListener('downloads:open',callback)},
@@ -74,6 +76,7 @@ contextBridge.exposeInMainWorld('studio',Object.freeze({
  disconnectDrive:()=>ipcRenderer.invoke('drive:disconnect'),
  listDriveFiles:()=>ipcRenderer.invoke('drive:files'),
  uploadDriveFile:()=>ipcRenderer.invoke('drive:upload'),
+ chatCapabilities:()=>ipcRenderer.invoke('chat:capabilities'),chatFiles:()=>ipcRenderer.invoke('chat:files'),chatMic:enabled=>ipcRenderer.invoke('chat:mic',enabled),chatTranscribe:input=>ipcRenderer.invoke('chat:transcribe',input),chatSpeak:input=>ipcRenderer.invoke('chat:speak',input),
  chat:input=>ipcRenderer.invoke('ai:chat',input),
  connectMeta:input=>ipcRenderer.invoke('meta:connect',input),
  disconnectMeta:id=>ipcRenderer.invoke('meta:disconnect',id),

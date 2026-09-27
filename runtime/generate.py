@@ -24,12 +24,12 @@ def generate(p,emit):
         if pipeline=='animatediff':
             hf_hub_download(model['repo'],model['adapter'])
             DiffusionPipeline.download(model.get('baseRepo',BASE),use_safetensors=True)
-        else: DiffusionPipeline.download(model['repo'],use_safetensors=True)
+        else: DiffusionPipeline.download(model['repo'],use_safetensors=model.get('weights')!='bin')
         return {'ready':True}
     device='cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'
     dtype=torch.float16 if device=='cuda' else torch.float32
     os.environ['HF_HUB_OFFLINE']='1'
-    options={'torch_dtype':dtype,'use_safetensors':True,'local_files_only':True}
+    options={'torch_dtype':dtype,'use_safetensors':model.get('weights')!='bin','local_files_only':True}
     if pipeline=='animatediff':
         adapter=MotionAdapter()
         adapter.load_state_dict(load_file(hf_hub_download(model['repo'],model['adapter'],local_files_only=True)))

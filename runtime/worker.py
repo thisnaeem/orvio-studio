@@ -8,8 +8,8 @@ def run(p):
     action=p['action']; root=pathlib.Path(p['models']); root.mkdir(parents=True,exist_ok=True)
     os.environ['HF_HOME']=str(root/'huggingface')
     os.environ['HF_HUB_DISABLE_XET']='1'
-    if action in ('voice','transcribe','generate_model'): os.environ['HF_HUB_OFFLINE']='1'
-    if action in ('install_model','install_whisper') or (action=='install_voice' and p.get('model')=='chatterbox'):
+    if action in ('voice','transcribe','transcribe_mms','generate_model'): os.environ['HF_HUB_OFFLINE']='1'
+    if action in ('install_model','install_whisper','install_mms') or (action=='install_voice' and p.get('model')=='chatterbox'):
         from download_progress import install_hub_progress
         install_hub_progress(emit)
     if action in ('install_model','generate_model'):
@@ -45,15 +45,18 @@ def run(p):
                 engine=PiperVoice.load(str(voice_root/(model+'.onnx')))
                 with wave.open(p['output'],'wb') as output: engine.synthesize_wav(p['text'],output)
         return {'ready':True}
+    if action in ('install_mms','transcribe_mms'):
+        from mms import run
+        return run(p,emit)
     if action in ('transcribe','install_whisper'):
         if action=='install_whisper':
             from faster_whisper.utils import download_model
-            download_model('tiny',cache_dir=str(root/'whisper'))
+            download_model({'whisper-base':'base','whisper-small':'small','whisper-turbo':'turbo'}.get(p.get('model'),'tiny'),cache_dir=str(root/'whisper'))
             return {'ready':True}
         from faster_whisper import WhisperModel
-        engine=WhisperModel('tiny',device='cpu',compute_type='int8',cpu_threads=2,download_root=str(root/'whisper'))
+        engine=WhisperModel({'whisper-base':'base','whisper-small':'small','whisper-turbo':'turbo'}.get(p.get('model'),'tiny'),device='cpu',compute_type='int8',cpu_threads=2,download_root=str(root/'whisper'))
         if action=='install_whisper': return {'ready':True}
-        segments,info=engine.transcribe(p['source'],beam_size=1,vad_filter=True,word_timestamps=True)
+        segments,info=engine.transcribe(p['source'],language=None if p.get('language','auto')=='auto' else p['language'],beam_size=1,vad_filter=True,word_timestamps=True)
         result=[]
         for s in segments:
             result.append({'start':s.start,'end':s.end,'text':s.text,'words':[{'start':w.start,'end':w.end,'text':w.word} for w in (s.words or [])]})

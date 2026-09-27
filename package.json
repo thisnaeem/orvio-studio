@@ -1,6 +1,6 @@
 {
   "name": "orvio-studio",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "description": "Your tools. Your flow. A growing creative workspace.",
   "main": "electron/main.cjs",
@@ -47,7 +47,8 @@
       "dist/**/*",
       "electron/**/*",
       "package.json",
-      "runtime/models.json"
+      "runtime/models.json",
+      "runtime/mms-languages.json"
     ],
     "directories": {
       "output": "release"
@@ -74,8 +75,9 @@
       "identity": null,
       "extendInfo": {
         "NSCameraUsageDescription": "Use your camera when you start a recording in Orvio Studio.",
-        "NSMicrophoneUsageDescription": "Use your microphone when you enable recording or turn on your desktop companion\u2019s voice controls.",
-        "NSAudioCaptureUsageDescription": "Capture selected audio when recording your screen."
+        "NSMicrophoneUsageDescription": "Use your microphone for dictation, recording or your enabled live desktop companion.",
+        "NSAudioCaptureUsageDescription": "Capture selected audio when recording your screen.",
+        "NSAppleEventsUsageDescription": "Paste your dictated text into the app you selected, only when you use Orvio dictation."
       }
     },
     "win": {
