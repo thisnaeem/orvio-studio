@@ -1,6 +1,6 @@
 {
   "name": "orvio-studio",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "description": "Your tools. Your flow. A growing creative workspace.",
   "main": "electron/main.cjs",
@@ -74,7 +74,7 @@
       "identity": null,
       "extendInfo": {
         "NSCameraUsageDescription": "Use your camera when you start a recording in Orvio Studio.",
-        "NSMicrophoneUsageDescription": "Record your microphone when you enable it in Recorder.",
+        "NSMicrophoneUsageDescription": "Use your microphone when you enable recording or turn on your desktop companion\u2019s voice controls.",
         "NSAudioCaptureUsageDescription": "Capture selected audio when recording your screen."
       }
     },

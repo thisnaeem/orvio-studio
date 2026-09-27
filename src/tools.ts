@@ -1,8 +1,10 @@
 import type {IconName} from './icons';
-export type Page='Home'|'All tools'|'Instagram'|'Automations'|'Settings'|'Chat'|'Integrations'|'Images'|'Downloader'|'Voice'|'Clipping'|'Live'|'Captions'|'Recorder'|'Models'|'Videos';
+export type Page='Pets'|'Home'|'All tools'|'Instagram'|'Automations'|'Settings'|'Chat'|'Integrations'|'Images'|'Downloader'|'Voice'|'Clipping'|'Live'|'Captions'|'Recorder'|'Models'|'Videos'|'PC Helper';
 export type StudioTool={id:string;name:Page;description:string;category:string;icon:IconName;color:string;label:string};
 // Extend this registry and add the tool's route to grow the workspace.
 export const studioTools:StudioTool[]=[
+{id:'pets',name:'Pets',description:'A floating companion with private local chat and voice.',category:'Productivity',icon:'sparkles',color:'purple',label:'Meet your companion'},
+{id:'pc-helper',name:'PC Helper',description:'Review large files, duplicates and app leftovers.',category:'Productivity',icon:'system',color:'green',label:'Review your storage'},
 {id:'instagram',name:'Instagram',description:'Connect your pages. Bring your content and community together.',category:'Social media',icon:'instagram',color:'rose',label:'Connect to get started'},
 
 {id:'chat',name:'Chat',description:'Chat with an agent that can prepare posts and use connected tools.',category:'Productivity',icon:'sparkles',color:'purple',label:'Actions and chat history'},

@@ -1,7 +1,7 @@
 [
   {
     "id": "qwen-small",
-    "name": "Qwen 2.5 · 0.5B Instruct",
+    "name": "Qwen 2.5 \u00b7 0.5B Instruct",
     "kind": "chat",
     "engine": "llama",
     "size": "491 MB",
@@ -13,7 +13,7 @@
   },
   {
     "id": "qwen-balanced",
-    "name": "Qwen 2.5 · 1.5B Instruct",
+    "name": "Qwen 2.5 \u00b7 1.5B Instruct",
     "kind": "chat",
     "engine": "llama",
     "size": "~1.1 GB",
@@ -25,7 +25,7 @@
   },
   {
     "id": "qwen-tools",
-    "name": "Qwen 2.5 · 7B Instruct",
+    "name": "Qwen 2.5 \u00b7 7B Instruct",
     "kind": "chat",
     "engine": "llama",
     "size": "~4.7 GB",
@@ -48,7 +48,9 @@
     "ramGB": 8,
     "description": "Fast 512-pixel image generation in a few steps. Runs directly inside Orvio.",
     "repo": "stabilityai/sd-turbo",
-    "license": "Stability AI model license"
+    "license": "Stability AI model license",
+    "steps": 4,
+    "guidance": 0
   },
   {
     "id": "sd15",
@@ -70,6 +72,47 @@
     "ramGB": 16,
     "description": "Generate a short 16-frame animation from a prompt. Uses the SD 1.5 base. GPU or Apple Silicon recommended; CPU can be very slow.",
     "repo": "ByteDance/AnimateDiff-Lightning",
-    "license": "Apache 2.0 adapter + base model license"
+    "license": "CreativeML Open RAIL-M",
+    "steps": 4,
+    "adapter": "animatediff_lightning_4step_diffusers.safetensors"
+  },
+  {
+    "id": "dreamshaper",
+    "name": "DreamShaper 8",
+    "kind": "image",
+    "engine": "diffusion",
+    "size": "~5 GB",
+    "ramGB": 8,
+    "description": "A Stable Diffusion 1.5 model for illustrations, stylized portraits and imaginative scenes.",
+    "repo": "Lykon/dreamshaper-8",
+    "license": "CreativeML Open RAIL-M",
+    "steps": 20,
+    "guidance": 7.5
+  },
+  {
+    "id": "sdxl-turbo",
+    "name": "SDXL Turbo",
+    "kind": "image",
+    "engine": "diffusion",
+    "size": "~14 GB",
+    "ramGB": 24,
+    "description": "A larger image model with fast few-step inference. Best suited to computers with more memory.",
+    "repo": "stabilityai/sdxl-turbo",
+    "license": "Stability AI non-commercial community license; check commercial terms",
+    "steps": 4,
+    "guidance": 0
+  },
+  {
+    "id": "animatediff-fast",
+    "name": "AnimateDiff Lightning \u00b7 2-step",
+    "kind": "video",
+    "engine": "diffusion",
+    "size": "~7 GB",
+    "ramGB": 16,
+    "description": "A faster short-animation option. Shares the SD 1.5 base with the 4-step model, with a separate motion adapter.",
+    "repo": "ByteDance/AnimateDiff-Lightning",
+    "license": "CreativeML Open RAIL-M",
+    "steps": 2,
+    "adapter": "animatediff_lightning_2step_diffusers.safetensors"
   }
 ]

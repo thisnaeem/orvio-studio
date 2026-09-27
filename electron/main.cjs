@@ -1,34 +1,47 @@
-const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, safeStorage, powerMonitor, dialog, protocol, net, desktopCapturer, powerSaveBlocker } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Tray, Menu, nativeImage, safeStorage, powerMonitor, dialog, protocol, net, desktopCapturer, powerSaveBlocker, screen } = require('electron');
 const path = require('node:path');
 const { autoUpdater } = require('electron-updater');
 const { externalURL } = require('./security.cjs');
 const { createUpdateController, RELEASES_URL } = require('./updates.cjs');
 const {createWorkspace}=require('./workspace.cjs');
-let localStudio,production,modelHub,downloads,updateDownloadId;
+let pets,petWindow;
+let localStudio,production,modelHub,downloads,updateDownloadId,pcHelper,modelScan;
 let productionBlocker=null,lastProductionStatus='';
 let captureUntil=0,captureSource='',captureSystemAudio=false;
 protocol.registerSchemesAsPrivileged([{scheme:"orvio-media",privileges:{standard:true,secure:true,supportFetchAPI:true,stream:true}}]);
-let mainWindow,tray,workspace,quitting=false;
+let mainWindow,tray,workspace,quitting=false,islandWindow;
 if(!app.requestSingleInstanceLock())app.quit();
 app.setAppUserModelId('com.orvio.studio');
-function showWindow(){if(!mainWindow||mainWindow.isDestroyed())openWindow();else{mainWindow.show();mainWindow.focus();}}
+function showWindow(){islandWindow?.hide();if(!mainWindow||mainWindow.isDestroyed())openWindow();else{mainWindow.show();mainWindow.focus();}}
+function islandState(){return {downloads:downloads?.state().filter(d=>d.status==='active').length||0,recording:!!production?.state().recording,live:['connecting','sending'].includes(production?.state().live?.status),paused:!!workspace?.snapshot().paused}}
+function refreshIsland(){if(islandWindow&&!islandWindow.isDestroyed()){islandWindow.webContents.send('island:changed',islandState());if(workspace?.snapshot().showIsland===false)islandWindow.hide()}}
+function islandBounds(expanded){const area=screen.getPrimaryDisplay().workArea;const width=expanded?370:286;return {x:Math.round(area.x+(area.width-width)/2),y:area.y+10,width,height:expanded?172:64}}
+function showIsland(){if(quitting||workspace?.snapshot().showIsland===false)return;if(!islandWindow){islandWindow=new BrowserWindow({...islandBounds(false),transparent:true,frame:false,resizable:false,alwaysOnTop:true,skipTaskbar:true,show:false,hasShadow:false,webPreferences:{preload:path.join(__dirname,'island-preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});islandWindow.webContents.setWindowOpenHandler(()=>({action:'deny'}));islandWindow.webContents.on('will-navigate',event=>event.preventDefault());islandWindow.once('ready-to-show',()=>{if(mainWindow?.isVisible()&&!mainWindow.isMinimized())return;islandWindow.showInactive();refreshIsland()});if(app.isPackaged)islandWindow.loadFile(path.join(__dirname,'../dist/index.html'),{hash:'island'});else islandWindow.loadURL('http://127.0.0.1:5188/#island');islandWindow.on('closed',()=>islandWindow=null)}else{islandWindow.setBounds(islandBounds(false));islandWindow.showInactive();refreshIsland()}}
+function islandHandle(channel,handler){ipcMain.handle(channel,(event,...args)=>{if(!islandWindow||event.sender!==islandWindow.webContents||event.senderFrame!==islandWindow.webContents.mainFrame)throw Error('Untrusted island request');return handler(...args)})}
+islandHandle('island:state',islandState);
+islandHandle('island:expand',expanded=>islandWindow.setBounds(islandBounds(!!expanded),process.platform==='darwin'));
+islandHandle('island:action',action=>{if(action==='publishing'){workspace.preferences({paused:!workspace.snapshot().paused});return}if(action==='stop-recording'){mainWindow?.webContents.send('recorder:stop');return}if(!['Home','Chat','PC Helper','downloads'].includes(action))throw Error('Unknown shortcut');showWindow();if(action==='downloads')mainWindow.webContents.send('downloads:open');else mainWindow.webContents.send('workspace:navigate',action)});
 app.on('second-instance',showWindow);
-app.on('before-quit',()=>{quitting=true;localStudio?.shutdown();production?.shutdown();modelHub?.shutdown();});
-function refreshTray(){if(!tray||!workspace)return;tray.setContextMenu(Menu.buildFromTemplate([{label:'Open Orvio Studio',click:showWindow},{label:'Pause automations',type:'checkbox',checked:workspace.snapshot().paused,click:item=>workspace.preferences({paused:item.checked})},...(production?.state().recording?[{label:'Stop and save recording',click:()=>mainWindow?.webContents.send('recorder:stop')}]:[]),...(['connecting','sending','stopping'].includes(production?.state().live?.status)?[{label:'Stop YouTube stream',click:()=>production.stop()}]:[]),{type:'separator'},{label:'Quit Orvio Studio',click:()=>app.quit()}]));}
+app.on('before-quit',()=>{quitting=true;petWindow?.hide();localStudio?.shutdown();production?.shutdown();modelHub?.shutdown();});
+function refreshTray(){if(!tray||!workspace)return;tray.setContextMenu(Menu.buildFromTemplate([{label:'Open Orvio Studio',click:showWindow},{label:'Show companion',click:()=>{if(pets?.state().settings.enabled)petWindow.show();else{showWindow();mainWindow.webContents.send('workspace:navigate','Pets')}}},{label:'Pause automations',type:'checkbox',checked:workspace.snapshot().paused,click:item=>workspace.preferences({paused:item.checked})},...(production?.state().recording?[{label:'Stop and save recording',click:()=>mainWindow?.webContents.send('recorder:stop')}]:[]),...(['connecting','sending','stopping'].includes(production?.state().live?.status)?[{label:'Stop YouTube stream',click:()=>production.stop()}]:[]),{type:'separator'},{label:'Quit Orvio Studio',click:()=>app.quit()}]));}
 const updates=createUpdateController({updater:autoUpdater,packaged:app.isPackaged,platform:process.platform,macSigned:false,send:state=>{if(downloads){if(state.phase==='downloading'){updateDownloadId ||= downloads.begin({title:'Orvio app update',kind:'update'});downloads.update(updateDownloadId,{message:state.message,received:state.received??state.percent,total:state.total??100,speed:state.speed})}else if(updateDownloadId&&['ready','error'].includes(state.phase)){downloads.finish(updateDownloadId,state.phase==='ready'?'completed':'failed',{message:state.message});updateDownloadId=null}}if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('update:status',state);}});
 function openWindow() {
  mainWindow = new BrowserWindow({width:1280,height:850,minWidth:800,minHeight:650,title:'Orvio Studio',icon:path.join(__dirname,'../dist/orvio-logo.png'),backgroundColor:'#f8f9fb',show:false,...(process.platform==='darwin'?{titleBarStyle:'hiddenInset'}:{frame:false}),webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true}});
- mainWindow.on('close',event=>{if(!quitting){event.preventDefault();mainWindow.hide();}});
+ mainWindow.on('close',event=>{if(!quitting){event.preventDefault();mainWindow.hide();showIsland();}});
+ mainWindow.on('minimize',showIsland);mainWindow.on('show',()=>islandWindow?.hide());mainWindow.on('restore',()=>islandWindow?.hide());
  mainWindow.once('ready-to-show',()=>mainWindow.show());
  mainWindow.webContents.setWindowOpenHandler(({url})=>{try{shell.openExternal(externalURL(url));}catch{}return {action:'deny'};});
  mainWindow.webContents.on('will-navigate',(event,url)=>{if(url!==mainWindow.webContents.getURL())event.preventDefault();});
- mainWindow.webContents.session.setPermissionRequestHandler((contents,permission,callback)=>callback(contents===mainWindow.webContents&&Date.now()<captureUntil&&['media','display-capture'].includes(permission)));
- mainWindow.webContents.session.setPermissionCheckHandler((contents,permission)=>contents===mainWindow.webContents&&Date.now()<captureUntil&&['media','display-capture'].includes(permission));
+ mainWindow.webContents.session.setPermissionRequestHandler((contents,permission,callback,details)=>callback((contents===mainWindow.webContents&&Date.now()<captureUntil&&['media','display-capture'].includes(permission))||petWindow?.permission(contents,permission,details)||false));
+ mainWindow.webContents.session.setPermissionCheckHandler((contents,permission,_origin,details)=>(contents===mainWindow.webContents&&Date.now()<captureUntil&&['media','display-capture'].includes(permission))||petWindow?.permission(contents,permission,details)||false);
  mainWindow.webContents.session.setDisplayMediaRequestHandler(async(request,callback)=>{if(request.frame!==mainWindow.webContents.mainFrame||Date.now()>captureUntil||!captureSource)return callback({});try{const sources=await desktopCapturer.getSources({types:['screen','window']});const source=sources.find(s=>s.id===captureSource);if(!source)return callback({});callback({video:source,...(captureSystemAudio&&process.platform==='win32'?{audio:'loopback'}:{})});captureSource=''}catch{callback({})}},{useSystemPicker:false});
- mainWindow.webContents.session.webRequest.onHeadersReceived((details,callback)=>{callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':["default-src 'self'; script-src 'self'"+(app.isPackaged?'':" 'unsafe-inline'")+"; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https: orvio-media:; media-src 'self' orvio-media:; connect-src 'self' ws://127.0.0.1:5188; object-src 'none'; base-uri 'self'; frame-src 'none'"]}})});
+ mainWindow.webContents.session.webRequest.onHeadersReceived((details,callback)=>{callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':["default-src 'self'; script-src 'self'"+(app.isPackaged?'':" 'unsafe-inline'")+"; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https: orvio-media:; media-src 'self' blob: orvio-media:; connect-src 'self' ws://127.0.0.1:5188; object-src 'none'; base-uri 'self'; frame-src 'none'"]}})});
  if(app.isPackaged)mainWindow.loadFile(path.join(__dirname,'../dist/index.html'));else mainWindow.loadURL('http://127.0.0.1:5188');
 }
 function handle(channel,action){ipcMain.handle(channel,(event,...args)=>{if(!mainWindow||event.sender!==mainWindow.webContents||event.senderFrame!==mainWindow.webContents.mainFrame)throw new Error('Untrusted request');return action(...args);});}
+handle('pets:state',()=>pets.state());
+handle('pets:save',input=>{const result=pets.save(input);petWindow.show();return result});
+handle('pets:show',()=>petWindow.show());
 handle('workspace:state',()=>workspace.snapshot());
 handle('window:minimize',()=>mainWindow.minimize());
 handle('window:maximize',()=>{if(mainWindow.isMaximized())mainWindow.unmaximize();else mainWindow.maximize();});
@@ -41,8 +54,20 @@ handle('images:generate',input=>workspace.generateImage(input));
 handle('videos:list',accountId=>workspace.listAccountVideos(accountId));
 handle('videos:download',input=>workspace.downloadVideo(input));
 handle('local:session',async clear=>{if(clear)return localStudio.setSession(null);const result=await dialog.showOpenDialog(mainWindow,{properties:['openFile'],filters:[{name:'Your exported account cookies',extensions:['txt']}]});if(!result.canceled)localStudio.setSession(result.filePaths[0]);});
+handle('pc:state',()=>pcHelper.state());
+handle('pc:scan',options=>pcHelper.scan({duplicates:!!options?.duplicates,minMB:Number(options?.minMB)||100}));
+handle('pc:folder',async options=>{const selected=await dialog.showOpenDialog(mainWindow,{properties:['openDirectory']});return selected.canceled?pcHelper.state():pcHelper.scan({duplicates:!!options?.duplicates,minMB:Number(options?.minMB)||100,folder:selected.filePaths[0]})});
+handle('pc:cancel',()=>pcHelper.cancel());
+handle('pc:trash',ids=>pcHelper.remove(ids));
+handle('pc:apps',()=>pcHelper.listApps());
+handle('pc:app-files',id=>pcHelper.appFiles(id));
+handle('pc:uninstall',id=>pcHelper.openNativeUninstaller(id));
+handle('pc:models',async choose=>{if(modelScan)return modelScan;let folder;if(choose){const selected=await dialog.showOpenDialog(mainWindow,{properties:['openDirectory']});if(selected.canceled)return pcHelper.state();folder=selected.filePaths[0]}modelScan=pcHelper.scanModels(folder).finally(()=>modelScan=null);return modelScan});
+handle('pc:use-model',id=>{const model=pcHelper.modelInfo(id);return model.kind==='chat'?modelHub.importGGUF(model.file,true):localStudio.attachModel(model.modelId,model.file)});
 handle('downloads:state',()=>downloads.state());
 handle('downloads:cancel',id=>downloads.cancel(id));
+handle('downloads:retry',id=>downloads.retry(id));
+handle('downloads:pause',id=>downloads.pause(id));
 handle('downloads:clear',()=>downloads.clear());
 handle('models:search',query=>modelHub.search(query));
 handle('models:files',repo=>modelHub.remoteFiles(repo));
@@ -93,23 +118,27 @@ handle('ai:save',input=>workspace.saveAI(input));
 handle('ai:generate',prompt=>workspace.generate(prompt));
 ipcMain.handle('updates:check',()=>updates.check());
 ipcMain.handle('updates:state',()=>updates.getState());
-ipcMain.handle('updates:install',()=>updates.install());
+handle('updates:install',()=>{const p=production?.state();if(pets?.state().busy||p?.recording||p?.starting||['connecting','sending','stopping'].includes(p?.live?.status)||localStudio?.state().active||downloads?.state().some(d=>d.status==='active'&&d.kind!=='update')||workspace?.snapshot().jobs.some(j=>['creating','processing','publishing'].includes(j.status)))throw Error('Finish or pause active work before restarting.');return updates.install()});
 ipcMain.handle('updates:releases',()=>shell.openExternal(RELEASES_URL));
 ipcMain.handle('app:version',()=>app.getVersion());
 app.whenReady().then(()=>{
  const resources=app.isPackaged?path.join(process.resourcesPath,'runtime'):path.join(__dirname,'../runtime');
  const python=path.join(app.isPackaged?process.resourcesPath:path.join(__dirname,'../.runtime-cache',`${process.platform}-${process.arch}`),'python',process.platform==='win32'?'python.exe':'bin/python3');
- downloads=require('./downloads.cjs').createDownloads({directory:app.getPath('userData'),notify:state=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('downloads:changed',state)}});
- localStudio=require('./local-studio.cjs').createLocalStudio({directory:app.getPath('userData'),resources,python,downloads,notify:state=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('local:changed',state)}});
- modelHub=require('./model-hub.cjs').createModelHub({directory:app.getPath('userData'),python,localStudio,downloads,notify:state=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('models:changed',state)}});
+ pcHelper=require('./pc-helper.cjs').createPCHelper({directory:app.getPath('userData'),trash:file=>shell.trashItem(file),open:url=>shell.openExternal(url),notify:state=>{if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('pc:changed',state)}});
+ downloads=require('./downloads.cjs').createDownloads({directory:app.getPath('userData'),notify:state=>{refreshIsland();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('downloads:changed',state)}});
+ localStudio=require('./local-studio.cjs').createLocalStudio({directory:app.getPath('userData'),resources,python,downloads,notify:state=>{petWindow?.refresh();if(pets&&mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('pets:changed',pets.state());if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('local:changed',state)}});
+ modelHub=require('./model-hub.cjs').createModelHub({directory:app.getPath('userData'),python,localStudio,downloads,notify:state=>{petWindow?.refresh();if(pets&&mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('pets:changed',pets.state());if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('models:changed',state)}});
+ downloads.registerRetry('model',({id})=>modelHub.state().models.some(m=>m.id===id)?modelHub.install(id):localStudio.install(id));downloads.registerRetry('video',input=>localStudio.download(input));
  require('./hardware.cjs').detectHardware(app).then(hardware=>modelHub.setHardware(hardware)).catch(()=>{});
- production=require('./production.cjs').createProduction({directory:app.getPath('userData'),localStudio,notify:state=>{const working=!!state.recording||state.starting||['connecting','sending','stopping'].includes(state.live?.status);if(working&&productionBlocker===null)productionBlocker=powerSaveBlocker.start('prevent-display-sleep');else if(!working&&productionBlocker!==null){powerSaveBlocker.stop(productionBlocker);productionBlocker=null}const status=String(state.recording?.id||'')+String(state.live?.status||'');if(status!==lastProductionStatus){lastProductionStatus=status;refreshTray()}if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('production:changed',state)}});
+ production=require('./production.cjs').createProduction({directory:app.getPath('userData'),localStudio,notify:state=>{const working=!!state.recording||state.starting||['connecting','sending','stopping'].includes(state.live?.status);if(working&&productionBlocker===null)productionBlocker=powerSaveBlocker.start('prevent-display-sleep');else if(!working&&productionBlocker!==null){powerSaveBlocker.stop(productionBlocker);productionBlocker=null}const status=String(state.recording?.id||'')+String(state.live?.status||'');if(status!==lastProductionStatus){lastProductionStatus=status;refreshTray();refreshIsland()}if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('production:changed',state)}});
  protocol.handle('orvio-media',request=>{try{const url=new URL(request.url);if(url.hostname!=='asset')throw Error();return net.fetch(require('node:url').pathToFileURL(localStudio.file(url.pathname.slice(1))).href,{headers:request.headers})}catch{return new Response('Not found',{status:404})}});
 
- workspace=createWorkspace({modelHub,localStudio,directory:app.getPath('userData'),downloadsDirectory:app.getPath('downloads'),safeStorage,openExternal:url=>shell.openExternal(url),notify:state=>{refreshTray();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('workspace:changed',state);}});
+ workspace=createWorkspace({modelHub,localStudio,directory:app.getPath('userData'),downloadsDirectory:app.getPath('downloads'),safeStorage,openExternal:url=>shell.openExternal(url),notify:state=>{refreshTray();refreshIsland();if(mainWindow&&!mainWindow.isDestroyed())mainWindow.webContents.send('workspace:changed',state);}});
  tray=new Tray(nativeImage.createFromPath(path.join(__dirname,'../dist/orvio-logo.png')).resize({width:process.platform==='darwin'?22:32,height:process.platform==='darwin'?22:32}));
  tray.setToolTip('Orvio Studio • Free tools');tray.on('double-click',showWindow);refreshTray();
- openWindow();
+ pets=require('./pets.cjs').createPets({directory:app.getPath('userData'),modelHub,localStudio,notify:state=>{petWindow?.refresh();mainWindow?.webContents.send('pets:changed',state)}});
+ petWindow=require('./pet-window.cjs').createPetWindow({app,BrowserWindow,screen,ipcMain,pets,open:page=>{showWindow();mainWindow.webContents.send('workspace:navigate',page)}});
+ openWindow();petWindow.show();
  const run=()=>workspace.tick().catch(()=>{});setInterval(run,30000).unref();setTimeout(run,3000).unref();powerMonitor.on('resume',run);
  if(app.isPackaged){setTimeout(()=>updates.check(),8000).unref();setInterval(()=>updates.check(),4*60*60*1000).unref();}
  app.on('activate',showWindow);

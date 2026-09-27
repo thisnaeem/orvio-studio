@@ -21,4 +21,7 @@ Package metadata, license files, and dependencies remain in each installed envir
 - Hugging Face Diffusers: Apache 2.0, https://github.com/huggingface/diffusers . Only supported pipelines are exposed; remote repository Python code is not enabled.
 - Stable Diffusion Turbo: model-specific Stability AI license, https://huggingface.co/stabilityai/sd-turbo .
 - Stable Diffusion 1.5: CreativeML Open RAIL-M, https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5 .
-- AnimateDiff Lightning: Apache 2.0 adapter with the SD 1.5 base model's separate license, https://huggingface.co/ByteDance/AnimateDiff-Lightning .
+- AnimateDiff Lightning: CreativeML Open RAIL-M, including the SD 1.5 base model, https://huggingface.co/ByteDance/AnimateDiff-Lightning .
+
+- DreamShaper 8: CreativeML Open RAIL-M, https://huggingface.co/Lykon/dreamshaper-8 .
+- SDXL Turbo: Stability AI non-commercial community license; review separate commercial terms on https://huggingface.co/stabilityai/sdxl-turbo .

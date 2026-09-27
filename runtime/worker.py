@@ -33,13 +33,16 @@ def run(p):
         else:
             from download_progress import download_voice
             from piper import PiperVoice
-            if not (root/(model+'.onnx')).exists() or not (root/(model+'.onnx.json')).exists():
-                with tempfile.TemporaryDirectory(dir=root) as staging:
-                    download_voice(model,pathlib.Path(staging),emit)
-                    for suffix in ('.onnx','.onnx.json'):
-                        os.replace(pathlib.Path(staging)/(model+suffix),root/(model+suffix))
+            voice_root=pathlib.Path(p.get('source') or root)
+            if not (voice_root/(model+'.onnx')).exists() or not (voice_root/(model+'.onnx.json')).exists():
+                staging=root/('download-'+model)
+                staging.mkdir(exist_ok=True)
+                download_voice(model,staging,emit)
+                for suffix in ('.onnx','.onnx.json'):
+                    os.replace(staging/(model+suffix),root/(model+suffix))
+                staging.rmdir()
             if action=='voice':
-                engine=PiperVoice.load(str(root/(model+'.onnx')))
+                engine=PiperVoice.load(str(voice_root/(model+'.onnx')))
                 with wave.open(p['output'],'wb') as output: engine.synthesize_wav(p['text'],output)
         return {'ready':True}
     if action in ('transcribe','install_whisper'):
@@ -68,7 +71,7 @@ def run(p):
                 total=d.get('total_bytes') or d.get('total_bytes_estimate')
                 stream='audio' if d.get('info_dict',{}).get('vcodec')=='none' else 'video'
                 emit('PROGRESS',{'message':f'Downloading {stream}…','stage':stream,'file':stream+' stream','title':d.get('info_dict',{}).get('title','Video download'),'received':d.get('downloaded_bytes',0),'total':total,'speed':d.get('speed'),'eta':d.get('eta')})
-        options={'outtmpl':p['output']+'.source.%(ext)s','format':'bv*[height<=1080]+ba/b[height<=1080]/bv*+ba/b/bv*','merge_output_format':'mkv','noplaylist':True,'max_filesize':2*1024**3,'quiet':True,'noprogress':True,'no_warnings':True,'progress_hooks':[progress],'ffmpeg_location':ffmpeg,'socket_timeout':30,'retries':2,'overwrites':True,'enable_file_urls':False}
+        options={'outtmpl':p['output']+'.source.%(ext)s','format':'bv*[height<=1080]+ba/b[height<=1080]/bv*+ba/b/bv*','merge_output_format':'mkv','noplaylist':True,'max_filesize':2*1024**3,'quiet':True,'noprogress':True,'no_warnings':True,'progress_hooks':[progress],'ffmpeg_location':ffmpeg,'socket_timeout':30,'retries':2,'overwrites':False,'continuedl':True,'enable_file_urls':False}
         if p.get('jsRuntime'): options['js_runtimes']={'node':{'path':p['jsRuntime']}}
         if p.get('cookies'): options['cookiefile']=p['cookies']
         with yt_dlp.YoutubeDL(options) as ydl:

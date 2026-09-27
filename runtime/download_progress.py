@@ -44,18 +44,26 @@ def install_hub_progress(emit):
     download.tqdm = Progress
 
 def download_voice(model, destination, emit):
-    from urllib.request import urlopen
+    from urllib.request import urlopen, Request
     from piper.download_voices import VOICE_PATTERN, URL_FORMAT
     match = VOICE_PATTERN.match(model)
     if not match: raise ValueError('Invalid voice model')
     parts = match.groupdict()
     parts['lang_code'] = parts['lang_family'] + '_' + parts['lang_region']
     for extension in ('.onnx', '.onnx.json'):
-        with urlopen(URL_FORMAT.format(**parts, extension=extension), timeout=60) as response:
+        target_path=destination/(model+extension)
+        if target_path.exists(): continue
+        partial=destination/(model+extension+'.part')
+        initial=partial.stat().st_size if partial.exists() else 0
+        request=Request(URL_FORMAT.format(**parts, extension=extension),headers={'Range':f'bytes={initial}-'} if initial else {})
+        with urlopen(request, timeout=60) as response:
+            if response.status!=206: initial=0
             total = int(response.headers.get('Content-Length') or 0) or None
-            progress = Reporter(emit, model + extension, total)
-            with open(destination / (model + extension), 'wb') as target:
+            total=total+initial if total else None
+            progress = Reporter(emit, model + extension, total, initial)
+            with open(partial, 'ab' if initial else 'wb') as target:
                 while chunk := response.read(256 * 1024):
                     target.write(chunk)
                     progress.update(len(chunk))
             progress.update(0, True)
+        partial.replace(target_path)
