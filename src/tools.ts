@@ -1,8 +1,9 @@
 import type {IconName} from './icons';
-export type Page='Studio'|'Pets'|'Home'|'All tools'|'Instagram'|'Automations'|'Settings'|'Chat'|'Integrations'|'Images'|'Downloader'|'Voice'|'Clipping'|'Live'|'Captions'|'Recorder'|'Models'|'Videos'|'PC Helper';
+export type Page='SEO'|'Studio'|'Pets'|'Home'|'All tools'|'Instagram'|'Automations'|'Settings'|'Chat'|'Integrations'|'Images'|'Downloader'|'Voice'|'Clipping'|'Live'|'Captions'|'Recorder'|'Models'|'Videos'|'PC Helper';
 export type StudioTool={id:string;name:Page;description:string;category:string;icon:IconName;color:string;label:string};
 // Extend this registry and add the tool's route to grow the workspace.
 export const studioTools:StudioTool[]=[
+{id:'seo',name:'SEO',description:'Google Analytics, Search Console and AI insights for your websites.',category:'Productivity',icon:'search',color:'green',label:'Understand your search traffic'},
 {id:'pc-helper',name:'PC Helper',description:'Review large files, duplicates and app leftovers.',category:'Productivity',icon:'system',color:'green',label:'Review your storage'},
 {id:'instagram',name:'Instagram',description:'Connect your pages. Bring your content and community together.',category:'Social media',icon:'instagram',color:'rose',label:'Connect to get started'},
 

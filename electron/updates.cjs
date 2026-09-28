@@ -1,5 +1,5 @@
 const RELEASES_URL = 'https://github.com/thisnaeem/orvio-studio/releases/latest';
-function createUpdateController({updater, packaged, platform, macSigned=false, send=()=>{}}) {
+function createUpdateController({updater, packaged, platform, macSigned=false, send=()=>{},alert=()=>{}}) {
   const manualMac = platform === 'darwin' && !macSigned;
   let state = {phase:'idle', message:packaged ? 'Checks automatically at startup and every 4 hours.' : 'Updates are available in packaged releases.'};
   let checking = null;
@@ -9,10 +9,10 @@ function createUpdateController({updater, packaged, platform, macSigned=false, s
   updater.allowPrerelease = false;
   updater.allowDowngrade = false;
   updater.on('checking-for-update',()=>publish('checking','Checking GitHub for a new release…'));
-  updater.on('update-available',info=>publish(manualMac?'manual':'downloading',manualMac?`Version ${info.version} is available. Download it from GitHub; this unsigned Mac build cannot install updates automatically.`:`Downloading version ${info.version}…`,{version:info.version}));
+  updater.on('update-available',info=>{if(packaged)alert('available',info);publish(manualMac?'manual':'downloading',manualMac?`Version ${info.version} is available. Download it from GitHub; this unsigned Mac build cannot install updates automatically.`:`Downloading version ${info.version}…`,{version:info.version});});
   updater.on('update-not-available',()=>publish('current',manualMac?'You’re up to date. Unsigned Mac releases require manual installation.':'You’re up to date.'));
   updater.on('download-progress',progress=>publish('downloading',`Downloading update: ${Math.round(progress.percent)}%`,{percent:Math.round(progress.percent),received:progress.transferred,total:progress.total,speed:progress.bytesPerSecond}));
-  updater.on('update-downloaded',info=>publish('ready',`Version ${info.version} is ready. Restart to install, or it will install when you quit.`,{version:info.version}));
+  updater.on('update-downloaded',info=>{if(packaged)alert('ready',info);publish('ready',`Version ${info.version} is ready. Restart to install, or it will install when you quit.`,{version:info.version});});
   updater.on('error',()=>publish('error','Could not check or download the update. Check your connection and try again.'));
   async function check() {
     if(!packaged) return state;
