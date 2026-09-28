@@ -162,8 +162,10 @@ handle('seo:cancel',()=>seo.cancel());
 handle('seo:disconnect',()=>seo.disconnect());
 handle('seo:discover',()=>seo.discover());
 handle('seo:report',input=>seo.report(input));
-handle('seo:analyze',question=>seo.analysis(question));
-handle('seo:export',async()=>{const report=seo.state().report;if(!report)throw Error('Load a report first.');const result=await dialog.showSaveDialog(mainWindow,{defaultPath:'orvio-seo-report.json',filters:[{name:'SEO report',extensions:['json']}]});if(result.canceled)return false;await require('node:fs/promises').writeFile(result.filePath,JSON.stringify({report,analysis:seo.state().analysis},null,2));return true});
+handle('seo:analyze',input=>seo.analysis(input));
+handle('seo:add-action',input=>seo.addAction(input));
+handle('seo:task',input=>seo.task(input));
+handle('seo:export',async()=>{const report=seo.state().report;if(!report)throw Error('Load a report first.');const result=await dialog.showSaveDialog(mainWindow,{defaultPath:'orvio-seo-report.json',filters:[{name:'SEO report',extensions:['json']}]});if(result.canceled)return false;await require('node:fs/promises').writeFile(result.filePath,JSON.stringify({report,analysis:seo.state().analysis,insight:seo.state().insight,plan:seo.state().plan.filter(t=>t.property===report.property&&t.site===report.site)},null,2));return true});
 handle('ai:chat',input=>workspace.chat(input));
 
 handle('chat:capabilities',()=>require('./chat-files.cjs').capabilities(workspace.snapshot().ai));
