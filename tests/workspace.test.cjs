@@ -1,6 +1,12 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const os=require('node:os');const path=require('node:path');const {createWorkspace}=require('../electron/workspace.cjs');
 function setup(t,fetchImpl){const directory=fs.mkdtempSync(path.join(os.tmpdir(),'orvio-test-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));const safeStorage={isEncryptionAvailable:()=>true,encryptString:v=>Buffer.from('encrypted:'+v),decryptString:v=>v.toString().slice(10)};return {directory,safeStorage,fetchImpl};}
 const response=body=>({ok:true,json:async()=>body});
+test('named cloud provider uses its fixed endpoint without exposing credentials',async t=>{
+ const calls=[];const w=createWorkspace(setup(t,async(url,options)=>{calls.push({url,...options});return Response.json({choices:[{message:{content:'done'}}]})}));
+ w.saveAI({provider:'deepseek',model:'test-model',key:'fixture-key',baseURL:'https://ignored.example'});
+ await w.completeWork({messages:[{role:'user',content:'Build'}]},new AbortController().signal);
+ assert.equal(calls[0].url,'https://api.deepseek.com/v1/chat/completions');assert.ok(!JSON.stringify(w.snapshot()).includes('fixture-key'));
+});
 const account=response({data:[{id:'1',name:'Page',instagram_business_account:{id:'11',username:'studio'}}]});
 const job=()=>({accountId:'11',title:'A post',caption:'Hello',imageUrl:'https://example.com/photo.jpg',scheduledAt:new Date().toISOString()});
 test('connect persists encrypted tokens, public snapshots never expose credentials',async t=>{const options=setup(t,async()=>account),w=createWorkspace(options);await w.connect({token:'secret-meta-token',version:'v24.0'});assert.equal(w.snapshot().accounts.length,2);assert.equal(w.snapshot().accounts[0].token,undefined);assert.ok(!JSON.stringify(w.snapshot()).includes('secret-meta-token'));assert.ok(!fs.readFileSync(path.join(options.directory,'workspace-v3.json'),'utf8').includes('secret-meta-token'));assert.equal(createWorkspace(options).snapshot().accounts.length,2);});

@@ -1,7 +1,7 @@
 [
   {
     "id": "qwen-small",
-    "name": "Qwen 2.5 · 0.5B Instruct",
+    "name": "Qwen 2.5 \u00b7 0.5B Instruct",
     "kind": "chat",
     "engine": "llama",
     "size": "491 MB",
@@ -13,7 +13,7 @@
   },
   {
     "id": "qwen-balanced",
-    "name": "Qwen 2.5 · 1.5B Instruct",
+    "name": "Qwen 2.5 \u00b7 1.5B Instruct",
     "kind": "chat",
     "engine": "llama",
     "size": "~1.1 GB",
@@ -25,7 +25,7 @@
   },
   {
     "id": "qwen-tools",
-    "name": "Qwen 2.5 · 7B Instruct",
+    "name": "Qwen 2.5 \u00b7 7B Instruct",
     "kind": "chat",
     "engine": "llama",
     "size": "~4.7 GB",
@@ -50,7 +50,8 @@
     "repo": "stabilityai/sd-turbo",
     "license": "Stability AI model license",
     "steps": 4,
-    "guidance": 0
+    "guidance": 0,
+    "parameterProfile": "turbo"
   },
   {
     "id": "sd15",
@@ -61,7 +62,8 @@
     "ramGB": 8,
     "description": "A versatile base for 512-pixel illustrations, scenes and concepts.",
     "repo": "stable-diffusion-v1-5/stable-diffusion-v1-5",
-    "license": "CreativeML Open RAIL-M"
+    "license": "CreativeML Open RAIL-M",
+    "parameterProfile": "image"
   },
   {
     "id": "animatediff",
@@ -74,7 +76,8 @@
     "repo": "ByteDance/AnimateDiff-Lightning",
     "license": "CreativeML Open RAIL-M",
     "steps": 4,
-    "adapter": "animatediff_lightning_4step_diffusers.safetensors"
+    "adapter": "animatediff_lightning_4step_diffusers.safetensors",
+    "parameterProfile": "motion"
   },
   {
     "id": "dreamshaper",
@@ -87,7 +90,8 @@
     "repo": "Lykon/dreamshaper-8",
     "license": "CreativeML Open RAIL-M",
     "steps": 20,
-    "guidance": 7.5
+    "guidance": 7.5,
+    "parameterProfile": "image"
   },
   {
     "id": "sdxl-turbo",
@@ -100,11 +104,12 @@
     "repo": "stabilityai/sdxl-turbo",
     "license": "Stability AI non-commercial community license; check commercial terms",
     "steps": 4,
-    "guidance": 0
+    "guidance": 0,
+    "parameterProfile": "turbo"
   },
   {
     "id": "animatediff-fast",
-    "name": "AnimateDiff Lightning · 2-step",
+    "name": "AnimateDiff Lightning \u00b7 2-step",
     "kind": "video",
     "engine": "diffusion",
     "size": "~7 GB",
@@ -113,11 +118,12 @@
     "repo": "ByteDance/AnimateDiff-Lightning",
     "license": "CreativeML Open RAIL-M",
     "steps": 2,
-    "adapter": "animatediff_lightning_2step_diffusers.safetensors"
+    "adapter": "animatediff_lightning_2step_diffusers.safetensors",
+    "parameterProfile": "motion"
   },
   {
     "id": "qwen3-tiny",
-    "name": "Qwen 3 · 0.6B",
+    "name": "Qwen 3 \u00b7 0.6B",
     "kind": "chat",
     "engine": "llama",
     "size": "0.64 GB",
@@ -132,7 +138,7 @@
   },
   {
     "id": "qwen3-small",
-    "name": "Qwen 3 · 1.7B",
+    "name": "Qwen 3 \u00b7 1.7B",
     "kind": "chat",
     "engine": "llama",
     "size": "1.83 GB",
@@ -147,7 +153,7 @@
   },
   {
     "id": "qwen3-balanced",
-    "name": "Qwen 3 · 4B",
+    "name": "Qwen 3 \u00b7 4B",
     "kind": "chat",
     "engine": "llama",
     "size": "2.50 GB",
@@ -162,7 +168,7 @@
   },
   {
     "id": "qwen3-capable",
-    "name": "Qwen 3 · 8B",
+    "name": "Qwen 3 \u00b7 8B",
     "kind": "chat",
     "engine": "llama",
     "size": "5.03 GB",
@@ -177,7 +183,7 @@
   },
   {
     "id": "qwen3-large",
-    "name": "Qwen 3 · 14B",
+    "name": "Qwen 3 \u00b7 14B",
     "kind": "chat",
     "engine": "llama",
     "size": "9.00 GB",
@@ -192,7 +198,7 @@
   },
   {
     "id": "qwen-coder-small",
-    "name": "Qwen Coder · 1.5B",
+    "name": "Qwen Coder \u00b7 1.5B",
     "kind": "chat",
     "engine": "llama",
     "size": "1.12 GB",
@@ -206,7 +212,7 @@
   },
   {
     "id": "qwen-coder",
-    "name": "Qwen Coder · 7B",
+    "name": "Qwen Coder \u00b7 7B",
     "kind": "chat",
     "engine": "llama",
     "size": "4.68 GB",
@@ -220,7 +226,7 @@
   },
   {
     "id": "smollm-tiny",
-    "name": "SmolLM2 · 360M",
+    "name": "SmolLM2 \u00b7 360M",
     "kind": "chat",
     "engine": "llama",
     "size": "0.39 GB",
@@ -234,7 +240,7 @@
   },
   {
     "id": "smollm-small",
-    "name": "SmolLM2 · 1.7B",
+    "name": "SmolLM2 \u00b7 1.7B",
     "kind": "chat",
     "engine": "llama",
     "size": "1.06 GB",
@@ -253,13 +259,14 @@
     "engine": "diffusion",
     "size": "~5 GB",
     "ramGB": 8,
-    "description": "Stylized concepts and imaginative art. Try “mdjrny-v4 style” in your prompt.",
+    "description": "Stylized concepts and imaginative art. Try \u201cmdjrny-v4 style\u201d in your prompt.",
     "repo": "prompthero/openjourney",
     "license": "CreativeML Open RAIL-M",
     "steps": 25,
     "guidance": 7.5,
     "width": 512,
-    "height": 512
+    "height": 512,
+    "parameterProfile": "image"
   },
   {
     "id": "openjourney-v4",
@@ -274,7 +281,8 @@
     "steps": 25,
     "guidance": 7.5,
     "width": 512,
-    "height": 512
+    "height": 512,
+    "parameterProfile": "image"
   },
   {
     "id": "absolute-reality",
@@ -289,7 +297,8 @@
     "steps": 25,
     "guidance": 7.5,
     "width": 512,
-    "height": 512
+    "height": 512,
+    "parameterProfile": "image"
   },
   {
     "id": "dreamshaper-7",
@@ -304,7 +313,8 @@
     "steps": 25,
     "guidance": 7.5,
     "width": 512,
-    "height": 512
+    "height": 512,
+    "parameterProfile": "image"
   },
   {
     "id": "sdxl-base",
@@ -319,7 +329,8 @@
     "steps": 25,
     "guidance": 7.5,
     "width": 1024,
-    "height": 1024
+    "height": 1024,
+    "parameterProfile": "xl"
   },
   {
     "id": "dreamshaper-xl",
@@ -334,11 +345,12 @@
     "steps": 25,
     "guidance": 7.5,
     "width": 1024,
-    "height": 1024
+    "height": 1024,
+    "parameterProfile": "xl"
   },
   {
     "id": "animatediff-detail",
-    "name": "AnimateDiff Lightning · 8-step",
+    "name": "AnimateDiff Lightning \u00b7 8-step",
     "kind": "video",
     "engine": "diffusion",
     "size": "~7 GB",
@@ -348,11 +360,12 @@
     "baseRepo": "stable-diffusion-v1-5/stable-diffusion-v1-5",
     "license": "CreativeML Open RAIL-M",
     "steps": 8,
-    "adapter": "animatediff_lightning_8step_diffusers.safetensors"
+    "adapter": "animatediff_lightning_8step_diffusers.safetensors",
+    "parameterProfile": "motion"
   },
   {
     "id": "animatediff-dream",
-    "name": "DreamShaper · Motion",
+    "name": "DreamShaper \u00b7 Motion",
     "kind": "video",
     "engine": "diffusion",
     "size": "~7 GB",
@@ -362,11 +375,12 @@
     "baseRepo": "Lykon/dreamshaper-8",
     "license": "CreativeML Open RAIL-M",
     "steps": 4,
-    "adapter": "animatediff_lightning_4step_diffusers.safetensors"
+    "adapter": "animatediff_lightning_4step_diffusers.safetensors",
+    "parameterProfile": "motion"
   },
   {
     "id": "animatediff-real",
-    "name": "AbsoluteReality · Motion",
+    "name": "AbsoluteReality \u00b7 Motion",
     "kind": "video",
     "engine": "diffusion",
     "size": "~7 GB",
@@ -376,30 +390,32 @@
     "baseRepo": "Lykon/absolute-reality-1.81",
     "license": "CreativeML Open RAIL-M",
     "steps": 4,
-    "adapter": "animatediff_lightning_4step_diffusers.safetensors"
+    "adapter": "animatediff_lightning_4step_diffusers.safetensors",
+    "parameterProfile": "motion"
   },
   {
     "id": "zeroscope",
-    "name": "Zeroscope v2 · 576w",
+    "name": "Zeroscope v2 \u00b7 576w",
     "kind": "video",
     "engine": "diffusion",
     "pipeline": "text-to-video",
     "size": "~7 GB",
     "ramGB": 24,
-    "description": "A separate text-to-video pipeline: 24 frames at 576 × 320. Noncommercial use; generation is demanding. Requires the current PyTorch engine on Apple Silicon or Windows; unavailable on Intel Mac.",
+    "description": "A separate text-to-video pipeline: 24 frames at 576 \u00d7 320. Noncommercial use; generation is demanding. Requires the current PyTorch engine on Apple Silicon or Windows; unavailable on Intel Mac.",
     "repo": "cerspense/zeroscope_v2_576w",
-    "license": "CC BY-NC 4.0 · noncommercial",
+    "license": "CC BY-NC 4.0 \u00b7 noncommercial",
     "steps": 40,
     "guidance": 7.5,
     "width": 576,
     "height": 320,
     "frames": 24,
     "fps": 8,
-    "weights": "bin"
+    "weights": "bin",
+    "parameterProfile": "zeroscope"
   },
   {
     "id": "modelscope",
-    "name": "ModelScope · Text to Video 1.7B",
+    "name": "ModelScope \u00b7 Text to Video 1.7B",
     "kind": "video",
     "engine": "diffusion",
     "pipeline": "text-to-video",
@@ -407,12 +423,13 @@
     "ramGB": 16,
     "description": "English prompts to short 256-pixel video experiments. Intended for noncommercial research; outputs can include learned watermarks.",
     "repo": "ali-vilab/text-to-video-ms-1.7b",
-    "license": "Noncommercial research · see CC BY-NC / NC-ND model-card terms",
+    "license": "Noncommercial research \u00b7 see CC BY-NC / NC-ND model-card terms",
     "steps": 25,
     "guidance": 9,
     "width": 256,
     "height": 256,
     "frames": 16,
-    "fps": 8
+    "fps": 8,
+    "parameterProfile": "modelscope"
   }
 ]

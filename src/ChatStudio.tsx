@@ -1,9 +1,11 @@
 import {useChatVoice} from './ChatVoice';
-import {LocalStudio} from './LocalStudio';
+import {lazy} from 'react';
+const LocalStudio=lazy(()=>import('./LocalStudio').then(m=>({default:m.LocalStudio})));
 import {useEffect,useRef,useState} from 'react';
 import {Icon} from './icons';
 import {bridge,friendlyError,Schedule,Calendar,type Workspace} from './Connected';
-import {ImageStudio,type GeneratedImage} from './CreativeTools';
+import type {GeneratedImage} from './CreativeTools';
+const ImageStudio=lazy(()=>import('./CreativeTools').then(m=>({default:m.ImageStudio})));
 type Attachment={id:string;name:string;size:number;kind:'image'|'text'};
 type Turn={role:'user'|'assistant';content:string;attachments?:Attachment[]};
 type Agent='studio'|'caption'|'planner';

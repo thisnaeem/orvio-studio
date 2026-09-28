@@ -69,24 +69,31 @@ def run(p):
         return render(p,ffmpeg,imageio_ffmpeg)
     if action=='download':
         import yt_dlp
+        def thumbnail(info):
+            candidates=[info.get('thumbnail')]+[t.get('url') for t in reversed(info.get('thumbnails') or [])]
+            return next((url for url in candidates if isinstance(url,str) and url.startswith('https://')),None)
         def progress(d):
             if d['status']=='downloading':
                 total=d.get('total_bytes') or d.get('total_bytes_estimate')
                 stream='audio' if d.get('info_dict',{}).get('vcodec')=='none' else 'video'
-                emit('PROGRESS',{'message':f'Downloading {stream}…','stage':stream,'file':stream+' stream','title':d.get('info_dict',{}).get('title','Video download'),'received':d.get('downloaded_bytes',0),'total':total,'speed':d.get('speed'),'eta':d.get('eta')})
+                emit('PROGRESS',{'message':f'Downloading {stream}…','stage':stream,'file':stream+' stream','title':d.get('info_dict',{}).get('title','Video download'),'thumbnail':thumbnail(d.get('info_dict',{})),'received':d.get('downloaded_bytes',0),'total':total,'speed':d.get('speed'),'eta':d.get('eta')})
         options={'outtmpl':p['output']+'.source.%(ext)s','format':'bv*[height<=1080]+ba/b[height<=1080]/bv*+ba/b/bv*','merge_output_format':'mkv','noplaylist':True,'max_filesize':2*1024**3,'quiet':True,'noprogress':True,'no_warnings':True,'progress_hooks':[progress],'ffmpeg_location':ffmpeg,'socket_timeout':30,'retries':2,'overwrites':False,'continuedl':True,'enable_file_urls':False}
+        quality=int(p.get('quality',1080))
+        options['format']='ba/b' if p.get('audio') else f'bv*[height<={quality}]+ba/b[height<={quality}]/b'
+        if p.get('rate'): options['ratelimit']=int(p['rate'])*1024
         if p.get('jsRuntime'): options['js_runtimes']={'node':{'path':p['jsRuntime']}}
         if p.get('cookies'): options['cookiefile']=p['cookies']
         with yt_dlp.YoutubeDL(options) as ydl:
             info=ydl.extract_info(p['url'],download=True)
             source=info.get('filepath') or ydl.prepare_filename(info)
         if not pathlib.Path(source).is_file(): raise ValueError('The site did not provide a downloadable video file.')
-        emit('PROGRESS','Preparing MP4 video…')
+        emit('PROGRESS',{'message':'Preparing audio…' if p.get('audio') else 'Preparing MP4 video…','thumbnail':thumbnail(info)})
         # Normalize to a playable, publishable MP4, even when the source is WebM.
         converted=p['output']
-        subprocess.run([ffmpeg,'-y','-i',source,'-map','0:v:0','-map','0:a:0?','-c:v','libx264','-preset','veryfast','-threads','2','-c:a','aac','-movflags','+faststart',converted],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
+        command=[ffmpeg,'-y','-i',source]+(['-vn','-c:a','libmp3lame','-q:a','2'] if p.get('audio') else ['-map','0:v:0','-map','0:a:0?','-c:v','libx264','-preset','veryfast','-threads','2','-c:a','aac','-movflags','+faststart'])+[converted]
+        subprocess.run(command,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
         pathlib.Path(source).unlink(missing_ok=True)
-        return {'title':info.get('title','Downloaded video'),'duration':info.get('duration')}
+        return {'title':info.get('title','Downloaded video'),'duration':info.get('duration'),'thumbnail':thumbnail(info)}
     if action=='clip':
         start=float(p['start']); end=float(p['end'])
         if not 0<=start<end or end-start>300: raise ValueError('Choose a clip between 1 and 300 seconds.')

@@ -9,9 +9,13 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "desktop": "concurrently -k \"npm:dev\" \"wait-on http://127.0.0.1:5188 && electron .\"",
+    "desktop": "concurrently -k \"npm:dev\" \"wait-on http://127.0.0.1:5188 && node scripts/desktop-dev.cjs\"",
     "dist": "npm run build && electron-builder",
     "test": "node --test tests/*.test.cjs",
+    "verify:desktop:dev": "electron scripts/verify-desktop.cjs",
+    "verify:router:dev": "electron scripts/verify-router.cjs",
+    "verify:creative:dev": "electron scripts/verify-creative.cjs",
+    "verify:work:dev": "electron scripts/verify-work.cjs",
     "release:build": "npm run build && electron-builder --mac --win --publish never",
     "mcp": "node mcp/server.mjs",
     "runtime:prepare": "node scripts/bundle-python.cjs"
@@ -48,6 +52,8 @@
       "electron/**/*",
       "package.json",
       "runtime/models.json",
+      "runtime/router-providers.json",
+      "runtime/creative-settings.json",
       "runtime/mms-languages.json"
     ],
     "directories": {

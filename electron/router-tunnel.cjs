@@ -1,0 +1,13 @@
+const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
+function createRouterTunnel({directory,safeStorage,router,notify=()=>{},spawnImpl=spawn}){
+ const file=path.join(directory,'router-tunnel.json');let config={executable:'',url:'',token:''};try{config={...config,...JSON.parse(fs.readFileSync(file,'utf8'))}}catch{}
+ let child=null,status='Stopped';
+ const state=()=>({executable:config.executable,url:config.url,hasToken:!!config.token,running:!!child,status});const publish=()=>notify(state());
+ const persist=()=>{fs.writeFileSync(file+'.tmp',JSON.stringify(config),{mode:0o600});fs.renameSync(file+'.tmp',file);publish()};
+ return {state,setExecutable(value){if(child)throw Error('Stop the tunnel before changing its executable.');if(!fs.statSync(value).isFile()||!/^cloudflared(?:\.exe)?$/i.test(path.basename(value)))throw Error('Choose the cloudflared executable.');config.executable=value;persist()},
+ save(input){if(child)throw Error('Stop the tunnel before changing its settings.');const u=new URL(input.url);if(u.protocol!=='https:'||u.username||u.password||u.search||u.hash||u.pathname!=='/')throw Error('Enter your tunnel’s HTTPS hostname, without a path.');config.url=u.origin;if(input.token){if(typeof input.token!=='string'||input.token.length>16384)throw Error('Invalid tunnel token.');if(!safeStorage.isEncryptionAvailable())throw Error('Operating system credential encryption is unavailable.');config.token=safeStorage.encryptString(String(input.token)).toString('base64')}persist()},
+ start(){if(child)return state();if(!router.state().running)throw Error('Start the local API first.');if(!config.executable||!config.token||!config.url)throw Error('Choose cloudflared and save your named tunnel hostname and token.');status='Connecting…';const running=spawnImpl(config.executable,['tunnel','--no-autoupdate','run'],{windowsHide:true,stdio:['ignore','ignore','pipe'],env:{...process.env,TUNNEL_TOKEN:safeStorage.decryptString(Buffer.from(config.token,'base64'))}});child=running;let buffer='';running.stderr.on('data',chunk=>{buffer=(buffer+chunk.toString()).slice(-4000);if(child===running&&buffer.includes('Registered tunnel connection')){status='Connected';buffer='';publish()}});running.on('error',()=>{if(child===running){child=null;status='Could not start cloudflared. Check the selected executable.';publish()}});running.on('exit',code=>{if(child===running){child=null;status=code===0?'Stopped':'Tunnel stopped. Check your token and Cloudflare configuration.';publish()}});publish();return state()},
+ stop(){if(child){const current=child;child=null;current.kill()}status='Stopped';publish()},
+ };
+}
+module.exports={createRouterTunnel};

@@ -3,6 +3,18 @@ from unittest.mock import patch
 sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/'runtime'))
 import generate
 class ModelInstallTests(unittest.TestCase):
+    def test_generation_forwards_controls_to_pipeline_and_preserves_seed_zero(self):
+        from unittest.mock import MagicMock
+        pipe=MagicMock();pipe.return_value.nsfw_content_detected=None
+        torch=MagicMock();torch.cuda.is_available.return_value=False;torch.backends.mps.is_available.return_value=False
+        diffusers=MagicMock();diffusers.AutoPipelineForText2Image.from_pretrained.return_value=pipe
+        modules={'torch':torch,'diffusers':diffusers,'huggingface_hub':MagicMock(),'safetensors.torch':MagicMock()}
+        model=next(m for m in json.loads(pathlib.Path('runtime/models.json').read_text()) if m.get('parameterProfile')=='image')
+        with patch.dict(sys.modules,modules):
+            result=generate.generate({'action':'generate_model','model':model['id'],'prompt':'Lake','negativePrompt':'blur','width':640,'height':360,'steps':30,'guidance':7,'sampler':'euler','seed':0,'output':'test.png'},lambda *a:None)
+        args=pipe.call_args.kwargs
+        self.assertEqual(args['width'],640);self.assertEqual(args['negative_prompt'],'blur');self.assertEqual(args['num_inference_steps'],30);self.assertEqual(args['guidance_scale'],7)
+        self.assertEqual(result['seed'],0);torch.Generator.return_value.manual_seed.assert_called_with(0)
     def test_video_install_downloads_its_own_pipeline_without_loading_weights(self):
         downloads=[]
         class Pipeline:

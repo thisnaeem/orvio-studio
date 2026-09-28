@@ -26,6 +26,7 @@ function createDownloads({directory, notify = () => {}}) {
     for (const key of ['message','stage','file','received','total','speed','eta','title','assetId']) {
       if (info[key] !== undefined) item[key] = info[key];
     }
+    if(typeof info.thumbnail==='string'&&info.thumbnail.length<8192){try{const url=new URL(info.thumbnail);if(url.protocol==='https:'&&!url.username&&!url.password)item.thumbnail=url.href}catch{}}
     item.percent = Number.isFinite(item.total) && item.total > 0 && Number.isFinite(item.received) ? Math.min(100, Math.max(0, item.received / item.total * 100)) : null;
     publish();
   }
@@ -42,8 +43,9 @@ function createDownloads({directory, notify = () => {}}) {
     state, queue:require('./download-queue.cjs').createDownloadQueue(3),
     begin({title, kind, modelId, cancel, retry}) {
       const prior=retryContext.getStore();const id=prior&&sources[prior]?.type===retry?.type?prior:randomUUID();
+      const thumbnail=items.find(item=>item.id===id)?.thumbnail;
       items=items.filter(item=>item.id!==id);if(retry)sources[id]=retry;
-      items.unshift({id, title, kind, modelId, status: 'active', message: 'Preparing download…', percent: null, received: 0, total: null, createdAt: new Date().toISOString()});
+      items.unshift({id, title, kind, modelId, thumbnail, status: 'active', message: 'Preparing download…', percent: null, received: 0, total: null, createdAt: new Date().toISOString()});
       items = [...items.filter(item => item.status === 'active'), ...items.filter(item => item.status !== 'active').slice(0, 60)];
       if (cancel) cancellations.set(id, cancel);
       publish(true);

@@ -1,0 +1,305 @@
+{
+  "profiles": {
+    "image": {
+      "resolutions": [
+        {
+          "label": "Square \u00b7 1:1",
+          "width": 512,
+          "height": 512
+        },
+        {
+          "label": "Landscape \u00b7 16:9",
+          "width": 640,
+          "height": 360
+        },
+        {
+          "label": "Portrait \u00b7 9:16",
+          "width": 360,
+          "height": 640
+        }
+      ],
+      "steps": {
+        "min": 10,
+        "max": 50,
+        "default": 25
+      },
+      "fixedSteps": false,
+      "guidance": {
+        "min": 1,
+        "max": 15,
+        "default": 7.5
+      },
+      "negativePrompt": true,
+      "frames": [],
+      "fps": [],
+      "samplers": [
+        "default",
+        "euler",
+        "dpm"
+      ]
+    },
+    "xl": {
+      "resolutions": [
+        {
+          "label": "Square \u00b7 1:1",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "label": "Landscape \u00b7 16:9",
+          "width": 1024,
+          "height": 576
+        },
+        {
+          "label": "Portrait \u00b7 9:16",
+          "width": 576,
+          "height": 1024
+        }
+      ],
+      "steps": {
+        "min": 10,
+        "max": 50,
+        "default": 25
+      },
+      "fixedSteps": false,
+      "guidance": {
+        "min": 1,
+        "max": 15,
+        "default": 7.5
+      },
+      "negativePrompt": true,
+      "frames": [],
+      "fps": [],
+      "samplers": [
+        "default",
+        "euler",
+        "dpm"
+      ]
+    },
+    "turbo": {
+      "resolutions": [
+        {
+          "label": "Square \u00b7 1:1",
+          "width": 512,
+          "height": 512
+        },
+        {
+          "label": "Landscape \u00b7 16:9",
+          "width": 640,
+          "height": 360
+        },
+        {
+          "label": "Portrait \u00b7 9:16",
+          "width": 360,
+          "height": 640
+        }
+      ],
+      "steps": {
+        "min": 1,
+        "max": 4,
+        "default": 4
+      },
+      "fixedSteps": false,
+      "guidance": {
+        "min": 0,
+        "max": 0,
+        "default": 0
+      },
+      "negativePrompt": false,
+      "frames": [],
+      "fps": [],
+      "samplers": [
+        "default"
+      ]
+    },
+    "motion": {
+      "resolutions": [
+        {
+          "label": "Square \u00b7 1:1",
+          "width": 512,
+          "height": 512
+        },
+        {
+          "label": "Landscape \u00b7 16:9",
+          "width": 640,
+          "height": 360
+        },
+        {
+          "label": "Portrait \u00b7 9:16",
+          "width": 360,
+          "height": 640
+        }
+      ],
+      "steps": {
+        "min": 10,
+        "max": 50,
+        "default": 25
+      },
+      "fixedSteps": true,
+      "guidance": {
+        "min": 1,
+        "max": 1,
+        "default": 1
+      },
+      "negativePrompt": false,
+      "frames": [
+        8,
+        16
+      ],
+      "fps": [
+        4,
+        8,
+        12,
+        16
+      ],
+      "samplers": [
+        "default"
+      ]
+    },
+    "zeroscope": {
+      "resolutions": [
+        {
+          "label": "Native",
+          "width": 576,
+          "height": 320
+        }
+      ],
+      "steps": {
+        "min": 10,
+        "max": 50,
+        "default": 25
+      },
+      "fixedSteps": false,
+      "guidance": {
+        "min": 1,
+        "max": 15,
+        "default": 7.5
+      },
+      "negativePrompt": true,
+      "frames": [
+        8,
+        16,
+        24
+      ],
+      "fps": [
+        4,
+        8,
+        12,
+        16
+      ],
+      "samplers": [
+        "default"
+      ]
+    },
+    "modelscope": {
+      "resolutions": [
+        {
+          "label": "Native",
+          "width": 256,
+          "height": 256
+        }
+      ],
+      "steps": {
+        "min": 10,
+        "max": 50,
+        "default": 25
+      },
+      "fixedSteps": false,
+      "guidance": {
+        "min": 1,
+        "max": 15,
+        "default": 7.5
+      },
+      "negativePrompt": true,
+      "frames": [
+        8,
+        16
+      ],
+      "fps": [
+        4,
+        8,
+        12,
+        16
+      ],
+      "samplers": [
+        "default"
+      ]
+    }
+  },
+  "styles": [
+    {
+      "id": "none",
+      "name": "As written",
+      "prompt": ""
+    },
+    {
+      "id": "cinematic",
+      "name": "Cinematic",
+      "prompt": "cinematic composition, natural film lighting, subtle film grain"
+    },
+    {
+      "id": "photo",
+      "name": "Photographic",
+      "prompt": "editorial photography, natural textures, realistic lighting"
+    },
+    {
+      "id": "illustration",
+      "name": "Illustration",
+      "prompt": "editorial illustration, deliberate shapes, expressive color palette"
+    },
+    {
+      "id": "clay",
+      "name": "Clay render",
+      "prompt": "handcrafted clay miniature, soft studio lighting, tactile material"
+    },
+    {
+      "id": "anime",
+      "name": "Anime",
+      "prompt": "anime illustration, expressive linework, painted background"
+    }
+  ],
+  "workflows": [
+    {
+      "id": "quick-concept",
+      "name": "Quick concept",
+      "description": "Explore an idea with a few-step image model.",
+      "model": "sd-turbo",
+      "prompt": "A sculptural terracotta arch beside a turquoise pool in a quiet desert, afternoon light",
+      "style": "cinematic"
+    },
+    {
+      "id": "editorial",
+      "name": "Editorial portrait",
+      "description": "Portrait framing with photographic styling.",
+      "model": "absolute-reality",
+      "prompt": "An editorial portrait of an adult ceramic artist in a sunlit studio, natural expression",
+      "style": "photo",
+      "resolution": 2
+    },
+    {
+      "id": "dream-world",
+      "name": "Dream world",
+      "description": "Illustrated landscapes and imaginative scenes.",
+      "model": "dreamshaper",
+      "prompt": "A tiny observatory on a floating island above a sea of clouds, warm evening light",
+      "style": "illustration"
+    },
+    {
+      "id": "motion-study",
+      "name": "Motion study",
+      "description": "A short animated scene with the Lightning adapter.",
+      "model": "animatediff-fast",
+      "prompt": "A quiet lake with gentle ripples, clouds drifting above distant mountains",
+      "style": "cinematic",
+      "fps": 8
+    },
+    {
+      "id": "wide-film",
+      "name": "Wide film sketch",
+      "description": "A native widescreen text-to-video experiment.",
+      "model": "zeroscope",
+      "prompt": "A slow view of a coastal lighthouse with rolling ocean waves at golden hour",
+      "style": "cinematic"
+    }
+  ]
+}
