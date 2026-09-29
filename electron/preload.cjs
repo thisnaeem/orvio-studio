@@ -39,6 +39,8 @@ contextBridge.exposeInMainWorld('studio',Object.freeze({
  removeModel:id=>ipcRenderer.invoke('models:remove',id),
  unloadModel:()=>ipcRenderer.invoke('models:unload'),
  cancelModel:()=>ipcRenderer.invoke('models:cancel'),
+ localMesh:id=>ipcRenderer.invoke('local:mesh',id),
+ generateSpatial:input=>ipcRenderer.invoke('local:spatial',input),
  generateLocal:input=>ipcRenderer.invoke('models:generate',input),
  importModel:()=>ipcRenderer.invoke('models:import'),
  onModels:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('models:changed',listener);return()=>ipcRenderer.removeListener('models:changed',listener)},

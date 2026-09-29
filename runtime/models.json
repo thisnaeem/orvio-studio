@@ -431,5 +431,43 @@
     "frames": 16,
     "fps": 8,
     "parameterProfile": "modelscope"
+  },
+  {
+    "id": "musetalk-15",
+    "name": "MuseTalk 1.5",
+    "kind": "lipsync",
+    "engine": "lipsync",
+    "size": "~2 GB + engine",
+    "ramGB": 12,
+    "description": "Animate a portrait or synchronize a face video to speech. Local 256px face generation, up to 30 seconds. Experimental feathered-crop compositor; clear front-facing faces work best.",
+    "repo": "TMElyralab/MuseTalk",
+    "license": "MIT \u00b7 review component licenses",
+    "input": "portrait-audio"
+  },
+  {
+    "id": "shap-e-text",
+    "name": "Shap-E \u00b7 text to 3D",
+    "kind": "3d",
+    "engine": "spatial",
+    "size": "~1.8 GB + engine",
+    "ramGB": 12,
+    "description": "Turn a description of one object into a colored 3D mesh. Preview, rotate and export GLB. Coarse concept geometry; refine in a 3D editor.",
+    "repo": "openai/shap-e",
+    "revision": "7bd337afdea1c17842e1c3cc45c4e268356dba40",
+    "license": "MIT",
+    "input": "text"
+  },
+  {
+    "id": "shap-e-image",
+    "name": "Shap-E \u00b7 image to 3D",
+    "kind": "3d",
+    "engine": "spatial",
+    "size": "~1.8 GB + engine",
+    "ramGB": 12,
+    "description": "Reconstruct a concept mesh from an object image. Use a centered object against a simple background. Color and geometry can need cleanup.",
+    "repo": "openai/shap-e-img2img",
+    "revision": "0e0aba80f08d368aaf6af9cb93583707481cc29b",
+    "license": "MIT",
+    "input": "image"
   }
 ]

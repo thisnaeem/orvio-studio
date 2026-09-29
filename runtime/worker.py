@@ -8,10 +8,16 @@ def run(p):
     action=p['action']; root=pathlib.Path(p['models']); root.mkdir(parents=True,exist_ok=True)
     os.environ['HF_HOME']=str(root/'huggingface')
     os.environ['HF_HUB_DISABLE_XET']='1'
-    if action in ('voice','transcribe','transcribe_mms','generate_model'): os.environ['HF_HUB_OFFLINE']='1'
-    if action in ('install_model','install_whisper','install_mms') or (action=='install_voice' and p.get('model')=='chatterbox'):
+    if action in ('voice','transcribe','transcribe_mms','generate_model','generate_spatial','generate_lipsync'): os.environ['HF_HUB_OFFLINE']='1'
+    if action in ('install_model','install_whisper','install_mms','install_spatial','install_lipsync') or (action=='install_voice' and p.get('model')=='chatterbox'):
         from download_progress import install_hub_progress
         install_hub_progress(emit)
+    if action in ('install_spatial','generate_spatial'):
+        from spatial import generate
+        return generate(p,emit)
+    if action in ('install_lipsync','generate_lipsync'):
+        from lipsync import run
+        return run(p,emit)
     if action in ('install_model','generate_model'):
         from generate import generate
         return generate(p,emit)
