@@ -118,4 +118,7 @@ def run(p):
 if __name__=='__main__':
     try: emit('RESULT',run(json.load(sys.stdin)))
     except Exception as e:
-        emit('ERROR',str(e)[-1800:]); sys.exit(1)
+        message=str(e)
+        if 'out of memory' in message.lower():
+            message='Not enough memory for this generation. Reduce resolution or video frames, choose a smaller model, or close other GPU-heavy apps. '+message
+        emit('ERROR',message[-1800:]); sys.exit(1)

@@ -118,7 +118,7 @@ body{@apply [font-size:1rem];@apply [line-height:1.5]}h1,h2,h3{@apply [letter-sp
   .app[data-studio-compact=true] .main-shell { @apply !ml-[67px] !w-[calc(100%_-_67px)]; }
   .app[data-studio=true] .main-shell { @apply h-dvh overflow-hidden; }
   .app[data-studio=true] .topbar { @apply !h-14 !min-h-14 !px-5; }
-  .app[data-studio=true] main { @apply !m-0 !h-[calc(100dvh_-_56px)] !min-h-0 !w-full !max-w-none !p-3; }
+  .app[data-studio=true] main { @apply !m-0 !h-[calc(100dvh_-_56px)] !min-h-0 !w-full !max-w-none !p-0; }
   .studio-inspector :is(input,select,textarea) { @apply !min-w-0 !max-w-full !rounded-lg !border-[var(--line)] !bg-[var(--surface)] !px-2.5 !py-2 !text-[11px]; }
   .studio-inspector select { @apply truncate; }
   .studio-inspector >section { @apply border-b border-[var(--line)] pb-5; }
@@ -131,6 +131,45 @@ body{@apply [font-size:1rem];@apply [line-height:1.5]}h1,h2,h3{@apply [letter-sp
     .app[data-studio=true] .breadcrumb { @apply hidden; }
     .app[data-studio=true] .top-actions { @apply ml-auto gap-2; }
     .app[data-studio=true] .topbar .avatar { @apply hidden; }
-    .app[data-studio=true] main { @apply !p-1.5; }
+    .app[data-studio=true] main { @apply !p-0; }
   }
+}
+
+@layer base {
+  * { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background-color: var(--muted); }
+}
+@layer components {
+  @media(min-width:1024px) {
+    .sidebar:not([data-compact=true]) { width: var(--navigation-width,245px); }
+    .app:not([data-studio-compact=true]) .main-shell { margin-left: var(--navigation-width,245px); width: calc(100% - var(--navigation-width,245px)); }
+  }
+}
+
+/* Keep navigation and content on the same easing curve when Studio changes layout. */
+@layer components {
+  .sidebar {
+    @apply transition-[width,padding] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)];
+  }
+  .main-shell {
+    @apply transition-[margin-left,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)];
+  }
+  .sidebar .brand img, .sidebar :is(nav button,.nav-secondary) {
+    @apply transition-[width,height,padding,background-color,color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)];
+  }
+  .sidebar:not([data-compact=true]) :is(nav button>span,.nav-secondary>span,.brand>div,.profile>div) {
+    @apply whitespace-nowrap animate-[navigation-label-in_240ms_ease-out_both];
+  }
+  html[data-panel-resizing=true] :is(.sidebar,.main-shell) { @apply transition-none; }
+  @media(prefers-reduced-motion:reduce) {
+    .sidebar, .main-shell, .sidebar .brand img, .sidebar :is(nav button,.nav-secondary) { @apply transition-none; }
+    .sidebar:not([data-compact=true]) :is(nav button>span,.nav-secondary>span,.brand>div,.profile>div) { @apply animate-none; }
+  }
+}
+@keyframes navigation-label-in {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
 }

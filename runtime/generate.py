@@ -1,5 +1,6 @@
 """Built-in diffusion pipelines. Catalog entries select supported, explicit routes."""
-import os,pathlib,json
+import os,pathlib,json,time
+from inference_device import select_device,configure
 
 BASE='stable-diffusion-v1-5/stable-diffusion-v1-5'
 def route(model):
@@ -26,8 +27,10 @@ def generate(p,emit):
             DiffusionPipeline.download(model.get('baseRepo',BASE),use_safetensors=True)
         else: DiffusionPipeline.download(model['repo'],use_safetensors=model.get('weights')!='bin')
         return {'ready':True}
-    device='cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'
-    dtype=torch.float16 if device=='cuda' else torch.float32
+    started=time.monotonic()
+    device=select_device(torch)
+    emit('PROGRESS',f'Loading model · {device.upper()}')
+    dtype=torch.float16 if device in ('cuda','mps') else torch.float32
     os.environ['HF_HUB_OFFLINE']='1'
     options={'torch_dtype':dtype,'use_safetensors':model.get('weights')!='bin','local_files_only':True}
     if pipeline=='animatediff':
@@ -40,11 +43,13 @@ def generate(p,emit):
         pipe.scheduler=DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
         pipe.unet.enable_forward_chunking(chunk_size=1,dim=1)
     else: pipe=AutoPipelineForText2Image.from_pretrained(p.get('source') or model['repo'],**options)
-    pipe.enable_attention_slicing();pipe.enable_vae_slicing();pipe.to(device)
+    execution=configure(pipe,torch,device,model['kind']=='video')
+    device_label=execution['deviceName'] + (' · memory saving' if execution['memoryMode']=='offload' else '')
+    emit('PROGRESS',f'Preparing generation · {device_label}')
     seed=int(p['seed']) if p.get('seed') is not None else int.from_bytes(os.urandom(4),'little')
     generator=torch.Generator(device='cpu').manual_seed(seed)
     def progress(_pipe,step,_time,kwargs):
-        emit('PROGRESS',f'Generating frame details · step {step+1}')
+        emit('PROGRESS',f'{device_label} · step {step+1}/{steps}')
         return kwargs
     width,height,frames,fps=dimensions(model)
     width=int(p.get('width',width));height=int(p.get('height',height));frames=int(p.get('frames',frames));fps=int(p.get('fps',fps))
@@ -53,18 +58,20 @@ def generate(p,emit):
     elif p.get('sampler')=='dpm':pipe.scheduler=DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
     args={'prompt':p['prompt'],'generator':generator,'height':height,'width':width}
     if p.get('negativePrompt') and guidance>1:args['negative_prompt']=p['negativePrompt']
-    if pipeline=='text-to-video': args.update(callback=lambda step,time,latents:emit('PROGRESS',f'Generating video · step {step+1}'),callback_steps=1)
+    if pipeline=='text-to-video': args.update(callback=lambda step,time,latents:emit('PROGRESS',f'{device_label} · step {step+1}/{steps}'),callback_steps=1)
     else: args['callback_on_step_end']=progress
     if model['kind']=='video':
         import imageio_ffmpeg,numpy as np
-        result=pipe(**args,num_frames=frames,num_inference_steps=steps,guidance_scale=guidance,output_type='pil').frames[0]
+        with torch.inference_mode():
+            result=pipe(**args,num_frames=frames,num_inference_steps=steps,guidance_scale=guidance,output_type='pil').frames[0]
         writer=imageio_ffmpeg.write_frames(p['output'],(width,height),fps=fps,codec='libx264',pix_fmt_in='rgb24',pix_fmt_out='yuv420p',output_params=['-threads','2'])
         writer.send(None)
         try:
             for frame in result: writer.send(np.asarray(frame.convert('RGB')))
         finally: writer.close()
     else:
-        result=pipe(**args,num_inference_steps=steps,guidance_scale=guidance)
+        with torch.inference_mode():
+            result=pipe(**args,num_inference_steps=steps,guidance_scale=guidance)
         if getattr(result,'nsfw_content_detected',None) and any(result.nsfw_content_detected): raise ValueError('The model did not return a usable image. Try a different prompt.')
         result.images[0].save(p['output'])
-    return {'seed':seed,'device':device,'model':model['name'],'width':width,'height':height,**({'frames':frames,'fps':fps,'duration':frames/fps} if model['kind']=='video' else {})}
+    return {'seed':seed,**execution,'seconds':round(time.monotonic()-started,2),'model':model['name'],'width':width,'height':height,**({'frames':frames,'fps':fps,'duration':frames/fps} if model['kind']=='video' else {})}
