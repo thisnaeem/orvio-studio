@@ -93,3 +93,44 @@ body{@apply [font-size:1rem];@apply [line-height:1.5]}h1,h2,h3{@apply [letter-sp
   :is(input,textarea,[contenteditable="true"]) { cursor: text; }
   :is(button,input,select):disabled { cursor: not-allowed; }
 }
+
+/* Charcoal studio palette; shared tokens keep every tool on the same theme. */
+@layer components {
+  [data-theme=dark] { --bg:#101011; --surface:#1c1d1f; --text:#efedf4; --muted:#a4a3ad; --line:#353438; --hover:#28272c; --studio-canvas:#1c1d1f; --studio-panel:#0c0b0f; --studio-input:#09090b; --shadow:0 12px 36px #0003; }
+  [data-theme=dark][data-accent=violet] { --accent:#8052ff; --accent-dark:#7041ec; --accent-soft:#282039; --accent-line:#65508f; }
+  [data-theme=dark] .sidebar { @apply bg-[#121214] border-[#303035] text-[#eae8ef]; }
+  [data-theme=dark] :is(.workspace-switch,.sidebar-bottom,.profile) { @apply !border-[#303035]; }
+  [data-theme=dark] .sidebar :is(nav button,.nav-secondary) { @apply text-[#a4a3ad]; }
+  [data-theme=dark] .sidebar :is(nav button.active,.nav-secondary.active) { @apply bg-[var(--accent-soft)] text-[#d4c1ff]; }
+  [data-theme=dark] :is(.topbar,.settings-panel,.panel,.settings-menu,.modal,.tool-card,.tool-card-bottom) { @apply border-[var(--line)]; }
+  [data-theme=dark] :is(.bg-white,.bg-slate-50,.bg-gray-50) { @apply bg-[var(--surface)]; }
+  [data-theme=dark] input::placeholder,[data-theme=dark] textarea::placeholder { @apply text-[#777680]; }
+  [data-theme=dark] .appearance-preview[data-preview-theme=dark] { @apply bg-[#1c1d1f]; }
+  [data-theme=dark] .preview-sidebar { @apply bg-[#101011]; }
+  [data-theme=dark] .theme-thumbnail.dark { @apply bg-[#1c1d1f]; }
+  .studio-sidebar-toggle { @apply mt-4 w-full rounded-xl p-2 text-[var(--muted)] hover:bg-[var(--hover)]; }
+  .sidebar[data-compact=true] { @apply !w-[67px] !items-center !px-2 !pt-4; }
+  .sidebar[data-compact=true] >div { @apply w-full; }
+  .sidebar[data-compact=true] .brand { @apply justify-center; }
+  .sidebar[data-compact=true] .brand img { @apply !h-9 !w-9; }
+  .sidebar[data-compact=true] :is(.brand>div,.workspace-switch,.nav-group-label,nav button>span,.nav-secondary>span,.profile>div,.profile>svg) { @apply !hidden; }
+  .sidebar[data-compact=true] :is(nav button,.nav-secondary,.profile) { @apply !justify-center !px-0; }
+  .app[data-studio-compact=true] .main-shell { @apply !ml-[67px] !w-[calc(100%_-_67px)]; }
+  .app[data-studio=true] .main-shell { @apply h-dvh overflow-hidden; }
+  .app[data-studio=true] .topbar { @apply !h-14 !min-h-14 !px-5; }
+  .app[data-studio=true] main { @apply !m-0 !h-[calc(100dvh_-_56px)] !min-h-0 !w-full !max-w-none !p-3; }
+  .studio-inspector :is(input,select,textarea) { @apply !min-w-0 !max-w-full !rounded-lg !border-[var(--line)] !bg-[var(--surface)] !px-2.5 !py-2 !text-[11px]; }
+  .studio-inspector select { @apply truncate; }
+  .studio-inspector >section { @apply border-b border-[var(--line)] pb-5; }
+  .studio-inspector input[type=checkbox] { @apply !h-3.5 !w-3.5 shrink-0 accent-[var(--accent)]; }
+  .studio-workbench p { @apply text-[var(--muted)]; }
+}
+@layer components {
+  .app[data-studio=true] .search-trigger { @apply hidden; }
+  @media(max-width:760px) {
+    .app[data-studio=true] .breadcrumb { @apply hidden; }
+    .app[data-studio=true] .top-actions { @apply ml-auto gap-2; }
+    .app[data-studio=true] .topbar .avatar { @apply hidden; }
+    .app[data-studio=true] main { @apply !p-1.5; }
+  }
+}

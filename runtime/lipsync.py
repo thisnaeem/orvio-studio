@@ -34,7 +34,7 @@ def run(p,emit):
     def convert(args):
         result=subprocess.run([ffmpeg,'-hide_banner','-loglevel','error','-y',*args],capture_output=True)
         if result.returncode:raise ValueError('Media conversion failed: '+result.stderr.decode(errors='replace')[-500:])
-    with tempfile.TemporaryDirectory(prefix='orvio-lipsync-') as temp:
+    with tempfile.TemporaryDirectory(prefix='orvio-lipsync-',dir=p.get('scratch')) as temp:
         # Limit decoded audio before it reaches model memory.
         pcm=pathlib.Path(temp,'speech.pcm')
         convert(['-i',p['audio'],'-t',str(p['duration']),'-vn','-ac','1','-ar','16000','-f','f32le',str(pcm)])
@@ -57,12 +57,14 @@ def run(p,emit):
             reader=imageio_ffmpeg.read_frames(str(normalized),pix_fmt='rgb24');metadata=next(reader);width,height=metadata['size']
         detector=cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
         silent=pathlib.Path(temp,'silent.mp4');writer=imageio_ffmpeg.write_frames(str(silent),(width,height),fps=fps,codec='libx264',pix_fmt_in='rgb24',pix_fmt_out='yuv420p',output_params=['-threads','2']);writer.send(None)
-        previous=None
+        previous=None;portrait_latent=None
         try:
             with torch.inference_mode():
                 for i in range(count):
                     frame=photo.copy() if photo is not None else np.frombuffer(next(reader),dtype=np.uint8).reshape(height,width,3).copy()
                     if p.get('box'):box=crop_box(p['box'],width,height)
+                    elif photo is not None and previous:
+                        box=previous
                     else:
                         detected=detector.detectMultiScale(cv2.cvtColor(frame,cv2.COLOR_RGB2GRAY),1.1,5,minSize=(48,48))
                         if len(detected)!=1:raise ValueError('Use a clear single face, or choose a manual face area. No video has been saved.')
@@ -74,7 +76,10 @@ def run(p,emit):
                     crop=cv2.resize(frame[y1:y2,x1:x2],(256,256),interpolation=cv2.INTER_LANCZOS4)
                     tensor=torch.from_numpy(crop.copy()).permute(2,0,1).unsqueeze(0).to(device,dtype)/255
                     masked=tensor.clone();masked[:,:,128:]=0
-                    latent=torch.cat([vae.encode(masked*2-1).latent_dist.sample(),vae.encode(tensor*2-1).latent_dist.sample()],dim=1)*vae.config.scaling_factor
+                    if photo is not None and portrait_latent is not None:latent=portrait_latent
+                    else:
+                        latent=torch.cat([vae.encode(masked*2-1).latent_dist.sample(),vae.encode(tensor*2-1).latent_dist.sample()],dim=1)*vae.config.scaling_factor
+                        if photo is not None:portrait_latent=latent
                     condition=hidden[:,i*2:i*2+10].reshape(1,50,384)+pe
                     prediction=unet(latent,torch.tensor([0],device=device),encoder_hidden_states=condition).sample
                     face=((vae.decode(prediction/vae.config.scaling_factor).sample/2+.5).clamp(0,1)[0].permute(1,2,0).float().cpu().numpy()*255).astype(np.uint8)

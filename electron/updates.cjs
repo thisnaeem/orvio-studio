@@ -11,7 +11,7 @@ function createUpdateController({updater, packaged, platform, macSigned=false, s
   updater.on('checking-for-update',()=>publish('checking','Checking GitHub for a new release…'));
   updater.on('update-available',info=>{if(packaged)alert('available',info);publish(manualMac?'manual':'downloading',manualMac?`Version ${info.version} is available. Download it from GitHub; this unsigned Mac build cannot install updates automatically.`:`Downloading version ${info.version}…`,{version:info.version});});
   updater.on('update-not-available',()=>publish('current',manualMac?'You’re up to date. Unsigned Mac releases require manual installation.':'You’re up to date.'));
-  updater.on('download-progress',progress=>publish('downloading',`Downloading update: ${Math.round(progress.percent)}%`,{percent:Math.round(progress.percent),received:progress.transferred,total:progress.total,speed:progress.bytesPerSecond}));
+  updater.on('download-progress',progress=>publish('downloading',`Downloading update: ${Math.round(progress.percent)}%`,{version:state.version,percent:Math.round(progress.percent),received:progress.transferred,total:progress.total,speed:progress.bytesPerSecond}));
   updater.on('update-downloaded',info=>{if(packaged)alert('ready',info);publish('ready',`Version ${info.version} is ready. Restart to install, or it will install when you quit.`,{version:info.version});});
   updater.on('error',()=>publish('error','Could not check or download the update. Check your connection and try again.'));
   async function check() {

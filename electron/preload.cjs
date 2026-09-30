@@ -92,6 +92,7 @@ contextBridge.exposeInMainWorld('studio',Object.freeze({
  editJob:(id,input)=>ipcRenderer.invoke('jobs:edit',id,input),
  savePreferences:input=>ipcRenderer.invoke('workspace:preferences',input),
  saveAI:input=>ipcRenderer.invoke('ai:save',input),
+ enhancePrompt:input=>ipcRenderer.invoke('creative:enhance',input),
  generateCaption:prompt=>ipcRenderer.invoke('ai:generate',prompt),
  onWorkspace:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('workspace:changed',listener);return()=>ipcRenderer.removeListener('workspace:changed',listener);},
  checkUpdates:()=>ipcRenderer.invoke('updates:check'),

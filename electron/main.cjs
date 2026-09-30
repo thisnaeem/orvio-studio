@@ -184,6 +184,7 @@ handle('jobs:edit',(id,input)=>workspace.editJob(id,input));
 handle('workspace:preferences',input=>{if(typeof input.startAtLogin==='boolean'){if(!app.isPackaged)throw new Error('Startup settings are available in the installed app.');app.setLoginItemSettings({openAtLogin:input.startAtLogin});}return workspace.preferences(input);});
 handle('ai:save',input=>workspace.saveAI(input));
 handle('ai:generate',prompt=>workspace.generate(prompt));
+handle('creative:enhance',async input=>{const prompt=require('./creative-prompts.cjs').enhancementPrompt(input);return (await workspace.generate(prompt,true)).slice(0,input.kind==='voice'?5000:2000)});
 ipcMain.handle('updates:check',()=>updates.check());
 ipcMain.handle('updates:state',()=>updates.getState());
 handle('updates:install',()=>{const p=production?.state();if(dictation?.busy()||workAgent?.state().busy||pets?.state().busy||p?.recording||p?.starting||['connecting','sending','stopping'].includes(p?.live?.status)||localStudio?.state().active||downloads?.state().some(d=>d.status==='active'&&d.kind!=='update')||workspace?.snapshot().jobs.some(j=>['creating','processing','publishing'].includes(j.status)))throw Error('Finish or pause active work before restarting.');return updates.install()});
