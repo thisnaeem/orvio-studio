@@ -1,6 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const {normalizeGeneration}=require('../electron/creative-settings.cjs'),models=require('../runtime/models.json');
 const model=id=>models.find(m=>m.id===id);
+test('generation validates and forwards explicit device selection',()=>{const m=models.find(m=>m.parameterProfile==='image');for(const device of ['auto','cpu','gpu'])assert.equal(normalizeGeneration(m,{prompt:'Test',device}).device,device);assert.throws(()=>normalizeGeneration(m,{prompt:'Test',device:'cuda:99'}),/Choose Auto/)});
 test('all creative model defaults are valid and preserve seed zero',()=>{for(const m of models.filter(m=>m.parameterProfile)){const p=normalizeGeneration(m,{prompt:'Test',seed:0});assert.equal(p.seed,0);assert.ok(p.steps>0);assert.ok(p.width>0)}});
 test('Turbo rejects ineffective negative prompts and unsupported guidance',()=>{const m=models.find(m=>m.parameterProfile==='turbo');assert.throws(()=>normalizeGeneration(m,{prompt:'Test',negativePrompt:'blur'}),/negative/);assert.throws(()=>normalizeGeneration(m,{prompt:'Test',guidance:7}),/guidance/)});
 test('Lightning steps match checkpoint and video resolution is enforced',()=>{const m=models.find(m=>m.parameterProfile==='motion');assert.throws(()=>normalizeGeneration(m,{prompt:'Test',steps:30}),/steps/);assert.throws(()=>normalizeGeneration(model('zeroscope'),{prompt:'Test',width:1024,height:1024}),/resolution/);assert.throws(()=>normalizeGeneration(model('zeroscope'),{prompt:'Test',frames:100}),/frames/)});

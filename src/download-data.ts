@@ -1,0 +1,3 @@
+import {useEffect,useState} from 'react';
+export type Download={id:string;title:string;kind:string;modelId?:string;assetId?:string;thumbnail?:string;status:string;message:string;file?:string;percent:number|null;received?:number;total?:number;speed?:number;eta?:number;retryable?:boolean;cancellable:boolean};
+export function useDownloads(){const [items,setItems]=useState<Download[]>([]);useEffect(()=>{const api=(window as any).studio;if(!api?.downloads)return;let live=true;const apply=(state:Download[])=>{if(live)setItems(state)};api.downloads().then(apply).catch(()=>{});const off=api.onDownloads(apply);return()=>{live=false;off()}},[]);return items}

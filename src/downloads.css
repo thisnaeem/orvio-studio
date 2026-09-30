@@ -1,0 +1,21 @@
+.download-row{position:relative;border-radius:14px;background:var(--surface);padding:16px}
+.download-row-heading{display:flex;align-items:center;gap:12px;min-width:0}
+.download-row-name{min-width:0;flex:1}
+.download-row-name h3{font-size:11px;line-height:1.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.3px}
+.download-row-kind{font-size:9px;color:var(--muted);text-transform:capitalize}
+.download-row-actions{display:flex;gap:4px;opacity:0;pointer-events:none;transition:opacity .15s}
+.download-row:hover .download-row-actions,.download-row:focus-within .download-row-actions{opacity:1;pointer-events:auto}
+.download-row-action{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex-shrink:0;border-radius:8px;color:var(--muted)}
+.download-row-action:hover,.download-row-action:focus-visible{background:var(--hover);color:var(--accent)}
+.download-row-bottom{display:flex;align-items:center;gap:8px;margin-top:12px}
+.download-row-progress{position:relative;flex:1;overflow:hidden;border-radius:8px;background:var(--bg);padding:9px 12px;text-align:center;font-size:10px;font-variant-numeric:tabular-nums}
+.download-row-fill{position:absolute;inset:0 auto 0 0;background:var(--accent);transition:width .3s}
+.download-row-progress-label{position:relative}
+.download-row-progress-contrast{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:white;transition:clip-path .3s}
+.download-row-status{flex:1;font-size:10px;color:var(--muted)}
+.download-row-status.is-failed{color:var(--accent)}
+.download-row-details{margin-left:auto}
+.download-row-details [role=tooltip]{position:absolute;z-index:5;left:12px;right:12px;top:calc(100% - 8px);padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);box-shadow:0 8px 24px #0003;font-size:10px;line-height:1.7;overflow-wrap:anywhere;opacity:0;visibility:hidden;pointer-events:none}
+.download-row-details:hover [role=tooltip],.download-row-details:focus-within [role=tooltip]{opacity:1;visibility:visible}
+@media(hover:none){.download-row-actions{opacity:1;pointer-events:auto}}
+@media(prefers-reduced-motion:reduce){.download-row-actions,.download-row-fill,.download-row-progress-contrast{transition:none}}

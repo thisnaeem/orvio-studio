@@ -4,11 +4,11 @@ sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/'runtime'))
 import spatial,lipsync
 class SpatialTests(unittest.TestCase):
     def test_spatial_download_uses_fixed_revision_safetensors_without_loading(self):
-        cls=MagicMock();modules={'torch':MagicMock(),'diffusers':types.SimpleNamespace(ShapEPipeline=cls,ShapEImg2ImgPipeline=cls),'diffusers.utils':types.SimpleNamespace(export_to_ply=MagicMock())}
+        cls=MagicMock();download=MagicMock();modules={'huggingface_hub':types.SimpleNamespace(snapshot_download=download),'torch':MagicMock(),'diffusers':types.SimpleNamespace(ShapEPipeline=cls,ShapEImg2ImgPipeline=cls),'diffusers.utils':types.SimpleNamespace(export_to_ply=MagicMock())}
         with patch.dict(sys.modules,modules):
             self.assertTrue(spatial.generate({'model':'shap-e-text','action':'install_spatial'},lambda *a:None)['ready'])
-        cls.from_pretrained.assert_not_called();args=cls.download.call_args
-        self.assertEqual(args.args[0],'openai/shap-e');self.assertEqual(len(args.kwargs['revision']),40);self.assertTrue(args.kwargs['use_safetensors']);self.assertEqual(args.kwargs['variant'],'fp16')
+        cls.from_pretrained.assert_not_called();args=download.call_args
+        self.assertEqual(args.args[0],'openai/shap-e');self.assertEqual(len(args.kwargs['revision']),40);self.assertIn('renderer/diffusion_pytorch_model.fp16.safetensors',args.kwargs['allow_patterns']);self.assertFalse(any('shap_e_renderer' in p for p in args.kwargs['allow_patterns']))
     def test_lipsync_downloads_only_named_weights_at_pinned_revisions(self):
         download=MagicMock(return_value='folder')
         with patch.dict(sys.modules,{'huggingface_hub':types.SimpleNamespace(snapshot_download=download)}):

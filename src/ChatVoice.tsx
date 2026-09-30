@@ -2,7 +2,8 @@ import {playCue,captureSound} from './feedback';
 import {useEffect,useRef,useState} from 'react';
 import {Icon} from './icons';
 import {bridge,friendlyError} from './Connected';
-import {DownloadButton,useDownloads} from './Downloads';
+import {DownloadButton} from './Downloads';
+import {useDownloads} from './download-data';
 import languages from './whisper-languages.json';
 const small='rounded-full px-3 py-2 text-[10px] hover:bg-[var(--hover)] disabled:opacity-40';
 export function useChatVoice({onText,onError,visible=true}:{onText:(text:string)=>void;onError:(text:string)=>void;visible?:boolean}){

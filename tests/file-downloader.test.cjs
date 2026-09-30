@@ -7,3 +7,14 @@ test('HTML image discovery resolves relative images and excludes privileged URLs
 test('filename and URL validation prevent escaping the destination',()=>{assert.equal(filename('../../bad.exe'),'.._.._bad.exe');assert.ok(filename('CON.txt').startsWith('download-'));assert.throws(()=>webURL('file:///secret'));assert.throws(()=>webURL('https://user:pass@example.com'))});
 test('resuming across app restart safely replaces partial bytes when server ignores Range',async t=>{const data=Buffer.from('a complete new version'),ranges=[];const f=await setup(t,(q,r)=>{ranges.push(q.headers.range);r.writeHead(200,{'Content-Type':'application/octet-stream','Content-Length':data.length,ETag:'"new"'});r.end(data)});const transfer=require('node:crypto').randomUUID();fs.writeFileSync(path.join(f.directory,'file-downloads',transfer+'.part'),'old partial');fs.writeFileSync(path.join(f.directory,'file-downloads',transfer+'.json'),JSON.stringify({validator:'"old"'}));const asset=await f.manager.download({url:f.url+'/version.bin',transfer});assert.equal(ranges[0],'bytes=11-');assert.deepEqual(fs.readFileSync(asset.file),data)});
 test('server failures are retried and then recorded as actionable failures',async t=>{let calls=0;const f=await setup(t,(q,r)=>{calls++;r.writeHead(503);r.end()});await assert.rejects(f.manager.download({url:f.url+'/failed'}),/HTTP 503/);assert.equal(calls,3);assert.equal(f.downloads.state()[0].status,'failed');assert.equal(f.downloads.state()[0].retryable,true)});
+
+test('full shutdown and automatic restart resume the same transfer with exact bytes',async t=>{
+ const data=Buffer.alloc(256*1024,19),ranges=[];
+ const f=await setup(t,(q,r)=>{const offset=Number(q.headers.range?.match(/bytes=(\d+)/)?.[1]||0);ranges.push(offset);r.writeHead(offset?206:200,{'Content-Length':data.length-offset,ETag:'"stable"',...(offset?{'Content-Range':`bytes ${offset}-${data.length-1}/${data.length}`}:{})});let pos=offset;const timer=setInterval(()=>{r.write(data.subarray(pos,pos+4096));pos+=4096;if(pos>=data.length){clearInterval(timer);r.end()}},3);r.on('close',()=>clearInterval(timer))});
+ const job=f.manager.download({url:f.url+'/restart.bin'}).catch(()=>{});
+ while(!f.downloads.state()[0]?.received)await new Promise(r=>setTimeout(r,5));
+ const id=f.downloads.state()[0].id;f.downloads.prepareShutdown();f.manager.shutdown();await job;
+ const restored=createDownloads({directory:f.directory});let output;
+ const manager=createFileDownloader({directory:f.directory,downloads:restored,register:file=>{output=file;return {id:'restored'}}});t.after(()=>manager.shutdown());
+ await restored.resumeInterrupted();assert.ok(ranges[1]>0);assert.deepEqual(fs.readFileSync(output),data);assert.equal(restored.state()[0].id,id);assert.equal(restored.state()[0].status,'completed');
+});

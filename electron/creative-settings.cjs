@@ -1,5 +1,6 @@
 const {profiles,styles}=require('../runtime/creative-settings.json');
 function normalizeGeneration(model,input){
+ const device=input.device??'auto';if(!['auto','cpu','gpu'].includes(device))throw Error('Choose Auto, GPU or CPU for generation.');
  const profile=profiles[model.parameterProfile];if(!profile)throw Error('Model does not support studio parameters.');
  const number=(key,fallback,min,max,integer=false)=>{const value=input[key]===undefined||input[key]===null||input[key]===''?fallback:Number(input[key]);if(!Number.isFinite(value)||value<min||value>max||(integer&&!Number.isInteger(value)))throw Error(`Invalid ${key}: use ${min}–${max}.`);return value};
  const size=profile.resolutions.find(r=>r.width===Number(input.width??model.width??512)&&r.height===Number(input.height??model.height??512));if(!size)throw Error('Choose one of this model’s supported resolutions.');
@@ -10,8 +11,9 @@ function normalizeGeneration(model,input){
  const prompt=[String(input.prompt||'').trim(),style.prompt].filter(Boolean).join(', ');if(!prompt||prompt.length>2200)throw Error('Describe your result in up to 2,000 characters.');
  const seed=input.seed===undefined||input.seed===null||input.seed===''?require('node:crypto').randomInt(0,4294967296):number('seed',0,0,4294967295,true);
  const sampler=input.sampler||'default';if(!profile.samplers.includes(sampler))throw Error('Unsupported sampler for this model.');
- const result={prompt,seed,width:size.width,height:size.height,steps,guidance,negativePrompt,style:style.id,sampler};
- if(model.kind==='video'){result.frames=number('frames',model.frames||16,1,24,true);result.fps=number('fps',model.fps||8,1,16,true);if(!profile.frames.includes(result.frames)||!profile.fps.includes(result.fps))throw Error('Choose a supported frame count and playback rate.');}
+ const result={device,prompt,seed,width:size.width,height:size.height,steps,guidance,negativePrompt,style:style.id,sampler};
+ if(input.sourceId){if((model.pipeline!=='ltx'&&!model.imageInput)||typeof input.sourceId!=='string')throw Error('This model does not support a starting image.');result.sourceId=input.sourceId;if(model.imageInput==='img2img')result.strength=number('strength',Math.max(.7,1/steps),Math.max(.05,1/steps),1);}
+ if(model.kind==='video'){result.frames=number('frames',model.frames||16,Math.min(...profile.frames),Math.max(...profile.frames),true);result.fps=number('fps',model.fps||8,Math.min(...profile.fps),Math.max(...profile.fps),true);if(!profile.frames.includes(result.frames)||!profile.fps.includes(result.fps))throw Error('Choose a supported frame count and playback rate.');}
  return result;
 }
 module.exports={normalizeGeneration};

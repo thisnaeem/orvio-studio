@@ -1,6 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {Icon} from './icons';
-import {DownloadButton,useDownloads} from './Downloads';
+import {DownloadButton} from './Downloads';
+import {useDownloads} from './download-data';
 import {friendlyError} from './Connected';
 const animals=[{id:'cat',name:'Mochi',detail:'A little calm for your desktop'},{id:'dog',name:'Sunny',detail:'Your cheerful creative companion'},{id:'fox',name:'Ember',detail:'Curious about your next idea'}];
 const control='mt-2 w-full rounded-xl border border-[var(--line)] bg-[var(--bg)] px-4 py-3 text-xs';
@@ -20,7 +21,7 @@ export function Pets(){
 export function PetCompanion(){
  const api=(window as any).pet,[state,setState]=useState<any>(null),[expanded,setExpanded]=useState(false),[text,setText]=useState(''),[status,setStatus]=useState('Ready'),[error,setError]=useState(''),[listening,setListening]=useState<'talk'|'wake'|null>(null),[working,setWorking]=useState(false);
  const mode=useRef<'talk'|'wake'|null>(null),stream=useRef<MediaStream|null>(null),recorder=useRef<MediaRecorder|null>(null),timer=useRef<ReturnType<typeof setTimeout>|null>(null),epoch=useRef(0),audio=useRef<HTMLAudioElement|null>(null),busy=useRef(false),latest=useRef<any>(null),end=useRef<HTMLDivElement>(null),followupUntil=useRef(0),active=useRef(true);
- function stop(){epoch.current++;mode.current=null;followupUntil.current=0;setListening(null);if(timer.current)clearTimeout(timer.current);if(recorder.current?.state==='recording')recorder.current.stop();stream.current?.getTracks().forEach(t=>t.stop());stream.current=null;void api.disarm();setStatus('Microphone off')}
+ function stop(){epoch.current++;mode.current=null;followupUntil.current=0;setListening(null);if(timer.current)clearTimeout(timer.current);if(recorder.current?.state==='recording')recorder.current.stop();stream.current?.getTracks().forEach(t=>t.stop());stream.current=null;void api.disarm().catch(()=>{});setStatus('Microphone off')}
  useEffect(()=>{active.current=true;document.documentElement.style.background='transparent';document.body.style.background='transparent';document.body.style.minWidth='0';document.body.style.overflow='hidden';api.state().then((s:any)=>{latest.current=s;setState(s)});const off=api.onState((s:any)=>{latest.current=s;setState(s)});const listen=api.onListen((value:boolean)=>{if(value&&latest.current?.settings.live!==false)void start('wake');else stop()});return()=>{active.current=false;stop();audio.current?.pause();off();listen()}},[]);
  useEffect(()=>{if(state?.settings.live===false){if(mode.current==='wake')stop();return}if(!state?.settings.live||!state?.transcriptionReady)return;const timer=setTimeout(()=>{if(!mode.current)void start('wake')},300);return()=>clearTimeout(timer)},[state?.settings.live,state?.transcriptionReady]);
  useEffect(()=>{end.current?.scrollIntoView({behavior:'smooth'})},[state?.messages,working]);

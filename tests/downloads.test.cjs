@@ -16,3 +16,18 @@ test('local chat provider uses the embedded model transport without API credenti
 test('paused downloads retain private retry information across restart and resume the same history entry',async t=>{const directory=fixture(t),first=createDownloads({directory});let id;first.registerRetry('video',async input=>{assert.equal(input.url,'https://example.test/video');id=first.begin({title:'Video',kind:'video',retry:{type:'video',input},cancel:()=>{}});return id});id=first.begin({title:'Video',kind:'video',retry:{type:'video',input:{url:'https://example.test/video'}},cancel:()=>{}});first.pause(id);first.finish(id,'cancelled');assert.equal(first.state()[0].status,'paused');assert.equal(first.state()[0].retryable,true);assert.ok(!JSON.stringify(first.state()).includes('https://'));const next=createDownloads({directory});next.registerRetry('video',async input=>{const resumed=next.begin({title:'Video',kind:'video',retry:{type:'video',input}});assert.equal(resumed,id);next.finish(resumed,'completed')});await next.retry(id);assert.equal(next.state().length,1);assert.equal(next.state()[0].status,'completed')});
 
 test('download thumbnails update during transfer and survive completion and reopening',t=>{const directory=fixture(t),downloads=createDownloads({directory});const id=downloads.begin({title:'Video',kind:'video'});downloads.update(id,{thumbnail:'file:///private.jpg'});assert.equal(downloads.state()[0].thumbnail,undefined);downloads.update(id,{thumbnail:'https://example.com/cover.jpg'});assert.equal(downloads.state()[0].thumbnail,'https://example.com/cover.jpg');downloads.update(id,{thumbnail:null,message:'Converting'});downloads.finish(id,'completed');assert.equal(createDownloads({directory}).state()[0].thumbnail,'https://example.com/cover.jpg')});
+
+test('shutdown preserves progress and restart recovers interrupted transfers but leaves paused jobs alone',async t=>{
+ const directory=fixture(t),first=createDownloads({directory});
+ const id=first.begin({title:'GPU runtime',kind:'runtime',retry:{type:'gpu-runtime',input:{id:'image'}}});
+ first.update(id,{received:250,total:1000});
+ const paused=first.begin({title:'Paused',kind:'file',retry:{type:'file',input:{}},cancel:()=>{}});
+ first.pause(paused);first.finish(paused,'cancelled');
+ first.prepareShutdown();first.finish(id,'cancelled');
+ const next=createDownloads({directory});assert.equal(next.state().find(d=>d.id===id).received,250);
+ next.registerRetry('file',()=>{throw Error('Paused transfer must stay paused')});
+ next.registerRetry('gpu-runtime',input=>{const resumed=next.begin({title:'GPU runtime',kind:'runtime',retry:{type:'gpu-runtime',input}});assert.equal(resumed,id);next.finish(resumed,'completed')});
+ await next.resumeInterrupted();assert.equal(next.state().find(d=>d.id===id).status,'completed');assert.equal(next.state().find(d=>d.id===paused).status,'paused');
+});
+
+test('model aggregate progress survives finishing messages and reserves 100 for completion',t=>{const downloads=createDownloads({directory:fixture(t)}),id=downloads.begin({title:'Model',kind:'model'});downloads.update(id,{stage:'dependency',received:90,total:100});assert.equal(downloads.state()[0].percent,null);downloads.update(id,{progressScope:'model',stage:'model',received:700,total:1000});assert.equal(downloads.state()[0].percent,70);downloads.update(id,{message:'Verifying model'});assert.equal(downloads.state()[0].percent,70);downloads.update(id,{received:1000});assert.equal(downloads.state()[0].percent,99.9);downloads.finish(id,'completed');assert.equal(downloads.state()[0].percent,100)});

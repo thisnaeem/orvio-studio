@@ -3,6 +3,7 @@ Model architecture/audio conditioning: https://github.com/TMElyralab/MuseTalk (M
 This runner uses a feathered crop, not upstream's DWPose/face-parse compositor.
 """
 import pathlib,json,math,subprocess,tempfile
+from inference_device import select_device
 REPOS={
  'muse':('TMElyralab/MuseTalk','2bcb936e2fddb4d86db4c62fd45b387d0c061571',['musetalkV15/musetalk.json','musetalkV15/unet.pth']),
  'vae':('stabilityai/sd-vae-ft-mse','31f26fdeee1355a5c34592e401dd41e45d25a493',['config.json','diffusion_pytorch_model.safetensors']),
@@ -21,7 +22,7 @@ def run(p,emit):
     from transformers import WhisperModel,WhisperFeatureExtractor
     from diffusers import AutoencoderKL,UNet2DConditionModel
     torch.set_num_threads(2);torch.manual_seed(p['seed'])
-    device='cuda' if torch.cuda.is_available() else 'cpu'
+    device=select_device(torch,p.get('device','auto'),allow_mps=False)
     dtype=torch.float16 if device=='cuda' else torch.float32
     emit('PROGRESS','Loading MuseTalk and speech features…')
     files=assets(True)

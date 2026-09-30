@@ -1,5 +1,6 @@
 """Local Shap-E text/image to colored mesh. Fixed, supported pipelines only."""
 import pathlib,json,os
+from inference_device import select_device
 
 def generate(p,emit):
     from diffusers import ShapEPipeline,ShapEImg2ImgPipeline
@@ -9,11 +10,13 @@ def generate(p,emit):
     cls=ShapEImg2ImgPipeline if model['input']=='image' else ShapEPipeline
     options={'revision':model['revision'],'variant':'fp16','use_safetensors':True}
     if p['action']=='install_spatial':
-        cls.download(model['repo'],**options)
+        # Fetch only the components used by Shap-E; the repo also contains an obsolete duplicate renderer.
+        from huggingface_hub import snapshot_download
+        snapshot_download(model['repo'],revision=model['revision'],allow_patterns=model['downloadPatterns'])
         return {'ready':True}
     torch.set_num_threads(2)
     # Shap-E's mesh renderer uses operations not consistently supported by Metal.
-    device='cuda' if torch.cuda.is_available() else 'cpu'
+    device=select_device(torch,p.get('device','auto'),allow_mps=False)
     dtype=torch.float16 if device=='cuda' else torch.float32
     emit('PROGRESS','Loading the 3D model…')
     pipe=cls.from_pretrained(model['repo'],**options,torch_dtype=dtype,local_files_only=True).to(device)

@@ -1,8 +1,8 @@
 const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
 function createRunner({launch,log=console.log,onExit=()=>{}}){
  let child=null,restarting=false,stopping=false,timer=null;
- function start(){if(stopping||child)return;child=launch();const current=child;current.once('error',error=>{log('Electron could not start: '+error.message);stopping=true;onExit(1)});current.once('exit',code=>{clearTimeout(timer);if(child===current)child=null;if(restarting&&!stopping){restarting=false;start()}else onExit(code||0)})}
- function requestStop(){if(!child)return;const current=child;if(current.connected)current.send({type:'orvio:dev-restart'},error=>{if(error)log('Could not request graceful restart: '+error.message)});else current.kill();timer=setTimeout(()=>{if(child===current){log('Electron has not exited; close Orvio to finish restarting.')}},10000);timer.unref()}
+ function start(){if(stopping||child)return;child=launch();const current=child;current.on('message',message=>{if(message?.type==='orvio:restart-deferred'){clearTimeout(timer);log('Downloads are active. Electron will restart after they finish.')}});current.once('error',error=>{log('Electron could not start: '+error.message);stopping=true;onExit(1)});current.once('exit',code=>{clearTimeout(timer);if(child===current)child=null;if(restarting&&!stopping){restarting=false;start()}else onExit(code||0)})}
+ function requestStop(){if(!child)return;const current=child;if(current.connected)current.send({type:stopping?'orvio:dev-stop':'orvio:dev-restart'},error=>{if(error)log('Could not request graceful restart: '+error.message)});else current.kill();timer=setTimeout(()=>{if(child===current){log('Electron has not exited; close Orvio to finish restarting.')}},10000);timer.unref()}
  function restart(){if(stopping||restarting)return;restarting=true;log('Backend changed. Restarting Electron…');if(child)requestStop();else{restarting=false;start()}}
  function stop(){if(stopping)return;stopping=true;restarting=false;if(child)requestStop();else onExit(0)}
  return {start,restart,stop};

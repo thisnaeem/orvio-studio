@@ -224,6 +224,178 @@
       "samplers": [
         "default"
       ]
+    },
+    "ltx": {
+      "resolutions": [
+        {
+          "label": "Landscape \u00b7 8:5",
+          "width": 512,
+          "height": 320
+        },
+        {
+          "label": "Portrait \u00b7 5:8",
+          "width": 320,
+          "height": 512
+        },
+        {
+          "label": "Square \u00b7 1:1",
+          "width": 384,
+          "height": 384
+        },
+        {
+          "label": "Wide \u00b7 12:7",
+          "width": 768,
+          "height": 448
+        }
+      ],
+      "steps": {
+        "min": 10,
+        "max": 50,
+        "default": 30
+      },
+      "fixedSteps": false,
+      "guidance": {
+        "min": 1,
+        "max": 8,
+        "default": 3
+      },
+      "negativePrompt": true,
+      "frames": [
+        25,
+        49,
+        73,
+        97
+      ],
+      "fps": [
+        12,
+        24,
+        25
+      ],
+      "samplers": [
+        "default"
+      ]
+    },
+    "ltx-distilled": {
+      "resolutions": [
+        {
+          "label": "Landscape \u00b7 8:5",
+          "width": 512,
+          "height": 320
+        },
+        {
+          "label": "Portrait \u00b7 5:8",
+          "width": 320,
+          "height": 512
+        },
+        {
+          "label": "Square \u00b7 1:1",
+          "width": 384,
+          "height": 384
+        },
+        {
+          "label": "Wide \u00b7 12:7",
+          "width": 768,
+          "height": 448
+        }
+      ],
+      "steps": {
+        "min": 8,
+        "max": 8,
+        "default": 8
+      },
+      "fixedSteps": true,
+      "guidance": {
+        "min": 1,
+        "max": 1,
+        "default": 1
+      },
+      "negativePrompt": false,
+      "frames": [
+        25,
+        49,
+        73,
+        97
+      ],
+      "fps": [
+        12,
+        24,
+        25
+      ],
+      "samplers": [
+        "default"
+      ]
+    },
+    "z-image-turbo": {
+      "resolutions": [
+        {
+          "label": "Square \u00b7 1:1",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "label": "Landscape \u00b7 16:9",
+          "width": 1024,
+          "height": 576
+        },
+        {
+          "label": "Portrait \u00b7 9:16",
+          "width": 576,
+          "height": 1024
+        }
+      ],
+      "steps": {
+        "min": 9,
+        "max": 20,
+        "default": 9
+      },
+      "fixedSteps": false,
+      "guidance": {
+        "min": 0,
+        "max": 0,
+        "default": 0
+      },
+      "negativePrompt": false,
+      "frames": [],
+      "fps": [],
+      "samplers": [
+        "default"
+      ]
+    },
+    "qwen-image-21": {
+      "resolutions": [
+        {
+          "label": "Square \u00b7 1:1",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "label": "Landscape \u00b7 16:9",
+          "width": 1024,
+          "height": 576
+        },
+        {
+          "label": "Portrait \u00b7 9:16",
+          "width": 576,
+          "height": 1024
+        }
+      ],
+      "steps": {
+        "min": 10,
+        "max": 50,
+        "default": 40
+      },
+      "fixedSteps": false,
+      "guidance": {
+        "min": 1,
+        "max": 1,
+        "default": 1
+      },
+      "negativePrompt": false,
+      "frames": [],
+      "fps": [],
+      "samplers": [
+        "default"
+      ]
     }
   },
   "styles": [
@@ -300,6 +472,18 @@
       "model": "zeroscope",
       "prompt": "A slow view of a coastal lighthouse with rolling ocean waves at golden hour",
       "style": "cinematic"
+    },
+    {
+      "id": "ltx-film",
+      "name": "LTX film draft",
+      "description": "A short memory-conscious LTX video draft.",
+      "model": "ltx-video-2b",
+      "prompt": "A small sailboat glides across a calm lake at sunrise. Gentle ripples trail behind it as the camera slowly moves forward. Warm natural light, continuous shot.",
+      "controls": {
+        "frames": 25,
+        "fps": 24,
+        "steps": 30
+      }
     }
   ]
 }

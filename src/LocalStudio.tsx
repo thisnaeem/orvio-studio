@@ -1,4 +1,5 @@
-import {DownloadButton,useDownloads} from './Downloads';
+import {DownloadButton} from './Downloads';
+import {useDownloads} from './download-data';
 import {useEffect,useState} from 'react';
 import {bridge,friendlyError} from './Connected';
 type Asset={id:string;kind:string;title:string;preview:string;duration?:number};

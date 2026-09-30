@@ -1,10 +1,20 @@
 const path=require('node:path');
 function createPetWindow({app,BrowserWindow,screen,ipcMain,pets,open}){
- let window=null,armedUntil=0;const state=()=>pets.state();
+ let window=null,armedUntil=0;const petFrames=new WeakMap();const state=()=>pets.state();
  function bounds(expanded){const area=screen.getPrimaryDisplay().workArea,width=expanded?380:180,height=Math.min(area.height-24,expanded?580:210);return {x:state().settings.corner==='left'?area.x+16:area.x+area.width-width-16,y:area.y+area.height-height-12,width,height}}
- function show(){if(!state().settings.enabled){hide();return}if(window){window.setBounds(bounds(false));window.showInactive();return}window=new BrowserWindow({...bounds(false),transparent:true,frame:false,resizable:false,alwaysOnTop:true,skipTaskbar:true,show:false,hasShadow:false,webPreferences:{preload:path.join(__dirname,'pet-preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:true}});window.webContents.setWindowOpenHandler(()=>({action:'deny'}));window.webContents.on('will-navigate',e=>e.preventDefault());window.once('ready-to-show',()=>{if(state().settings.enabled)window?.showInactive()});window.on('closed',()=>{window=null;armedUntil=0});if(app.isPackaged)window.loadFile(path.join(__dirname,'../dist/index.html'),{hash:'pet'});else window.loadURL('http://127.0.0.1:5188/#pet')}
+ function show(){if(!state().settings.enabled){hide();return}if(window){window.setBounds(bounds(false));window.showInactive();return}window=new BrowserWindow({...bounds(false),transparent:true,frame:false,resizable:false,alwaysOnTop:true,skipTaskbar:true,show:false,hasShadow:false,webPreferences:{preload:path.join(__dirname,'pet-preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:true}});petFrames.set(window.webContents,new Set([window.webContents.mainFrame]));window.webContents.on('did-start-navigation',(_event,_url,inPlace,mainFrame)=>{if(mainFrame&&!inPlace)armedUntil=0});window.webContents.setWindowOpenHandler(()=>({action:'deny'}));window.webContents.on('will-navigate',e=>e.preventDefault());window.once('ready-to-show',()=>{if(state().settings.enabled)window?.showInactive()});window.on('closed',()=>{window=null;armedUntil=0});if(app.isPackaged)window.loadFile(path.join(__dirname,'../dist/index.html'),{hash:'pet'});else window.loadURL('http://127.0.0.1:5188/#pet')}
  function hide(){armedUntil=0;window?.destroy();window=null}
- function handle(channel,fn){ipcMain.handle(channel,(event,...args)=>{if(!window||event.sender!==window.webContents||event.senderFrame!==window.webContents.mainFrame)throw Error('Untrusted pet request');return fn(...args)})}
+ function handle(channel,fn){ipcMain.handle(channel,(event,...args)=>{
+  const frames=petFrames.get(event.sender);
+  const trusted=!!event.senderFrame&&window&&event.sender===window.webContents&&event.senderFrame===window.webContents.mainFrame;
+  // React cleanup can arrive after its frame detaches or its window is destroyed.
+  // A retired renderer may acknowledge disarming, but cannot affect a new pet.
+  if(!trusted){
+   if(channel==='pet:disarm'&&frames&&(event.senderFrame===null||frames.has(event.senderFrame)))return;
+   throw Error('Untrusted pet request');
+  }
+  frames.add(event.senderFrame);return fn(...args);
+ })}
  handle('pet:state',state);handle('pet:chat',text=>pets.chat(text));handle('pet:speech',text=>pets.speech(text));handle('pet:clear',()=>pets.clear());handle('pet:wake',(text,phrase)=>require('./pets.cjs').wakeCommand(String(text).slice(0,4000),String(phrase).slice(0,40)));
  handle('pet:transcribe',bytes=>{if(!armedUntil)throw Error('Enable the microphone first.');return pets.transcribe(bytes)});
  handle('pet:arm',()=>{armedUntil=Date.now()+60000;return true});handle('pet:disarm',()=>{armedUntil=0});handle('pet:hide',hide);handle('pet:expand',expanded=>window.setBounds(bounds(!!expanded),false));

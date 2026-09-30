@@ -1,0 +1,2504 @@
+{
+  "qwen-small": {
+    "bytes": 491400032,
+    "checkedAt": "2026-09-30T11:03:37.553179+00:00",
+    "sources": [
+      {
+        "repo": "Qwen/Qwen2.5-0.5B-Instruct-GGUF",
+        "revision": "9217f5db79a29953eb74d5343926648285ec7e67",
+        "files": [
+          {
+            "path": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
+            "bytes": 491400032
+          }
+        ]
+      }
+    ]
+  },
+  "qwen-balanced": {
+    "bytes": 1117320736,
+    "checkedAt": "2026-09-30T11:03:37.821333+00:00",
+    "sources": [
+      {
+        "repo": "Qwen/Qwen2.5-1.5B-Instruct-GGUF",
+        "revision": "91cad51170dc346986eccefdc2dd33a9da36ead9",
+        "files": [
+          {
+            "path": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+            "bytes": 1117320736
+          }
+        ]
+      }
+    ]
+  },
+  "qwen-tools": {
+    "bytes": 4683073632,
+    "checkedAt": "2026-09-30T11:03:38.125479+00:00",
+    "sources": [
+      {
+        "repo": "Qwen/Qwen2.5-7B-Instruct-GGUF",
+        "revision": "bb5d59e06d9551d752d08b292a50eb208b07ab1f",
+        "files": [
+          {
+            "path": "qwen2.5-7b-instruct-q4_k_m-00001-of-00002.gguf",
+            "bytes": 3993201344
+          },
+          {
+            "path": "qwen2.5-7b-instruct-q4_k_m-00002-of-00002.gguf",
+            "bytes": 689872288
+          }
+        ]
+      }
+    ]
+  },
+  "sd-turbo": {
+    "bytes": 5161556395,
+    "checkedAt": "2026-09-30T11:03:39.040545+00:00",
+    "sources": [
+      {
+        "repo": "stabilityai/sd-turbo",
+        "revision": "b261bac6fd2cf515557d5d0707481eafa0485ec2",
+        "files": [
+          {
+            "path": "model_index.json",
+            "bytes": 616
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 553
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 618
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 1361596304
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 574
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 855
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 1867
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 3463726504
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 655
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643268
+          }
+        ]
+      }
+    ]
+  },
+  "sd15": {
+    "bytes": 5482652200,
+    "checkedAt": "2026-09-30T11:03:40.028232+00:00",
+    "sources": [
+      {
+        "repo": "stable-diffusion-v1-5/stable-diffusion-v1-5",
+        "revision": "451f4fe16113bff5a5d2269ed5ad43b0592e9a14",
+        "files": [
+          {
+            "path": "feature_extractor/preprocessor_config.json",
+            "bytes": 342
+          },
+          {
+            "path": "model_index.json",
+            "bytes": 541
+          },
+          {
+            "path": "safety_checker/config.json",
+            "bytes": 4723
+          },
+          {
+            "path": "safety_checker/model.safetensors",
+            "bytes": 1215981830
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 308
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 617
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265874
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 806
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 743
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 3438167540
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 547
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643276
+          }
+        ]
+      }
+    ]
+  },
+  "animatediff": {
+    "bytes": 6390354448,
+    "checkedAt": "2026-09-30T11:03:41.082564+00:00",
+    "sources": [
+      {
+        "repo": "ByteDance/AnimateDiff-Lightning",
+        "revision": "027c893eec01df7330f5d4b733bc9485ee02e8b2",
+        "files": [
+          {
+            "path": "animatediff_lightning_4step_diffusers.safetensors",
+            "bytes": 907702248
+          }
+        ]
+      },
+      {
+        "repo": "stable-diffusion-v1-5/stable-diffusion-v1-5",
+        "revision": "451f4fe16113bff5a5d2269ed5ad43b0592e9a14",
+        "files": [
+          {
+            "path": "feature_extractor/preprocessor_config.json",
+            "bytes": 342
+          },
+          {
+            "path": "model_index.json",
+            "bytes": 541
+          },
+          {
+            "path": "safety_checker/config.json",
+            "bytes": 4723
+          },
+          {
+            "path": "safety_checker/model.safetensors",
+            "bytes": 1215981830
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 308
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 617
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265874
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 806
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 743
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 3438167540
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 547
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643276
+          }
+        ]
+      }
+    ]
+  },
+  "dreamshaper": {
+    "bytes": 5482647346,
+    "checkedAt": "2026-09-30T11:03:42.029297+00:00",
+    "sources": [
+      {
+        "repo": "Lykon/dreamshaper-8",
+        "revision": "a7e52b98680b1ba8ff7bce97c7f9f2e2e5337917",
+        "files": [
+          {
+            "path": "feature_extractor/preprocessor_config.json",
+            "bytes": 520
+          },
+          {
+            "path": "model_index.json",
+            "bytes": 642
+          },
+          {
+            "path": "safety_checker/config.json",
+            "bytes": 796
+          },
+          {
+            "path": "safety_checker/model.safetensors",
+            "bytes": 1215979664
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 614
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 724
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265168
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 737
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 1868
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 3438167536
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 756
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643268
+          }
+        ]
+      }
+    ]
+  },
+  "sdxl-turbo": {
+    "bytes": 13878864870,
+    "checkedAt": "2026-09-30T11:03:43.030178+00:00",
+    "sources": [
+      {
+        "repo": "stabilityai/sdxl-turbo",
+        "revision": "71153311d3dbb46851df1931d3ca6e939de83304",
+        "files": [
+          {
+            "path": "model_index.json",
+            "bytes": 685
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 459
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 565
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265168
+          },
+          {
+            "path": "text_encoder_2/config.json",
+            "bytes": 575
+          },
+          {
+            "path": "text_encoder_2/model.safetensors",
+            "bytes": 2778702264
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 586
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 704
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "tokenizer_2/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer_2/special_tokens_map.json",
+            "bytes": 460
+          },
+          {
+            "path": "tokenizer_2/tokenizer_config.json",
+            "bytes": 855
+          },
+          {
+            "path": "tokenizer_2/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 1776
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 10270077736
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 607
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643268
+          }
+        ]
+      }
+    ]
+  },
+  "animatediff-fast": {
+    "bytes": 6390354448,
+    "checkedAt": "2026-09-30T11:03:43.033178+00:00",
+    "sources": [
+      {
+        "repo": "ByteDance/AnimateDiff-Lightning",
+        "revision": "027c893eec01df7330f5d4b733bc9485ee02e8b2",
+        "files": [
+          {
+            "path": "animatediff_lightning_2step_diffusers.safetensors",
+            "bytes": 907702248
+          }
+        ]
+      },
+      {
+        "repo": "stable-diffusion-v1-5/stable-diffusion-v1-5",
+        "revision": "451f4fe16113bff5a5d2269ed5ad43b0592e9a14",
+        "files": [
+          {
+            "path": "feature_extractor/preprocessor_config.json",
+            "bytes": 342
+          },
+          {
+            "path": "model_index.json",
+            "bytes": 541
+          },
+          {
+            "path": "safety_checker/config.json",
+            "bytes": 4723
+          },
+          {
+            "path": "safety_checker/model.safetensors",
+            "bytes": 1215981830
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 308
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 617
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265874
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 806
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 743
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 3438167540
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 547
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643276
+          }
+        ]
+      }
+    ]
+  },
+  "qwen3-tiny": {
+    "bytes": 639446688,
+    "checkedAt": "2026-09-30T11:03:43.298894+00:00",
+    "sources": [
+      {
+        "repo": "Qwen/Qwen3-0.6B-GGUF",
+        "revision": "23749fefcc72300e3a2ad315e1317431b06b590a",
+        "files": [
+          {
+            "path": "Qwen3-0.6B-Q8_0.gguf",
+            "bytes": 639446688
+          }
+        ]
+      }
+    ]
+  },
+  "qwen3-small": {
+    "bytes": 1834426016,
+    "checkedAt": "2026-09-30T11:03:43.564782+00:00",
+    "sources": [
+      {
+        "repo": "Qwen/Qwen3-1.7B-GGUF",
+        "revision": "90862c4b9d2787eaed51d12237eafdfe7c5f6077",
+        "files": [
+          {
+            "path": "Qwen3-1.7B-Q8_0.gguf",
+            "bytes": 1834426016
+          }
+        ]
+      }
+    ]
+  },
+  "qwen3-balanced": {
+    "bytes": 2497280256,
+    "checkedAt": "2026-09-30T11:03:43.852818+00:00",
+    "sources": [
+      {
+        "repo": "Qwen/Qwen3-4B-GGUF",
+        "revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+        "files": [
+          {
+            "path": "Qwen3-4B-Q4_K_M.gguf",
+            "bytes": 2497280256
+          }
+        ]
+      }
+    ]
+  },
+  "qwen3-capable": {
+    "bytes": 5027783488,
+    "checkedAt": "2026-09-30T11:03:44.157926+00:00",
+    "sources": [
+      {
+        "repo": "Qwen/Qwen3-8B-GGUF",
+        "revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+        "files": [
+          {
+            "path": "Qwen3-8B-Q4_K_M.gguf",
+            "bytes": 5027783488
+          }
+        ]
+      }
+    ]
+  },
+  "qwen3-large": {
+    "bytes": 9001752960,
+    "checkedAt": "2026-09-30T11:03:44.616911+00:00",
+    "sources": [
+      {
+        "repo": "Qwen/Qwen3-14B-GGUF",
+        "revision": "530227a7d994db8eca5ab5ced2fb692b614357fd",
+        "files": [
+          {
+            "path": "Qwen3-14B-Q4_K_M.gguf",
+            "bytes": 9001752960
+          }
+        ]
+      }
+    ]
+  },
+  "qwen-coder-small": {
+    "bytes": 1117320768,
+    "checkedAt": "2026-09-30T11:03:45.036395+00:00",
+    "sources": [
+      {
+        "repo": "Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF",
+        "revision": "f86cb2c1fa58255f8052cc32aeede1b7482d4361",
+        "files": [
+          {
+            "path": "qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
+            "bytes": 1117320768
+          }
+        ]
+      }
+    ]
+  },
+  "qwen-coder": {
+    "bytes": 4683073536,
+    "checkedAt": "2026-09-30T11:03:45.467723+00:00",
+    "sources": [
+      {
+        "repo": "Qwen/Qwen2.5-Coder-7B-Instruct-GGUF",
+        "revision": "13fb94bfda8c8cf22497dc57b78f391a9acb426a",
+        "files": [
+          {
+            "path": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
+            "bytes": 4683073536
+          }
+        ]
+      }
+    ]
+  },
+  "smollm-tiny": {
+    "bytes": 386404992,
+    "checkedAt": "2026-09-30T11:03:45.883512+00:00",
+    "sources": [
+      {
+        "repo": "HuggingFaceTB/SmolLM2-360M-Instruct-GGUF",
+        "revision": "593b5a2e04c8f3e4ee880263f93e0bd2901ad47f",
+        "files": [
+          {
+            "path": "smollm2-360m-instruct-q8_0.gguf",
+            "bytes": 386404992
+          }
+        ]
+      }
+    ]
+  },
+  "smollm-small": {
+    "bytes": 1055609536,
+    "checkedAt": "2026-09-30T11:03:46.166168+00:00",
+    "sources": [
+      {
+        "repo": "HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF",
+        "revision": "2d4a76a30b4af41ecd395c35725ac11688d4cfe4",
+        "files": [
+          {
+            "path": "smollm2-1.7b-instruct-q4_k_m.gguf",
+            "bytes": 1055609536
+          }
+        ]
+      }
+    ]
+  },
+  "openjourney": {
+    "bytes": 5974918192,
+    "checkedAt": "2026-09-30T11:03:47.212272+00:00",
+    "sources": [
+      {
+        "repo": "prompthero/openjourney",
+        "revision": "f4572661b028c732b2b97c8fbdc32fa5db3afe03",
+        "files": [
+          {
+            "path": "feature_extractor/preprocessor_config.json",
+            "bytes": 342
+          },
+          {
+            "path": "model.safetensors",
+            "bytes": 492265879
+          },
+          {
+            "path": "model_index.json",
+            "bytes": 541
+          },
+          {
+            "path": "safety_checker/config.json",
+            "bytes": 4841
+          },
+          {
+            "path": "safety_checker/model.safetensors",
+            "bytes": 1215981830
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 308
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 612
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265874
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 806
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 743
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 3438167540
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 547
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643276
+          }
+        ]
+      }
+    ]
+  },
+  "openjourney-v4": {
+    "bytes": 5482652884,
+    "checkedAt": "2026-09-30T11:03:48.123600+00:00",
+    "sources": [
+      {
+        "repo": "prompthero/openjourney-v4",
+        "revision": "b195ed2d503f3eb29637050a886d77bd81d35f0e",
+        "files": [
+          {
+            "path": "feature_extractor/preprocessor_config.json",
+            "bytes": 520
+          },
+          {
+            "path": "model_index.json",
+            "bytes": 582
+          },
+          {
+            "path": "safety_checker/config.json",
+            "bytes": 4533
+          },
+          {
+            "path": "safety_checker/model.safetensors",
+            "bytes": 1215981830
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 465
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 602
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265874
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 755
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 1244
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 3438167540
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 610
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643276
+          }
+        ]
+      }
+    ]
+  },
+  "absolute-reality": {
+    "bytes": 5482647436,
+    "checkedAt": "2026-09-30T11:03:49.210040+00:00",
+    "sources": [
+      {
+        "repo": "Lykon/absolute-reality-1.81",
+        "revision": "569d201654dca1426f1e090fca3953acc7db2c30",
+        "files": [
+          {
+            "path": "feature_extractor/preprocessor_config.json",
+            "bytes": 520
+          },
+          {
+            "path": "model_index.json",
+            "bytes": 660
+          },
+          {
+            "path": "safety_checker/config.json",
+            "bytes": 814
+          },
+          {
+            "path": "safety_checker/model.safetensors",
+            "bytes": 1215979664
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 614
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 742
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265168
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 737
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 1886
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 3438167536
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 774
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643268
+          }
+        ]
+      }
+    ]
+  },
+  "dreamshaper-7": {
+    "bytes": 5482647346,
+    "checkedAt": "2026-09-30T11:03:50.316720+00:00",
+    "sources": [
+      {
+        "repo": "Lykon/dreamshaper-7",
+        "revision": "9b481047f77996efa025e75e03941dbf51f506ad",
+        "files": [
+          {
+            "path": "feature_extractor/preprocessor_config.json",
+            "bytes": 520
+          },
+          {
+            "path": "model_index.json",
+            "bytes": 642
+          },
+          {
+            "path": "safety_checker/config.json",
+            "bytes": 796
+          },
+          {
+            "path": "safety_checker/model.safetensors",
+            "bytes": 1215979664
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 614
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 724
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265168
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 737
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 1868
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 3438167536
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 756
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643268
+          }
+        ]
+      }
+    ]
+  },
+  "sdxl-base": {
+    "bytes": 14213507810,
+    "checkedAt": "2026-09-30T11:03:51.275153+00:00",
+    "sources": [
+      {
+        "repo": "stabilityai/stable-diffusion-xl-base-1.0",
+        "revision": "462165984030d82259a11f4367a4eed129e94a7b",
+        "files": [
+          {
+            "path": "model_index.json",
+            "bytes": 609
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 479
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 565
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265168
+          },
+          {
+            "path": "text_encoder_2/config.json",
+            "bytes": 575
+          },
+          {
+            "path": "text_encoder_2/model.safetensors",
+            "bytes": 2778702264
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 737
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "tokenizer_2/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer_2/special_tokens_map.json",
+            "bytes": 460
+          },
+          {
+            "path": "tokenizer_2/tokenizer_config.json",
+            "bytes": 725
+          },
+          {
+            "path": "tokenizer_2/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 1680
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 10270077736
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 642
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643268
+          },
+          {
+            "path": "vae_1_0/diffusion_pytorch_model.safetensors",
+            "bytes": 334643268
+          }
+        ]
+      }
+    ]
+  },
+  "dreamshaper-xl": {
+    "bytes": 13878865375,
+    "checkedAt": "2026-09-30T11:03:52.229003+00:00",
+    "sources": [
+      {
+        "repo": "Lykon/dreamshaper-xl-1-0",
+        "revision": "41e6644752a8c9aa63930e6043c4fd83c7708420",
+        "files": [
+          {
+            "path": "model_index.json",
+            "bytes": 636
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 648
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 729
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265168
+          },
+          {
+            "path": "text_encoder_2/config.json",
+            "bytes": 741
+          },
+          {
+            "path": "text_encoder_2/model.safetensors",
+            "bytes": 2778702264
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 737
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "tokenizer_2/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer_2/special_tokens_map.json",
+            "bytes": 460
+          },
+          {
+            "path": "tokenizer_2/tokenizer_config.json",
+            "bytes": 725
+          },
+          {
+            "path": "tokenizer_2/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 1867
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 10270077736
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 762
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643268
+          }
+        ]
+      }
+    ]
+  },
+  "animatediff-detail": {
+    "bytes": 6390354448,
+    "checkedAt": "2026-09-30T11:03:52.231003+00:00",
+    "sources": [
+      {
+        "repo": "ByteDance/AnimateDiff-Lightning",
+        "revision": "027c893eec01df7330f5d4b733bc9485ee02e8b2",
+        "files": [
+          {
+            "path": "animatediff_lightning_8step_diffusers.safetensors",
+            "bytes": 907702248
+          }
+        ]
+      },
+      {
+        "repo": "stable-diffusion-v1-5/stable-diffusion-v1-5",
+        "revision": "451f4fe16113bff5a5d2269ed5ad43b0592e9a14",
+        "files": [
+          {
+            "path": "feature_extractor/preprocessor_config.json",
+            "bytes": 342
+          },
+          {
+            "path": "model_index.json",
+            "bytes": 541
+          },
+          {
+            "path": "safety_checker/config.json",
+            "bytes": 4723
+          },
+          {
+            "path": "safety_checker/model.safetensors",
+            "bytes": 1215981830
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 308
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 617
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265874
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 806
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 743
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 3438167540
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 547
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643276
+          }
+        ]
+      }
+    ]
+  },
+  "animatediff-dream": {
+    "bytes": 6390349594,
+    "checkedAt": "2026-09-30T11:03:52.863328+00:00",
+    "sources": [
+      {
+        "repo": "ByteDance/AnimateDiff-Lightning",
+        "revision": "027c893eec01df7330f5d4b733bc9485ee02e8b2",
+        "files": [
+          {
+            "path": "animatediff_lightning_4step_diffusers.safetensors",
+            "bytes": 907702248
+          }
+        ]
+      },
+      {
+        "repo": "Lykon/dreamshaper-8",
+        "revision": "a7e52b98680b1ba8ff7bce97c7f9f2e2e5337917",
+        "files": [
+          {
+            "path": "feature_extractor/preprocessor_config.json",
+            "bytes": 520
+          },
+          {
+            "path": "model_index.json",
+            "bytes": 642
+          },
+          {
+            "path": "safety_checker/config.json",
+            "bytes": 796
+          },
+          {
+            "path": "safety_checker/model.safetensors",
+            "bytes": 1215979664
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 614
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 724
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265168
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 737
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 1868
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 3438167536
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 756
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643268
+          }
+        ]
+      }
+    ]
+  },
+  "animatediff-real": {
+    "bytes": 6390349684,
+    "checkedAt": "2026-09-30T11:03:53.490624+00:00",
+    "sources": [
+      {
+        "repo": "ByteDance/AnimateDiff-Lightning",
+        "revision": "027c893eec01df7330f5d4b733bc9485ee02e8b2",
+        "files": [
+          {
+            "path": "animatediff_lightning_4step_diffusers.safetensors",
+            "bytes": 907702248
+          }
+        ]
+      },
+      {
+        "repo": "Lykon/absolute-reality-1.81",
+        "revision": "569d201654dca1426f1e090fca3953acc7db2c30",
+        "files": [
+          {
+            "path": "feature_extractor/preprocessor_config.json",
+            "bytes": 520
+          },
+          {
+            "path": "model_index.json",
+            "bytes": 660
+          },
+          {
+            "path": "safety_checker/config.json",
+            "bytes": 814
+          },
+          {
+            "path": "safety_checker/model.safetensors",
+            "bytes": 1215979664
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 614
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 742
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 492265168
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 737
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 1886
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 3438167536
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 774
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643268
+          }
+        ]
+      }
+    ]
+  },
+  "zeroscope": {
+    "bytes": 3673011066,
+    "checkedAt": "2026-09-30T11:03:54.375382+00:00",
+    "sources": [
+      {
+        "repo": "cerspense/zeroscope_v2_576w",
+        "revision": "6963642a64dbefa93663d1ecebb4ceda2d9ecb28",
+        "files": [
+          {
+            "path": "model_index.json",
+            "bytes": 384
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 465
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 609
+          },
+          {
+            "path": "text_encoder/pytorch_model.bin",
+            "bytes": 680904225
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 460
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 737
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 727
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.bin",
+            "bytes": 2823110385
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 636
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.bin",
+            "bytes": 167407857
+          }
+        ]
+      }
+    ]
+  },
+  "modelscope": {
+    "bytes": 7342947419,
+    "checkedAt": "2026-09-30T11:03:55.262283+00:00",
+    "sources": [
+      {
+        "repo": "ali-vilab/text-to-video-ms-1.7b",
+        "revision": "8227dddca75a8561bf858d604cc5dae52b954d01",
+        "files": [
+          {
+            "path": "model_index.json",
+            "bytes": 384
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 465
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 644
+          },
+          {
+            "path": "text_encoder/model.safetensors",
+            "bytes": 1361597016
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 460
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 755
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          },
+          {
+            "path": "unet/config.json",
+            "bytes": 787
+          },
+          {
+            "path": "unet/diffusion_pytorch_model.safetensors",
+            "bytes": 5645118394
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 657
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 334643276
+          }
+        ]
+      }
+    ]
+  },
+  "musetalk-15": {
+    "bytes": 3885968140,
+    "checkedAt": "2026-09-30T11:03:56.089648+00:00",
+    "sources": [
+      {
+        "repo": "TMElyralab/MuseTalk",
+        "revision": "2bcb936e2fddb4d86db4c62fd45b387d0c061571",
+        "files": [
+          {
+            "path": "musetalkV15/musetalk.json",
+            "bytes": 748
+          },
+          {
+            "path": "musetalkV15/unet.pth",
+            "bytes": 3400074924
+          }
+        ]
+      },
+      {
+        "repo": "stabilityai/sd-vae-ft-mse",
+        "revision": "31f26fdeee1355a5c34592e401dd41e45d25a493",
+        "files": [
+          {
+            "path": "config.json",
+            "bytes": 547
+          },
+          {
+            "path": "diffusion_pytorch_model.safetensors",
+            "bytes": 334643276
+          }
+        ]
+      },
+      {
+        "repo": "openai/whisper-tiny",
+        "revision": "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
+        "files": [
+          {
+            "path": "config.json",
+            "bytes": 1983
+          },
+          {
+            "path": "model.safetensors",
+            "bytes": 151061672
+          },
+          {
+            "path": "preprocessor_config.json",
+            "bytes": 184990
+          }
+        ]
+      }
+    ]
+  },
+  "ltx-video-2b": {
+    "bytes": 25390818694,
+    "checkedAt": "2026-09-30T11:03:57.605938+00:00",
+    "sources": [
+      {
+        "repo": "Lightricks/LTX-Video-0.9.5",
+        "revision": "e58e28c39631af4d1468ee57a853764e11c1d37e",
+        "files": [
+          {
+            "path": "model_index.json",
+            "bytes": 412
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 455
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 786
+          },
+          {
+            "path": "text_encoder/model-00001-of-00004.safetensors",
+            "bytes": 4989319680
+          },
+          {
+            "path": "text_encoder/model-00002-of-00004.safetensors",
+            "bytes": 4999830656
+          },
+          {
+            "path": "text_encoder/model-00003-of-00004.safetensors",
+            "bytes": 4865612720
+          },
+          {
+            "path": "text_encoder/model-00004-of-00004.safetensors",
+            "bytes": 4194506688
+          },
+          {
+            "path": "text_encoder/model.safetensors.index.json",
+            "bytes": 19886
+          },
+          {
+            "path": "tokenizer/added_tokens.json",
+            "bytes": 2593
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 2543
+          },
+          {
+            "path": "tokenizer/spiece.model",
+            "bytes": 791656
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 20648
+          },
+          {
+            "path": "transformer/config.json",
+            "bytes": 500
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model.safetensors",
+            "bytes": 3846852608
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 1251
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 2493855612
+          }
+        ]
+      }
+    ]
+  },
+  "ltx-video-13b-distilled": {
+    "bytes": 47629366835,
+    "checkedAt": "2026-09-30T11:03:58.773132+00:00",
+    "sources": [
+      {
+        "repo": "Lightricks/LTX-Video-0.9.7-distilled",
+        "revision": "057509edea1493cae5e62e9d8f780ebda3fb4333",
+        "files": [
+          {
+            "path": "model_index.json",
+            "bytes": 421
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 487
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 740
+          },
+          {
+            "path": "text_encoder/model-00001-of-00004.safetensors",
+            "bytes": 4989319680
+          },
+          {
+            "path": "text_encoder/model-00002-of-00004.safetensors",
+            "bytes": 4999830656
+          },
+          {
+            "path": "text_encoder/model-00003-of-00004.safetensors",
+            "bytes": 4865612720
+          },
+          {
+            "path": "text_encoder/model-00004-of-00004.safetensors",
+            "bytes": 4194506688
+          },
+          {
+            "path": "text_encoder/model.safetensors.index.json",
+            "bytes": 19886
+          },
+          {
+            "path": "tokenizer/added_tokens.json",
+            "bytes": 2593
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 2543
+          },
+          {
+            "path": "tokenizer/spiece.model",
+            "bytes": 791656
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 20648
+          },
+          {
+            "path": "transformer/config.json",
+            "bytes": 501
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model-00001-of-00006.safetensors",
+            "bytes": 4870326248
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model-00002-of-00006.safetensors",
+            "bytes": 4967810536
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model-00003-of-00006.safetensors",
+            "bytes": 4967851880
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model-00004-of-00006.safetensors",
+            "bytes": 4967827888
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model-00005-of-00006.safetensors",
+            "bytes": 4967811280
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model-00006-of-00006.safetensors",
+            "bytes": 1343650240
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model.safetensors.index.json",
+            "bytes": 122681
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 1251
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 2493855612
+          }
+        ]
+      }
+    ]
+  },
+  "en_US-amy-medium": {
+    "bytes": 63206176,
+    "checkedAt": "2026-09-30T11:03:59.267934+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "en/en_US/amy/medium/en_US-amy-medium.onnx",
+            "bytes": 63201294
+          },
+          {
+            "path": "en/en_US/amy/medium/en_US-amy-medium.onnx.json",
+            "bytes": 4882
+          }
+        ]
+      }
+    ]
+  },
+  "ar_JO-kareem-medium": {
+    "bytes": 63206318,
+    "checkedAt": "2026-09-30T11:03:59.271934+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "ar/ar_JO/kareem/medium/ar_JO-kareem-medium.onnx",
+            "bytes": 63201294
+          },
+          {
+            "path": "ar/ar_JO/kareem/medium/ar_JO-kareem-medium.onnx.json",
+            "bytes": 5024
+          }
+        ]
+      }
+    ]
+  },
+  "hi_IN-pratham-medium": {
+    "bytes": 63521020,
+    "checkedAt": "2026-09-30T11:03:59.275935+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "hi/hi_IN/pratham/medium/hi_IN-pratham-medium.onnx",
+            "bytes": 63516050
+          },
+          {
+            "path": "hi/hi_IN/pratham/medium/hi_IN-pratham-medium.onnx.json",
+            "bytes": 4970
+          }
+        ]
+      }
+    ]
+  },
+  "es_ES-davefx-medium": {
+    "bytes": 63206111,
+    "checkedAt": "2026-09-30T11:03:59.279934+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "es/es_ES/davefx/medium/es_ES-davefx-medium.onnx",
+            "bytes": 63201294
+          },
+          {
+            "path": "es/es_ES/davefx/medium/es_ES-davefx-medium.onnx.json",
+            "bytes": 4817
+          }
+        ]
+      }
+    ]
+  },
+  "fr_FR-mls-medium": {
+    "bytes": 76740786,
+    "checkedAt": "2026-09-30T11:03:59.283936+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "fr/fr_FR/mls/medium/fr_FR-mls-medium.onnx",
+            "bytes": 76733750
+          },
+          {
+            "path": "fr/fr_FR/mls/medium/fr_FR-mls-medium.onnx.json",
+            "bytes": 7036
+          }
+        ]
+      }
+    ]
+  },
+  "de_DE-mls-medium": {
+    "bytes": 76970027,
+    "checkedAt": "2026-09-30T11:03:59.287936+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "de/de_DE/mls/medium/de_DE-mls-medium.onnx",
+            "bytes": 76961079
+          },
+          {
+            "path": "de/de_DE/mls/medium/de_DE-mls-medium.onnx.json",
+            "bytes": 8948
+          }
+        ]
+      }
+    ]
+  },
+  "ru_RU-denis-medium": {
+    "bytes": 63206117,
+    "checkedAt": "2026-09-30T11:03:59.291936+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "ru/ru_RU/denis/medium/ru_RU-denis-medium.onnx",
+            "bytes": 63201294
+          },
+          {
+            "path": "ru/ru_RU/denis/medium/ru_RU-denis-medium.onnx.json",
+            "bytes": 4823
+          }
+        ]
+      }
+    ]
+  },
+  "it_IT-paola-medium": {
+    "bytes": 63518137,
+    "checkedAt": "2026-09-30T11:03:59.295700+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "it/it_IT/paola/medium/it_IT-paola-medium.onnx",
+            "bytes": 63511038
+          },
+          {
+            "path": "it/it_IT/paola/medium/it_IT-paola-medium.onnx.json",
+            "bytes": 7099
+          }
+        ]
+      }
+    ]
+  },
+  "pt_BR-faber-medium": {
+    "bytes": 63206149,
+    "checkedAt": "2026-09-30T11:03:59.299702+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "pt/pt_BR/faber/medium/pt_BR-faber-medium.onnx",
+            "bytes": 63201294
+          },
+          {
+            "path": "pt/pt_BR/faber/medium/pt_BR-faber-medium.onnx.json",
+            "bytes": 4855
+          }
+        ]
+      }
+    ]
+  },
+  "tr_TR-dfki-medium": {
+    "bytes": 63206254,
+    "checkedAt": "2026-09-30T11:03:59.303733+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "tr/tr_TR/dfki/medium/tr_TR-dfki-medium.onnx",
+            "bytes": 63201294
+          },
+          {
+            "path": "tr/tr_TR/dfki/medium/tr_TR-dfki-medium.onnx.json",
+            "bytes": 4960
+          }
+        ]
+      }
+    ]
+  },
+  "zh_CN-huayan-medium": {
+    "bytes": 63206116,
+    "checkedAt": "2026-09-30T11:03:59.308732+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "zh/zh_CN/huayan/medium/zh_CN-huayan-medium.onnx",
+            "bytes": 63201294
+          },
+          {
+            "path": "zh/zh_CN/huayan/medium/zh_CN-huayan-medium.onnx.json",
+            "bytes": 4822
+          }
+        ]
+      }
+    ]
+  },
+  "nl_NL-alex-medium": {
+    "bytes": 63536441,
+    "checkedAt": "2026-09-30T11:03:59.312732+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "nl/nl_NL/alex/medium/nl_NL-alex-medium.onnx",
+            "bytes": 63531476
+          },
+          {
+            "path": "nl/nl_NL/alex/medium/nl_NL-alex-medium.onnx.json",
+            "bytes": 4965
+          }
+        ]
+      }
+    ]
+  },
+  "pl_PL-gosia-medium": {
+    "bytes": 63206108,
+    "checkedAt": "2026-09-30T11:03:59.318235+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "pl/pl_PL/gosia/medium/pl_PL-gosia-medium.onnx",
+            "bytes": 63201294
+          },
+          {
+            "path": "pl/pl_PL/gosia/medium/pl_PL-gosia-medium.onnx.json",
+            "bytes": 4814
+          }
+        ]
+      }
+    ]
+  },
+  "sv_SE-nst-medium": {
+    "bytes": 63108683,
+    "checkedAt": "2026-09-30T11:03:59.322243+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "sv/sv_SE/nst/medium/sv_SE-nst-medium.onnx",
+            "bytes": 63104526
+          },
+          {
+            "path": "sv/sv_SE/nst/medium/sv_SE-nst-medium.onnx.json",
+            "bytes": 4157
+          }
+        ]
+      }
+    ]
+  },
+  "en_GB-alan-medium": {
+    "bytes": 63206182,
+    "checkedAt": "2026-09-30T11:03:59.326242+00:00",
+    "sources": [
+      {
+        "repo": "rhasspy/piper-voices",
+        "revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+        "files": [
+          {
+            "path": "en/en_GB/alan/medium/en_GB-alan-medium.onnx",
+            "bytes": 63201294
+          },
+          {
+            "path": "en/en_GB/alan/medium/en_GB-alan-medium.onnx.json",
+            "bytes": 4888
+          }
+        ]
+      }
+    ]
+  },
+  "chatterbox": {
+    "bytes": 3208951748,
+    "checkedAt": "2026-09-30T11:03:59.606688+00:00",
+    "sources": [
+      {
+        "repo": "ResembleAI/chatterbox",
+        "revision": "5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18",
+        "files": [
+          {
+            "path": "Cangjie5_TC.json",
+            "bytes": 1920163
+          },
+          {
+            "path": "conds.pt",
+            "bytes": 107374
+          },
+          {
+            "path": "grapheme_mtl_merged_expanded_v1.json",
+            "bytes": 69989
+          },
+          {
+            "path": "s3gen.pt",
+            "bytes": 1057165844
+          },
+          {
+            "path": "t3_mtl23ls_v2.safetensors",
+            "bytes": 2143989752
+          },
+          {
+            "path": "ve.pt",
+            "bytes": 5698626
+          }
+        ]
+      }
+    ]
+  },
+  "mms": {
+    "bytes": 3870292895,
+    "checkedAt": "2026-09-30T11:04:00.103736+00:00",
+    "sources": [
+      {
+        "repo": "facebook/mms-1b-all",
+        "revision": "3d33597edbdaaba14a8e858e2c8caa76e3cec0cd",
+        "files": [
+          {
+            "path": "adapter.eng.safetensors",
+            "bytes": 9428832
+          },
+          {
+            "path": "config.json",
+            "bytes": 2040
+          },
+          {
+            "path": "model.safetensors",
+            "bytes": 3859521128
+          },
+          {
+            "path": "preprocessor_config.json",
+            "bytes": 254
+          },
+          {
+            "path": "special_tokens_map.json",
+            "bytes": 96
+          },
+          {
+            "path": "tokenizer_config.json",
+            "bytes": 397
+          },
+          {
+            "path": "vocab.json",
+            "bytes": 1340148
+          }
+        ]
+      }
+    ]
+  },
+  "whisper": {
+    "bytes": 78203619,
+    "checkedAt": "2026-09-30T11:04:00.374878+00:00",
+    "sources": [
+      {
+        "repo": "Systran/faster-whisper-tiny",
+        "revision": "d90ca5fe260221311c53c58e660288d3deb8d356",
+        "files": [
+          {
+            "path": "config.json",
+            "bytes": 2249
+          },
+          {
+            "path": "model.bin",
+            "bytes": 75538270
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 2203239
+          },
+          {
+            "path": "vocabulary.txt",
+            "bytes": 459861
+          }
+        ]
+      }
+    ]
+  },
+  "whisper-base": {
+    "bytes": 147882941,
+    "checkedAt": "2026-09-30T11:04:00.653120+00:00",
+    "sources": [
+      {
+        "repo": "Systran/faster-whisper-base",
+        "revision": "ebe41f70d5b6dfa9166e2c581c45c9c0cfc57b66",
+        "files": [
+          {
+            "path": "config.json",
+            "bytes": 2309
+          },
+          {
+            "path": "model.bin",
+            "bytes": 145217532
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 2203239
+          },
+          {
+            "path": "vocabulary.txt",
+            "bytes": 459861
+          }
+        ]
+      }
+    ]
+  },
+  "whisper-small": {
+    "bytes": 486212372,
+    "checkedAt": "2026-09-30T11:04:00.924809+00:00",
+    "sources": [
+      {
+        "repo": "Systran/faster-whisper-small",
+        "revision": "536b0662742c02347bc0e980a01041f333bce120",
+        "files": [
+          {
+            "path": "config.json",
+            "bytes": 2370
+          },
+          {
+            "path": "model.bin",
+            "bytes": 483546902
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 2203239
+          },
+          {
+            "path": "vocabulary.txt",
+            "bytes": 459861
+          }
+        ]
+      }
+    ]
+  },
+  "whisper-turbo": {
+    "bytes": 1621665983,
+    "checkedAt": "2026-09-30T11:04:01.453139+00:00",
+    "sources": [
+      {
+        "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
+        "revision": "0a363e9161cbc7ed1431c9597a8ceaf0c4f78fcf",
+        "files": [
+          {
+            "path": "config.json",
+            "bytes": 2263
+          },
+          {
+            "path": "model.bin",
+            "bytes": 1617884929
+          },
+          {
+            "path": "preprocessor_config.json",
+            "bytes": 340
+          },
+          {
+            "path": "tokenizer.json",
+            "bytes": 2710337
+          },
+          {
+            "path": "vocabulary.json",
+            "bytes": 1068114
+          }
+        ]
+      }
+    ]
+  },
+  "shap-e-text": {
+    "bytes": 1332946481,
+    "checkedAt": "2026-09-30T11:03:56.429780+00:00",
+    "sources": [
+      {
+        "repo": "openai/shap-e",
+        "revision": "7bd337afdea1c17842e1c3cc45c4e268356dba40",
+        "files": [
+          {
+            "path": "model_index.json",
+            "bytes": 458
+          },
+          {
+            "path": "prior/config.json",
+            "bytes": 489
+          },
+          {
+            "path": "prior/diffusion_pytorch_model.fp16.safetensors",
+            "bytes": 631435880
+          },
+          {
+            "path": "renderer/config.json",
+            "bytes": 496
+          },
+          {
+            "path": "renderer/diffusion_pytorch_model.fp16.safetensors",
+            "bytes": 452597858
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 276
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 626
+          },
+          {
+            "path": "text_encoder/model.fp16.safetensors",
+            "bytes": 247324608
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 524619
+          },
+          {
+            "path": "tokenizer/special_tokens_map.json",
+            "bytes": 472
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 737
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 1059962
+          }
+        ]
+      }
+    ]
+  },
+  "shap-e-image": {
+    "bytes": 1690974199,
+    "checkedAt": "2026-09-30T11:03:56.721764+00:00",
+    "sources": [
+      {
+        "repo": "openai/shap-e-img2img",
+        "revision": "0e0aba80f08d368aaf6af9cb93583707481cc29b",
+        "files": [
+          {
+            "path": "image_encoder/config.json",
+            "bytes": 560
+          },
+          {
+            "path": "image_encoder/model.fp16.safetensors",
+            "bytes": 606409288
+          },
+          {
+            "path": "image_processor/preprocessor_config.json",
+            "bytes": 315
+          },
+          {
+            "path": "model_index.json",
+            "bytes": 465
+          },
+          {
+            "path": "prior/config.json",
+            "bytes": 493
+          },
+          {
+            "path": "prior/diffusion_pytorch_model.fp16.safetensors",
+            "bytes": 631964448
+          },
+          {
+            "path": "renderer/config.json",
+            "bytes": 496
+          },
+          {
+            "path": "renderer/diffusion_pytorch_model.fp16.safetensors",
+            "bytes": 452597858
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 276
+          }
+        ]
+      }
+    ]
+  },
+  "z-image-turbo": {
+    "bytes": 32848305533,
+    "checkedAt": "2026-09-30T12:48:48.594283+00:00",
+    "sources": [
+      {
+        "repo": "Tongyi-MAI/Z-Image-Turbo",
+        "revision": "f332072aa78be7aecdf3ee76d5c247082da564a6",
+        "files": [
+          {
+            "path": "model_index.json",
+            "bytes": 467
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 173
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 726
+          },
+          {
+            "path": "text_encoder/generation_config.json",
+            "bytes": 239
+          },
+          {
+            "path": "text_encoder/model-00001-of-00003.safetensors",
+            "bytes": 3957900840
+          },
+          {
+            "path": "text_encoder/model-00002-of-00003.safetensors",
+            "bytes": 3987450520
+          },
+          {
+            "path": "text_encoder/model-00003-of-00003.safetensors",
+            "bytes": 99630640
+          },
+          {
+            "path": "text_encoder/model.safetensors.index.json",
+            "bytes": 32819
+          },
+          {
+            "path": "tokenizer/merges.txt",
+            "bytes": 1671853
+          },
+          {
+            "path": "tokenizer/tokenizer.json",
+            "bytes": 11422654
+          },
+          {
+            "path": "tokenizer/tokenizer_config.json",
+            "bytes": 9732
+          },
+          {
+            "path": "tokenizer/vocab.json",
+            "bytes": 2776833
+          },
+          {
+            "path": "transformer/config.json",
+            "bytes": 473
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model-00001-of-00003.safetensors",
+            "bytes": 9973693184
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model-00002-of-00003.safetensors",
+            "bytes": 9973714824
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model-00003-of-00003.safetensors",
+            "bytes": 4672282880
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model.safetensors.index.json",
+            "bytes": 48969
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 805
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 167666902
+          }
+        ]
+      }
+    ]
+  },
+  "qwen-image-21": {
+    "bytes": 33131601593,
+    "checkedAt": "2026-09-30T12:48:48.941131+00:00",
+    "sources": [
+      {
+        "repo": "Qwen/Qwen-Image-2.1",
+        "revision": "d26bb61231c349cf6b7896fa83353113880e1ba3",
+        "files": [
+          {
+            "path": "model_index.json",
+            "bytes": 447
+          },
+          {
+            "path": "processor/added_tokens.json",
+            "bytes": 707
+          },
+          {
+            "path": "processor/chat_template.jinja",
+            "bytes": 5292
+          },
+          {
+            "path": "processor/merges.txt",
+            "bytes": 1671853
+          },
+          {
+            "path": "processor/preprocessor_config.json",
+            "bytes": 782
+          },
+          {
+            "path": "processor/special_tokens_map.json",
+            "bytes": 613
+          },
+          {
+            "path": "processor/tokenizer.json",
+            "bytes": 11422654
+          },
+          {
+            "path": "processor/tokenizer_config.json",
+            "bytes": 5445
+          },
+          {
+            "path": "processor/video_preprocessor_config.json",
+            "bytes": 817
+          },
+          {
+            "path": "processor/vocab.json",
+            "bytes": 2776833
+          },
+          {
+            "path": "scheduler/scheduler_config.json",
+            "bytes": 485
+          },
+          {
+            "path": "text_encoder/config.json",
+            "bytes": 1517
+          },
+          {
+            "path": "text_encoder/generation_config.json",
+            "bytes": 213
+          },
+          {
+            "path": "text_encoder/model-00001-of-00004.safetensors",
+            "bytes": 4998056552
+          },
+          {
+            "path": "text_encoder/model-00002-of-00004.safetensors",
+            "bytes": 4915962464
+          },
+          {
+            "path": "text_encoder/model-00003-of-00004.safetensors",
+            "bytes": 4915962496
+          },
+          {
+            "path": "text_encoder/model-00004-of-00004.safetensors",
+            "bytes": 2704357976
+          },
+          {
+            "path": "text_encoder/model.safetensors.index.json",
+            "bytes": 67795
+          },
+          {
+            "path": "transformer/config.json",
+            "bytes": 370
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model-00001-of-00002.safetensors",
+            "bytes": 9968332504
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model-00002-of-00002.safetensors",
+            "bytes": 4261951904
+          },
+          {
+            "path": "transformer/diffusion_pytorch_model.safetensors.index.json",
+            "bytes": 30283
+          },
+          {
+            "path": "vae/config.json",
+            "bytes": 2079
+          },
+          {
+            "path": "vae/diffusion_pytorch_model.safetensors",
+            "bytes": 1350989512
+          }
+        ]
+      }
+    ]
+  }
+}

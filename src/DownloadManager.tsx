@@ -2,7 +2,8 @@ import {DownloadThumbnail} from './DownloadThumbnail';
 import {useEffect,useState} from 'react';
 import {bridge,friendlyError} from './Connected';
 import {Icon} from './icons';
-import {useDownloads} from './Downloads';
+
+import {useDownloads} from './download-data';
 import './download-manager.css';
 const bytes=(n=0)=>n>=1024**3?(n/1024**3).toFixed(2)+' GB':n>=1024**2?(n/1024**2).toFixed(1)+' MB':Math.round(n/1024)+' KB';
 export function DownloadManager(){

@@ -5,6 +5,13 @@ from inference_device import select_device,memory_mode,configure
 from prepare_acceleration import needs_cuda
 GB=1024**3
 class DeviceTests(unittest.TestCase):
+    def test_explicit_device_choice(self):
+        torch=SimpleNamespace(cuda=SimpleNamespace(is_available=lambda:True),backends=SimpleNamespace(mps=SimpleNamespace(is_available=lambda:False)))
+        self.assertEqual(select_device(torch,'cpu'),'cpu')
+        self.assertEqual(select_device(torch,'gpu'),'cuda')
+        torch.cuda.is_available=lambda:False
+        with self.assertRaisesRegex(ValueError,'GPU is not ready'):select_device(torch,'gpu')
+        self.assertEqual(select_device(torch,'auto'),'cpu')
     def test_selection(self):
         torch=SimpleNamespace(cuda=SimpleNamespace(is_available=lambda:True),backends=SimpleNamespace(mps=SimpleNamespace(is_available=lambda:True)))
         self.assertEqual(select_device(torch),'cuda')

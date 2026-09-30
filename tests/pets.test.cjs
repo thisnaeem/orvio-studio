@@ -8,3 +8,24 @@ test('failed inference leaves history unchanged and releases busy state',async t
 test('pet microphone permission is scoped to its own window and explicit arming',async()=>{const handlers=new Map();let created;class Window{constructor(){this.webContents={setWindowOpenHandler(){},on(){},send(){},mainFrame:{}};created=this}once(){}on(){}loadURL(){}setBounds(){}showInactive(){}destroy(){}isDestroyed(){return false}}
  const pets={state:()=>({settings:{enabled:true,corner:'right'}})};const controller=require('../electron/pet-window.cjs').createPetWindow({app:{isPackaged:false},BrowserWindow:Window,screen:{getPrimaryDisplay:()=>({workArea:{x:0,y:0,width:1280,height:800}})},ipcMain:{handle:(name,fn)=>handlers.set(name,fn)},pets,open(){}});controller.show();const event={sender:created.webContents,senderFrame:created.webContents.mainFrame};assert.equal(controller.permission(created.webContents,'media',{mediaType:'audio'}),false);assert.throws(()=>handlers.get('pet:arm')({sender:{}}),/Untrusted/);handlers.get('pet:arm')(event);assert.equal(controller.permission(created.webContents,'media',{mediaTypes:['audio']}),true);assert.equal(controller.permission(created.webContents,'media',{mediaTypes:['video']}),false);assert.equal(controller.permission({},'media',{mediaType:'audio'}),false);handlers.get('pet:disarm')(event);assert.equal(controller.permission(created.webContents,'media',{mediaType:'audio'}),false);
 });
+
+test('late pet disarm is harmless across closing, reopening and frame replacement',()=>{
+ const {EventEmitter}=require('node:events');const handlers=new Map();let created;
+ class Window extends EventEmitter{
+  constructor(){super();this.webContents=new EventEmitter();Object.assign(this.webContents,{mainFrame:{},setWindowOpenHandler(){},send(){}});created=this}
+  loadURL(){}setBounds(){}showInactive(){}destroy(){this.emit('closed')}isDestroyed(){return false}
+ }
+ const controller=require('../electron/pet-window.cjs').createPetWindow({app:{isPackaged:false},BrowserWindow:Window,screen:{getPrimaryDisplay:()=>({workArea:{x:0,y:0,width:1280,height:800}})},ipcMain:{handle:(name,fn)=>handlers.set(name,fn)},pets:{state:()=>({settings:{enabled:true,corner:'right'}})},open(){}});
+ const invoke=(name,event)=>handlers.get('pet:'+name)(event);
+ controller.show();const original={sender:created.webContents,senderFrame:created.webContents.mainFrame};
+ invoke('arm',original);controller.hide();assert.doesNotThrow(()=>invoke('disarm',original));assert.doesNotThrow(()=>invoke('disarm',{sender:original.sender,senderFrame:null}));
+ controller.show();const current={sender:created.webContents,senderFrame:created.webContents.mainFrame};invoke('arm',current);
+ invoke('disarm',original);assert.equal(controller.permission(current.sender,'media',{mediaType:'audio'}),true);
+ assert.throws(()=>invoke('arm',original),/Untrusted/);assert.throws(()=>invoke('disarm',{sender:{},senderFrame:null}),/Untrusted/);
+ assert.throws(()=>invoke('disarm',{sender:current.sender,senderFrame:{}}),/Untrusted/);
+ current.sender.emit('did-start-navigation',{},'http://127.0.0.1:5188/#pet',false,true);
+ assert.equal(controller.permission(current.sender,'media',{mediaType:'audio'}),false);
+ current.sender.mainFrame={};const reloaded={sender:current.sender,senderFrame:current.sender.mainFrame};invoke('arm',reloaded);
+ invoke('disarm',current);invoke('disarm',{sender:current.sender,senderFrame:null});assert.equal(controller.permission(current.sender,'media',{mediaType:'audio'}),true);
+ invoke('disarm',reloaded);assert.equal(controller.permission(current.sender,'media',{mediaType:'audio'}),false);
+});

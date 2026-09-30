@@ -11,7 +11,7 @@ def run(p):
     if action in ('voice','transcribe','transcribe_mms','generate_model','generate_spatial','generate_lipsync'): os.environ['HF_HUB_OFFLINE']='1'
     if action in ('install_model','install_whisper','install_mms','install_spatial','install_lipsync') or (action=='install_voice' and p.get('model')=='chatterbox'):
         from download_progress import install_hub_progress
-        install_hub_progress(emit)
+        install_hub_progress(emit,p.get('model'))
     if action in ('install_spatial','generate_spatial'):
         from spatial import generate
         return generate(p,emit)
@@ -115,10 +115,20 @@ def run(p):
         return {'duration':end-start}
     raise ValueError('Unknown operation')
 
-if __name__=='__main__':
-    try: emit('RESULT',run(json.load(sys.stdin)))
+def respond(p):
+    try:
+        emit('RESULT',run(p))
+        return True
     except Exception as e:
         message=str(e)
         if 'out of memory' in message.lower():
             message='Not enough memory for this generation. Reduce resolution or video frames, choose a smaller model, or close other GPU-heavy apps. '+message
-        emit('ERROR',message[-1800:]); sys.exit(1)
+        emit('ERROR',message[-1800:])
+        return False
+
+if __name__=='__main__':
+    if '--serve' in sys.argv:
+        # Keep one model warm across requests; the parent owns cancellation and idle expiry.
+        for line in sys.stdin:
+            if not respond(json.loads(line)): sys.exit(1)
+    elif not respond(json.load(sys.stdin)): sys.exit(1)

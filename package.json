@@ -59,7 +59,8 @@
       "runtime/models.json",
       "runtime/router-providers.json",
       "runtime/creative-settings.json",
-      "runtime/mms-languages.json"
+      "runtime/mms-languages.json",
+      "runtime/model-download-sizes.json"
     ],
     "directories": {
       "output": "release"

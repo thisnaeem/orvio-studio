@@ -2,15 +2,24 @@
 import os,pathlib,json,time
 from inference_device import select_device,configure
 
+_cached_pipeline = None
 BASE='stable-diffusion-v1-5/stable-diffusion-v1-5'
 def route(model):
-    return 'text-to-video' if model.get('pipeline')=='text-to-video' else 'animatediff' if model['kind']=='video' else 'image'
+    return 'ltx' if model.get('pipeline')=='ltx' else 'text-to-video' if model.get('pipeline')=='text-to-video' else 'animatediff' if model['kind']=='video' else 'image'
 def dimensions(model):
     return int(model.get('width',512)),int(model.get('height',512)),int(model.get('frames',16)),int(model.get('fps',8))
 
 def generate(p,emit):
+    catalog=json.loads(pathlib.Path(__file__).with_name('models.json').read_text())
+    selected=next((m for m in catalog if m['id']==p['model']),None)
+    if selected and selected['engine']=='modern-image':
+        from modern_image import generate as generate_modern
+        return generate_modern(p,emit,selected)
+    if selected and selected['engine']=='ltx':
+        from ltx import generate as generate_ltx
+        return generate_ltx(p,emit,selected)
     import torch
-    from diffusers import AutoPipelineForText2Image,AnimateDiffPipeline,MotionAdapter,EulerDiscreteScheduler,DiffusionPipeline,TextToVideoSDPipeline,DPMSolverMultistepScheduler
+    from diffusers import AutoPipelineForText2Image,AutoPipelineForImage2Image,AnimateDiffPipeline,MotionAdapter,EulerDiscreteScheduler,DiffusionPipeline,TextToVideoSDPipeline,DPMSolverMultistepScheduler
     from huggingface_hub import hf_hub_download
     from safetensors.torch import load_file
     torch.set_num_threads(2)
@@ -28,22 +37,39 @@ def generate(p,emit):
         else: DiffusionPipeline.download(model['repo'],use_safetensors=model.get('weights')!='bin')
         return {'ready':True}
     started=time.monotonic()
-    device=select_device(torch)
+    device=select_device(torch,p.get('device','auto'))
     emit('PROGRESS',f'Loading model · {device.upper()}')
     dtype=torch.float16 if device in ('cuda','mps') else torch.float32
     os.environ['HF_HUB_OFFLINE']='1'
     options={'torch_dtype':dtype,'use_safetensors':model.get('weights')!='bin','local_files_only':True}
-    if pipeline=='animatediff':
-        adapter=MotionAdapter()
-        adapter.load_state_dict(load_file(hf_hub_download(model['repo'],model['adapter'],local_files_only=True)))
-        pipe=AnimateDiffPipeline.from_pretrained(model.get('baseRepo',BASE),motion_adapter=adapter,**options)
-        pipe.scheduler=EulerDiscreteScheduler.from_config(pipe.scheduler.config,timestep_spacing='trailing',beta_schedule='linear')
-    elif pipeline=='text-to-video':
-        pipe=TextToVideoSDPipeline.from_pretrained(model['repo'],**options)
-        pipe.scheduler=DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
-        pipe.unet.enable_forward_chunking(chunk_size=1,dim=1)
-    else: pipe=AutoPipelineForText2Image.from_pretrained(p.get('source') or model['repo'],**options)
-    execution=configure(pipe,torch,device,model['kind']=='video')
+    global _cached_pipeline
+    key=(model['id'],p.get('source'),device,p.get('sampler','default'),bool(p.get('image')))
+    reused=pipeline=='image' and _cached_pipeline is not None and _cached_pipeline[0]==key
+    if reused:
+        _,pipe,execution=_cached_pipeline
+    else:
+        _cached_pipeline=None
+        import gc
+        gc.collect()
+        if torch.cuda.is_available(): torch.cuda.empty_cache()
+        if pipeline=='animatediff':
+            adapter=MotionAdapter()
+            adapter.load_state_dict(load_file(hf_hub_download(model['repo'],model['adapter'],local_files_only=True)))
+            pipe=AnimateDiffPipeline.from_pretrained(model.get('baseRepo',BASE),motion_adapter=adapter,**options)
+            pipe.scheduler=EulerDiscreteScheduler.from_config(pipe.scheduler.config,timestep_spacing='trailing',beta_schedule='linear')
+        elif pipeline=='text-to-video':
+            pipe=TextToVideoSDPipeline.from_pretrained(model['repo'],**options)
+            pipe.scheduler=DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
+            pipe.unet.enable_forward_chunking(chunk_size=1,dim=1)
+        else:
+            factory=AutoPipelineForImage2Image if p.get('image') else AutoPipelineForText2Image
+            pipe=factory.from_pretrained(p.get('source') or model['repo'],**options)
+        execution=configure(pipe,torch,device,model['kind']=='video')
+        if pipeline=='image': _cached_pipeline=(key,pipe,execution)
+    if device=='cuda':
+        torch.cuda.synchronize()
+        torch.cuda.reset_peak_memory_stats()
+    load_seconds=time.monotonic()-started
     device_label=execution['deviceName'] + (' · memory saving' if execution['memoryMode']=='offload' else '')
     emit('PROGRESS',f'Preparing generation · {device_label}')
     seed=int(p['seed']) if p.get('seed') is not None else int.from_bytes(os.urandom(4),'little')
@@ -57,9 +83,13 @@ def generate(p,emit):
     if p.get('sampler')=='euler':pipe.scheduler=EulerDiscreteScheduler.from_config(pipe.scheduler.config)
     elif p.get('sampler')=='dpm':pipe.scheduler=DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
     args={'prompt':p['prompt'],'generator':generator,'height':height,'width':width}
+    if p.get('image') and model.get('imageInput')=='img2img':
+        from modern_image import source_image
+        args.update(image=source_image(p['image'],width,height),strength=float(p.get('strength',.7)))
     if p.get('negativePrompt') and guidance>1:args['negative_prompt']=p['negativePrompt']
     if pipeline=='text-to-video': args.update(callback=lambda step,time,latents:emit('PROGRESS',f'{device_label} · step {step+1}/{steps}'),callback_steps=1)
     else: args['callback_on_step_end']=progress
+    inference_started=time.monotonic()
     if model['kind']=='video':
         import imageio_ffmpeg,numpy as np
         with torch.inference_mode():
@@ -74,4 +104,6 @@ def generate(p,emit):
             result=pipe(**args,num_inference_steps=steps,guidance_scale=guidance)
         if getattr(result,'nsfw_content_detected',None) and any(result.nsfw_content_detected): raise ValueError('The model did not return a usable image. Try a different prompt.')
         result.images[0].save(p['output'])
-    return {'seed':seed,**execution,'seconds':round(time.monotonic()-started,2),'model':model['name'],'width':width,'height':height,**({'frames':frames,'fps':fps,'duration':frames/fps} if model['kind']=='video' else {})}
+    if device=='cuda': torch.cuda.synchronize()
+    inference_seconds=time.monotonic()-inference_started
+    return {'loadSeconds':round(load_seconds,2),'generationSeconds':round(inference_seconds,2),'reusedModel':reused,'peakVRAMGB':round(torch.cuda.max_memory_allocated()/1024**3,2) if device=='cuda' else 0,'seed':seed,**execution,'seconds':round(time.monotonic()-started,2),'model':model['name'],'width':width,'height':height,**({'frames':frames,'fps':fps,'duration':frames/fps} if model['kind']=='video' else {})}

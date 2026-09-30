@@ -1,11 +1,17 @@
 """Device-aware placement without reserving every byte of graphics memory."""
 import os
 
-def select_device(torch):
+def select_device(torch, requested='auto', allow_mps=True):
+    if requested not in ('auto', 'cpu', 'gpu'):
+        raise ValueError('Choose Auto, GPU or CPU for generation.')
+    if requested == 'cpu':
+        return 'cpu'
     if torch.cuda.is_available():
         return 'cuda'
-    if hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+    if allow_mps and hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
         return 'mps'
+    if requested == 'gpu':
+        raise ValueError('GPU is not ready. Download the GPU runtime or choose CPU in the generation settings.')
     return 'cpu'
 
 def memory_mode(free_bytes, weight_bytes, video=False):
@@ -33,12 +39,12 @@ def configure(pipe, torch, device, video=False):
         else: pipe.to(device)
         # PyTorch SDPA handles attention efficiently; slicing would serialize it.
     elif device == 'mps':
-        pipe.enable_attention_slicing()
+        if hasattr(pipe, 'enable_attention_slicing'): pipe.enable_attention_slicing()
         if hasattr(pipe, 'enable_vae_tiling'): pipe.enable_vae_tiling()
         pipe.to(device)
     else:
         if not hasattr(torch.nn.functional, 'scaled_dot_product_attention'):
-            pipe.enable_attention_slicing()
+            if hasattr(pipe, 'enable_attention_slicing'): pipe.enable_attention_slicing()
         pipe.to(device)
     name=torch.cuda.get_device_name() if device=='cuda' else 'Apple Metal' if device=='mps' else 'CPU'
     return {'device':device,'deviceName':name,'memoryMode':mode}

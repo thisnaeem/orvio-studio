@@ -1,6 +1,8 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('studio',Object.freeze({
  platform:process.platform,
+ isDevelopment:process.argv.includes("--orvio-development"),
+ storageState:()=>ipcRenderer.invoke('storage:state'),chooseStorage:()=>ipcRenderer.invoke('storage:choose'),cancelStorage:()=>ipcRenderer.invoke('storage:cancel'),openStorage:()=>ipcRenderer.invoke('storage:open'),restartStorage:()=>ipcRenderer.invoke('storage:restart'),
  seoState:()=>ipcRenderer.invoke('seo:state'),seoImport:()=>ipcRenderer.invoke('seo:import'),seoConnect:()=>ipcRenderer.invoke('seo:connect'),seoCancel:()=>ipcRenderer.invoke('seo:cancel'),seoDisconnect:()=>ipcRenderer.invoke('seo:disconnect'),seoDiscover:()=>ipcRenderer.invoke('seo:discover'),seoReport:input=>ipcRenderer.invoke('seo:report',input),seoAnalyze:input=>ipcRenderer.invoke('seo:analyze',input),seoAddAction:input=>ipcRenderer.invoke('seo:add-action',input),seoTask:input=>ipcRenderer.invoke('seo:task',input),seoExport:()=>ipcRenderer.invoke('seo:export'),onSEO:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('seo:changed',listener);return()=>ipcRenderer.removeListener('seo:changed',listener)},onUpdateOpen:callback=>{ipcRenderer.on('update:open',callback);return()=>ipcRenderer.removeListener('update:open',callback)},
  routerSignIn:input=>ipcRenderer.invoke('router:sign-in',input),routerCancelSignIn:()=>ipcRenderer.invoke('router:cancel-sign-in'),routerRefresh:()=>ipcRenderer.invoke('router:refresh'),routerCheck:()=>ipcRenderer.invoke('router:check'),routerAutoStart:value=>ipcRenderer.invoke('router:auto-start',value),routerState:()=>ipcRenderer.invoke('router:state'),routerAccount:input=>ipcRenderer.invoke('router:account',input),routerRemoveAccount:id=>ipcRenderer.invoke('router:remove-account',id),routerRoute:input=>ipcRenderer.invoke('router:route',input),routerRemoveRoute:name=>ipcRenderer.invoke('router:remove-route',name),routerTest:id=>ipcRenderer.invoke('router:test',id),routerStart:port=>ipcRenderer.invoke('router:start',port),routerStop:()=>ipcRenderer.invoke('router:stop'),routerCopyKey:()=>ipcRenderer.invoke('router:copy-key'),routerRotateKey:()=>ipcRenderer.invoke('router:rotate-key'),routerUse:name=>ipcRenderer.invoke('router:use',name),routerTunnelFile:()=>ipcRenderer.invoke('router:tunnel-file'),routerTunnelSave:input=>ipcRenderer.invoke('router:tunnel-save',input),routerTunnelStart:()=>ipcRenderer.invoke('router:tunnel-start'),routerTunnelStop:()=>ipcRenderer.invoke('router:tunnel-stop'),onRouter:callback=>{const listener=()=>callback();ipcRenderer.on('router:changed',listener);return()=>ipcRenderer.removeListener('router:changed',listener)},
 
@@ -55,7 +57,7 @@ contextBridge.exposeInMainWorld('studio',Object.freeze({
  abortRecording:id=>ipcRenderer.invoke('recorder:abort',id),
  renderCaptions:input=>ipcRenderer.invoke('local:captions',input),
  onProduction:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('production:changed',listener);return()=>ipcRenderer.removeListener('production:changed',listener)},
- localState:()=>ipcRenderer.invoke('local:state'),
+ localAcceleration:input=>ipcRenderer.invoke('local:acceleration',input),localState:()=>ipcRenderer.invoke('local:state'),
  localInstall:id=>ipcRenderer.invoke('local:install',id),
  localCancel:()=>ipcRenderer.invoke('local:cancel'),
  localDownload:input=>ipcRenderer.invoke('local:download',input),
