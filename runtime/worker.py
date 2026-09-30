@@ -5,6 +5,11 @@ def emit(kind, value):
     print('\nORVIO_' + kind + ' ' + json.dumps(value), flush=True)
 
 def run(p):
+    if p['action']=='runtime_status':
+        import torch
+        from inference_device import select_device
+        device=select_device(torch)
+        return {'device':device,'name':torch.cuda.get_device_name() if device=='cuda' else 'Apple Metal' if device=='mps' else 'CPU','cudaBuild':torch.version.cuda}
     action=p['action']; root=pathlib.Path(p['models']); root.mkdir(parents=True,exist_ok=True)
     os.environ['HF_HOME']=str(root/'huggingface')
     os.environ['HF_HUB_DISABLE_XET']='1'
@@ -115,20 +120,22 @@ def run(p):
         return {'duration':end-start}
     raise ValueError('Unknown operation')
 
-def respond(p):
-    try:
-        emit('RESULT',run(p))
-        return True
+def respond(request):
+    try: emit('RESULT',run(request))
     except Exception as e:
         message=str(e)
         if 'out of memory' in message.lower():
-            message='Not enough memory for this generation. Reduce resolution or video frames, choose a smaller model, or close other GPU-heavy apps. '+message
+            message='Not enough memory. Try a smaller image size or fewer video frames. '+message
         emit('ERROR',message[-1800:])
         return False
+    return True
 
 if __name__=='__main__':
-    if '--serve' in sys.argv:
-        # Keep one model warm across requests; the parent owns cancellation and idle expiry.
+    if '--persistent' in sys.argv or '--serve' in sys.argv:
         for line in sys.stdin:
-            if not respond(json.loads(line)): sys.exit(1)
+            if not line.strip(): continue
+            try: request=json.loads(line)
+            except Exception:
+                emit('ERROR','Invalid worker request'); break
+            if not respond(request): break
     elif not respond(json.load(sys.stdin)): sys.exit(1)

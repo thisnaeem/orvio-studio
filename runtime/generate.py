@@ -2,7 +2,17 @@
 import os,pathlib,json,time
 from inference_device import select_device,configure
 
-_cached_pipeline = None
+_cache=None
+
+def clear_cache():
+    global _cache
+    _cache=None
+    import gc
+    gc.collect()
+    import torch
+    if torch.cuda.is_available(): torch.cuda.empty_cache()
+    elif hasattr(torch.backends,'mps') and torch.backends.mps.is_available(): torch.mps.empty_cache()
+
 BASE='stable-diffusion-v1-5/stable-diffusion-v1-5'
 def route(model):
     return 'ltx' if model.get('pipeline')=='ltx' else 'text-to-video' if model.get('pipeline')=='text-to-video' else 'animatediff' if model['kind']=='video' else 'image'
@@ -10,6 +20,7 @@ def dimensions(model):
     return int(model.get('width',512)),int(model.get('height',512)),int(model.get('frames',16)),int(model.get('fps',8))
 
 def generate(p,emit):
+    global _cache
     catalog=json.loads(pathlib.Path(__file__).with_name('models.json').read_text())
     selected=next((m for m in catalog if m['id']==p['model']),None)
     if selected and selected['engine']=='modern-image':
@@ -38,20 +49,17 @@ def generate(p,emit):
         return {'ready':True}
     started=time.monotonic()
     device=select_device(torch,p.get('device','auto'))
-    emit('PROGRESS',f'Loading model · {device.upper()}')
-    dtype=torch.float16 if device in ('cuda','mps') else torch.float32
-    os.environ['HF_HUB_OFFLINE']='1'
-    options={'torch_dtype':dtype,'use_safetensors':model.get('weights')!='bin','local_files_only':True}
-    global _cached_pipeline
-    key=(model['id'],p.get('source'),device,p.get('sampler','default'),bool(p.get('image')))
-    reused=pipeline=='image' and _cached_pipeline is not None and _cached_pipeline[0]==key
+    cache_key=(model['id'],p.get('source'),device,bool(p.get('image')))
+    reused=_cache is not None and _cache[0]==cache_key
     if reused:
-        _,pipe,execution=_cached_pipeline
+        _,pipe,execution,scheduler_type,scheduler_config=_cache
+        pipe.scheduler=scheduler_type.from_config(scheduler_config)
     else:
-        _cached_pipeline=None
-        import gc
-        gc.collect()
-        if torch.cuda.is_available(): torch.cuda.empty_cache()
+        clear_cache()
+        emit('PROGRESS','Preparing…')
+        dtype=torch.float16 if device in ('cuda','mps') else torch.float32
+        os.environ['HF_HUB_OFFLINE']='1'
+        options={'torch_dtype':dtype,'use_safetensors':model.get('weights')!='bin','local_files_only':True}
         if pipeline=='animatediff':
             adapter=MotionAdapter()
             adapter.load_state_dict(load_file(hf_hub_download(model['repo'],model['adapter'],local_files_only=True)))
@@ -65,17 +73,17 @@ def generate(p,emit):
             factory=AutoPipelineForImage2Image if p.get('image') else AutoPipelineForText2Image
             pipe=factory.from_pretrained(p.get('source') or model['repo'],**options)
         execution=configure(pipe,torch,device,model['kind']=='video')
-        if pipeline=='image': _cached_pipeline=(key,pipe,execution)
+        _cache=(cache_key,pipe,execution,type(pipe.scheduler),dict(pipe.scheduler.config))
     if device=='cuda':
         torch.cuda.synchronize()
         torch.cuda.reset_peak_memory_stats()
     load_seconds=time.monotonic()-started
     device_label=execution['deviceName'] + (' · memory saving' if execution['memoryMode']=='offload' else '')
-    emit('PROGRESS',f'Preparing generation · {device_label}')
+    emit('PROGRESS',{'message':'Creating…','device':device,'deviceName':execution['deviceName']})
     seed=int(p['seed']) if p.get('seed') is not None else int.from_bytes(os.urandom(4),'little')
     generator=torch.Generator(device='cpu').manual_seed(seed)
     def progress(_pipe,step,_time,kwargs):
-        emit('PROGRESS',f'{device_label} · step {step+1}/{steps}')
+        emit('PROGRESS',f'Creating · {round((step+1)/steps*100)}%')
         return kwargs
     width,height,frames,fps=dimensions(model)
     width=int(p.get('width',width));height=int(p.get('height',height));frames=int(p.get('frames',frames));fps=int(p.get('fps',fps))
@@ -87,7 +95,7 @@ def generate(p,emit):
         from modern_image import source_image
         args.update(image=source_image(p['image'],width,height),strength=float(p.get('strength',.7)))
     if p.get('negativePrompt') and guidance>1:args['negative_prompt']=p['negativePrompt']
-    if pipeline=='text-to-video': args.update(callback=lambda step,time,latents:emit('PROGRESS',f'{device_label} · step {step+1}/{steps}'),callback_steps=1)
+    if pipeline=='text-to-video': args.update(callback=lambda step,time,latents:emit('PROGRESS',f'Creating · {round((step+1)/steps*100)}%'),callback_steps=1)
     else: args['callback_on_step_end']=progress
     inference_started=time.monotonic()
     if model['kind']=='video':

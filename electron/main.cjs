@@ -145,6 +145,7 @@ handle('storage:cancel',()=>storageLocation.cancel());
 handle('storage:open',()=>shell.openPath(storageLocation.state().directory));
 handle('storage:restart',()=>{const p=production?.state();if(downloads?.state().some(d=>d.status==='active')||localStudio?.state().active||modelHub?.state().active||modelHub?.state().benchmarking||dictation?.busy()||workAgent?.state().busy||pets?.state().busy||p?.recording||p?.starting||['connecting','sending','stopping'].includes(p?.live?.status)||workspace?.snapshot().jobs.some(j=>['creating','processing','publishing'].includes(j.status)))throw Error('Pause downloads and finish active work before moving storage.');if(app.isPackaged){app.relaunch();app.quit()}else{app.quit()}return {restartManually:!app.isPackaged}});
 handle('local:acceleration',input=>localStudio.acceleration(input?.model,input?.repair===true));
+handle('local:gpu',()=>localStudio.checkGPU());
 handle('local:install',id=>localStudio.install(id));
 handle('local:cancel',()=>localStudio.cancel());
 handle('files:download',input=>fileDownloader.download(input));

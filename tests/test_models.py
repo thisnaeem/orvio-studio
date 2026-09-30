@@ -3,6 +3,8 @@ from unittest.mock import patch
 sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/'runtime'))
 import generate
 class ModelInstallTests(unittest.TestCase):
+    def setUp(self): generate._cache=None
+    def tearDown(self): generate._cache=None
     def test_generation_forwards_controls_to_pipeline_and_preserves_seed_zero(self):
         from unittest.mock import MagicMock
         pipe=MagicMock();pipe.return_value.nsfw_content_detected=None
@@ -15,6 +17,26 @@ class ModelInstallTests(unittest.TestCase):
         args=pipe.call_args.kwargs
         self.assertEqual(args['width'],640);self.assertEqual(args['negative_prompt'],'blur');self.assertEqual(args['num_inference_steps'],30);self.assertEqual(args['guidance_scale'],7)
         self.assertEqual(result['seed'],0);torch.Generator.return_value.manual_seed.assert_called_with(0)
+    def test_reuses_model_and_reloads_after_source_change(self):
+        from unittest.mock import MagicMock
+        class Scheduler:
+            config={'test':True}
+            @classmethod
+            def from_config(cls,config): return cls()
+        pipe=MagicMock();pipe.scheduler=Scheduler();pipe.return_value.nsfw_content_detected=None
+        torch=MagicMock();torch.cuda.is_available.return_value=False;torch.backends.mps.is_available.return_value=False
+        diffusers=MagicMock();diffusers.AutoPipelineForText2Image.from_pretrained.return_value=pipe
+        modules={'torch':torch,'diffusers':diffusers,'huggingface_hub':MagicMock(),'safetensors.torch':MagicMock()}
+        model=next(m for m in json.loads(pathlib.Path('runtime/models.json').read_text()) if m.get('parameterProfile')=='image')
+        request={'action':'generate_model','model':model['id'],'prompt':'Lake','output':'test.png'}
+        with patch.dict(sys.modules,modules):
+            first=generate.generate(request,lambda *a:None)
+            second=generate.generate({**request,'prompt':'Forest'},lambda *a:None)
+            self.assertFalse(first['reusedModel']);self.assertTrue(second['reusedModel'])
+            self.assertEqual(diffusers.AutoPipelineForText2Image.from_pretrained.call_count,1)
+            self.assertEqual(pipe.call_args.kwargs['prompt'],'Forest')
+            generate.generate({**request,'source':'another-folder'},lambda *a:None)
+            self.assertEqual(diffusers.AutoPipelineForText2Image.from_pretrained.call_count,2)
     def test_video_install_downloads_its_own_pipeline_without_loading_weights(self):
         downloads=[]
         class Pipeline:
@@ -22,7 +44,7 @@ class ModelInstallTests(unittest.TestCase):
             def download(repo,**kwargs): downloads.append(repo)
             @staticmethod
             def from_pretrained(*args,**kwargs): raise AssertionError('Install must not load a model')
-        modules={'torch':types.SimpleNamespace(set_num_threads=lambda n:None),'diffusers':types.SimpleNamespace(**{name:Pipeline for name in ['AutoPipelineForText2Image','AnimateDiffPipeline','MotionAdapter','EulerDiscreteScheduler','DiffusionPipeline','TextToVideoSDPipeline','DPMSolverMultistepScheduler']}),'huggingface_hub':types.SimpleNamespace(hf_hub_download=lambda repo,file:downloads.append((repo,file))),'safetensors.torch':types.SimpleNamespace(load_file=lambda p:None)}
+        modules={'torch':types.SimpleNamespace(set_num_threads=lambda n:None),'diffusers':types.SimpleNamespace(**{name:Pipeline for name in ['AutoPipelineForText2Image','AutoPipelineForImage2Image','AnimateDiffPipeline','MotionAdapter','EulerDiscreteScheduler','DiffusionPipeline','TextToVideoSDPipeline','DPMSolverMultistepScheduler']}),'huggingface_hub':types.SimpleNamespace(hf_hub_download=lambda repo,file:downloads.append((repo,file))),'safetensors.torch':types.SimpleNamespace(load_file=lambda p:None)}
         with patch.dict(sys.modules,modules):
             generate.generate({'action':'install_model','model':'zeroscope'},lambda *a:None)
             self.assertEqual(downloads,['cerspense/zeroscope_v2_576w'])

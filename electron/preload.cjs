@@ -58,6 +58,7 @@ contextBridge.exposeInMainWorld('studio',Object.freeze({
  renderCaptions:input=>ipcRenderer.invoke('local:captions',input),
  onProduction:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('production:changed',listener);return()=>ipcRenderer.removeListener('production:changed',listener)},
  localAcceleration:input=>ipcRenderer.invoke('local:acceleration',input),localState:()=>ipcRenderer.invoke('local:state'),
+ checkGenerationGPU:()=>ipcRenderer.invoke('local:gpu'),
  localInstall:id=>ipcRenderer.invoke('local:install',id),
  localCancel:()=>ipcRenderer.invoke('local:cancel'),
  localDownload:input=>ipcRenderer.invoke('local:download',input),
