@@ -1,0 +1,92 @@
+{
+  "skill": "bs-grokbot-avatar",
+  "version": "1.0.1",
+  "method": "built-in image_gen",
+  "mode": "Original",
+  "prompts": [
+    {
+      "id": "seo",
+      "name": "Atlas",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-extended.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Atlas, a tool bot in Orvio Studio. Use the attached atlas cell B2 as contour reference only: teal rounded diamond. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two white circular eyes of slightly different sizes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "pc-helper",
+      "name": "Tidy",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-observed.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Tidy, a tool bot in Orvio Studio. Use the attached atlas cell A3 as contour reference only: emerald squircle. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two white round eyes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "instagram",
+      "name": "Mingle",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-extended.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Mingle, a tool bot in Orvio Studio. Use the attached atlas cell B5 as contour reference only: pink soft heart. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two white tilted short capsule eyes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "chat",
+      "name": "Orbi",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-observed.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Orbi, a tool bot in Orvio Studio. Use the attached atlas cell A1 as contour reference only: violet nearly circular body. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two white upright capsule eyes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "integrations",
+      "name": "Relay",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-observed.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Relay, a tool bot in Orvio Studio. Use the attached atlas cell A7 as contour reference only: cyan connected cloud lobes. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with one white upright capsule and one white tilted capsule. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "automations",
+      "name": "Tempo",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-observed.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Tempo, a tool bot in Orvio Studio. Use the attached atlas cell A8 as contour reference only: amber rounded hexagon. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two white parallel long capsule eyes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "studio",
+      "name": "Prisma",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-extended.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Prisma, a tool bot in Orvio Studio. Use the attached atlas cell B8 as contour reference only: purple cushioned four-point star. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two white short tilted capsule eyes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "models",
+      "name": "Sage",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-extended.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Sage, a tool bot in Orvio Studio. Use the attached atlas cell B1 as contour reference only: cobalt rounded pentagon. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two white circular eyes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "live",
+      "name": "Beacon",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-observed.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Beacon, a tool bot in Orvio Studio. Use the attached atlas cell A6 as contour reference only: coral rounded teardrop. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two white tilted oval eyes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "captions",
+      "name": "Glyph",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-extended.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Glyph, a tool bot in Orvio Studio. Use the attached atlas cell B3 as contour reference only: magenta soft trapezoid wider at bottom. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two white slightly splayed capsule eyes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "recorder",
+      "name": "Frame",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-extended.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Frame, a tool bot in Orvio Studio. Use the attached atlas cell B6 as contour reference only: mint green four-petal clover. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two near-black short upright capsule eyes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "voice",
+      "name": "Echo",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-observed.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Echo, a tool bot in Orvio Studio. Use the attached atlas cell A4 as contour reference only: pink horizontal pill. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two white diagonal capsule eyes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "clipping",
+      "name": "Slice",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-observed.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Slice, a tool bot in Orvio Studio. Use the attached atlas cell A5 as contour reference only: orange rounded triangle. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two near-black short capsule eyes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    },
+    {
+      "id": "downloader",
+      "name": "Fetch",
+      "reference": "/Users/naeem/.agents/skills/bs-grokbot-avatar/references/images/original-extended.png",
+      "prompt": "Create one independent square 1024x1024 PNG mascot avatar for Fetch, a tool bot in Orvio Studio. Use the attached atlas cell B4 as contour reference only: lime green asymmetric bean. Original flat geometric avatar style. One continuous solid vivid body occupying about 70% of the square, centered, with two near-black small round eyes. Exactly two eye marks inside the circular safe crop. Transparent background. Crisp flat fills and clean antialiased smooth contours; preserve the distinctive sides, lobes or taper. No mouth, nose, highlights, pupils, limbs, accessories, gradients, shadows, lighting, texture, outlines, text, labels, grid or extra characters. This is a single individual avatar, not the atlas."
+    }
+  ]
+}

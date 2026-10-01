@@ -1,0 +1,2 @@
+import {toolBots} from './tool-bots';
+export function BotAvatar({id,size=40,className=''}:{id:string;size?:number;className?:string}){const bot=toolBots[id];if(!bot)return null;return <img src={`./bots/${id}.png`} alt="" aria-hidden="true" width={size} height={size} loading="lazy" decoding="async" draggable={false} className={`shrink-0 object-contain ${className}`} style={{width:size,height:size}}/>}
