@@ -1,6 +1,8 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('studio',Object.freeze({
  platform:process.platform,
+ composioState:()=>ipcRenderer.invoke('composio:state'),composioConfigure:key=>ipcRenderer.invoke('composio:configure',key),composioCatalog:input=>ipcRenderer.invoke('composio:catalog',input),composioConnect:id=>ipcRenderer.invoke('composio:connect',id),composioDisconnect:id=>ipcRenderer.invoke('composio:disconnect',id),composioApprove:(id,allow)=>ipcRenderer.invoke('composio:approve',id,allow),composioForget:()=>ipcRenderer.invoke('composio:forget'),onComposio:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('composio:changed',listener);return()=>ipcRenderer.removeListener('composio:changed',listener)},
+
  createBotShortcut:id=>ipcRenderer.invoke('bots:shortcut',id),openBot:id=>ipcRenderer.invoke('bots:open',id),openWorkspace:()=>ipcRenderer.invoke('bots:workspace'),
  isDevelopment:process.argv.includes("--orvio-development"),
  storageState:()=>ipcRenderer.invoke('storage:state'),chooseStorage:()=>ipcRenderer.invoke('storage:choose'),cancelStorage:()=>ipcRenderer.invoke('storage:cancel'),openStorage:()=>ipcRenderer.invoke('storage:open'),restartStorage:()=>ipcRenderer.invoke('storage:restart'),
@@ -86,7 +88,8 @@ contextBridge.exposeInMainWorld('studio',Object.freeze({
  disconnectDrive:()=>ipcRenderer.invoke('drive:disconnect'),
  listDriveFiles:()=>ipcRenderer.invoke('drive:files'),
  uploadDriveFile:()=>ipcRenderer.invoke('drive:upload'),
- chatCapabilities:()=>ipcRenderer.invoke('chat:capabilities'),chatFiles:()=>ipcRenderer.invoke('chat:files'),chatMic:enabled=>ipcRenderer.invoke('chat:mic',enabled),chatTranscribe:input=>ipcRenderer.invoke('chat:transcribe',input),chatSpeak:input=>ipcRenderer.invoke('chat:speak',input),
+ chatCapabilities:model=>ipcRenderer.invoke('chat:capabilities',model),chatFiles:()=>ipcRenderer.invoke('chat:files'),chatMic:enabled=>ipcRenderer.invoke('chat:mic',enabled),chatTranscribe:input=>ipcRenderer.invoke('chat:transcribe',input),chatSpeak:input=>ipcRenderer.invoke('chat:speak',input),
+ onChatProgress:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('chat:progress',listener);return()=>ipcRenderer.removeListener('chat:progress',listener)},
  chat:input=>ipcRenderer.invoke('ai:chat',input),
  connectMeta:input=>ipcRenderer.invoke('meta:connect',input),
  disconnectMeta:id=>ipcRenderer.invoke('meta:disconnect',id),

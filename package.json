@@ -21,9 +21,11 @@
     "runtime:prepare": "node scripts/bundle-python.cjs"
   },
   "dependencies": {
+    "@composio/core": "^0.22.0",
     "@fontsource-variable/unbounded": "^5.3.0",
     "@hugeicons/core-free-icons": "^4.3.5",
     "@hugeicons/react": "^1.1.10",
+    "@modelcontextprotocol/client": "^2.1.0",
     "electron-updater": "^6.6.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -32,7 +34,6 @@
     "three": "^0.186.1"
   },
   "devDependencies": {
-    "@modelcontextprotocol/client": "^2.1.0",
     "@modelcontextprotocol/server": "^2.1.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.1.0",
