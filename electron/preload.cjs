@@ -1,6 +1,7 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('studio',Object.freeze({
  platform:process.platform,
+ createBotShortcut:id=>ipcRenderer.invoke('bots:shortcut',id),openBot:id=>ipcRenderer.invoke('bots:open',id),openWorkspace:()=>ipcRenderer.invoke('bots:workspace'),
  isDevelopment:process.argv.includes("--orvio-development"),
  storageState:()=>ipcRenderer.invoke('storage:state'),chooseStorage:()=>ipcRenderer.invoke('storage:choose'),cancelStorage:()=>ipcRenderer.invoke('storage:cancel'),openStorage:()=>ipcRenderer.invoke('storage:open'),restartStorage:()=>ipcRenderer.invoke('storage:restart'),
  seoState:()=>ipcRenderer.invoke('seo:state'),seoImport:()=>ipcRenderer.invoke('seo:import'),seoConnect:()=>ipcRenderer.invoke('seo:connect'),seoCancel:()=>ipcRenderer.invoke('seo:cancel'),seoDisconnect:()=>ipcRenderer.invoke('seo:disconnect'),seoDiscover:()=>ipcRenderer.invoke('seo:discover'),seoReport:input=>ipcRenderer.invoke('seo:report',input),seoAnalyze:input=>ipcRenderer.invoke('seo:analyze',input),seoAddAction:input=>ipcRenderer.invoke('seo:add-action',input),seoTask:input=>ipcRenderer.invoke('seo:task',input),seoExport:()=>ipcRenderer.invoke('seo:export'),onSEO:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('seo:changed',listener);return()=>ipcRenderer.removeListener('seo:changed',listener)},onUpdateOpen:callback=>{ipcRenderer.on('update:open',callback);return()=>ipcRenderer.removeListener('update:open',callback)},

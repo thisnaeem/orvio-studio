@@ -173,3 +173,6 @@ body{@apply [font-size:1rem];@apply [line-height:1.5]}h1,h2,h3{@apply [letter-sp
   from { opacity: 0; transform: translateX(-4px); }
   to { opacity: 1; transform: translateX(0); }
 }
+
+/* A shortcut opens a focused bot window without workspace navigation. */
+.app[data-bot-window=true] .main-shell { @apply !ml-0 !w-full; }
