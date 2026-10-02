@@ -103,6 +103,7 @@ contextBridge.exposeInMainWorld('studio',Object.freeze({
  generatePostCaption:input=>ipcRenderer.invoke('social:caption',input),
  openPost:url=>ipcRenderer.invoke('social:openPost',url),
  refreshPost:id=>ipcRenderer.invoke('social:refreshPost',id),
+ refreshCreator:id=>ipcRenderer.invoke('social:creator',id),
  cancelJob:id=>ipcRenderer.invoke('jobs:cancel',id),
  editJob:(id,input)=>ipcRenderer.invoke('jobs:edit',id,input),
  savePreferences:input=>ipcRenderer.invoke('workspace:preferences',input),

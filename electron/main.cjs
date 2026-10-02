@@ -212,6 +212,7 @@ handle('jobs:schedule',input=>{const result=workspace.schedule(input);setImmedia
 handle('jobs:bulk',inputs=>{const result=workspace.scheduleBulk(inputs);setImmediate(()=>workspace.tick().catch(()=>{}));return result;});
 handle('social:connect',input=>workspace.connectSocial(input));
 handle('social:caption',input=>workspace.generatePostCaption(input));
+handle('social:creator',id=>workspace.refreshCreator(id));
 handle('social:models',async()=>{const {supportsVision}=require('./social-caption.cjs');const config=workspace.chatConfig('');const models=config.provider==='local'?[]:await workspace.listModels(config);return models.map(id=>({id:'provider:'+id,name:id,vision:supportsVision({...config,model:id})}));});
 handle('social:media',async()=>{const result=await dialog.showOpenDialog(activeWindow(),{title:'Add posts to your queue',properties:['openFile','multiSelections'],filters:[{name:'Images and videos',extensions:['jpg','jpeg','png','webp','mp4','mov','webm']}]});if(result.canceled)return [];if(result.filePaths.length>50)throw Error('Choose up to 50 files at once.');return result.filePaths.map(file=>workspace.stageMedia(file));});
 handle('social:prepare',id=>workspace.stageMedia(localStudio.file(String(id).replace(/^local:/,''))));

@@ -8,6 +8,10 @@ function createSocialPlatforms({fetchImpl=fetch}){
  const creator=token=>request('https://open.tiktokapis.com/v2/post/publish/creator_info/query/',token,{});
  return {
   creator,
+  async refresh(kind,{clientId,clientSecret,refreshToken}){
+   const response=await fetchImpl(kind==='tiktok'?'https://open.tiktokapis.com/v2/oauth/token/':'https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({[kind==='tiktok'?'client_key':'client_id']:clientId,...(clientSecret?{client_secret:clientSecret}:{}),grant_type:'refresh_token',refresh_token:refreshToken}),redirect:'error',signal:AbortSignal.timeout(30000)});
+   const result=await response.json();if(!response.ok||!result.access_token)throw Error('Automatic token refresh failed. Reconnect this channel.');return result;
+  },
   async connect(kind,token){
    if(kind==='tiktok'){const info=await creator(token);const user=await request('https://open.tiktokapis.com/v2/user/info/?fields=open_id',token);if(!user.user?.open_id)throw Error('TikTok access needs user.info.basic and video.publish scopes.');return {id:'tt:'+user.user.open_id,kind,username:info.creator_username,pageName:info.creator_nickname,pictureUrl:info.creator_avatar_url,privacyOptions:info.privacy_level_options,maxDuration:info.max_video_post_duration_sec,commentDisabled:info.comment_disabled,duetDisabled:info.duet_disabled,stitchDisabled:info.stitch_disabled}}
    if(kind==='youtube'){const result=await request('https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true',token);const c=result.items?.[0];if(!c)throw Error('No YouTube channel found for this token.');return {id:'yt:'+c.id,kind,username:c.snippet.title,pageName:c.snippet.customUrl||c.snippet.title,pictureUrl:c.snippet.thumbnails?.default?.url,followers:Number(c.statistics?.subscriberCount)||0,mediaCount:Number(c.statistics?.videoCount)||0}}
