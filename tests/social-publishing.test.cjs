@@ -92,7 +92,7 @@ test("staged files survive deletion of originals, serve only registered media, a
   await w.connect({ token: "meta-private-token", version: "v24.0" });
   const original = path.join(options.directory, "original.jpg");
   fs.writeFileSync(original, "photo");
-  const media = w.stageMedia(original);
+  const media = await w.stageMedia(original);
   fs.unlinkSync(original);
   assert.equal(fs.readFileSync(w.socialFile(media.sourceId), "utf8"), "photo");
   assert.throws(() => w.socialFile("../workspace-v3.json"));
@@ -266,7 +266,7 @@ test("YouTube requires video and explicit audience, uploads local bytes, and wai
   await w.connectSocial({ kind: "youtube", token: "youtube-private-token" });
   const file = path.join(options.directory, "clip.mp4");
   fs.writeFileSync(file, "video-bytes");
-  const media = w.stageMedia(file);
+  const media = await w.stageMedia(file);
   const post = {
     accountId: "yt:channel",
     mediaType: "video",
@@ -293,7 +293,7 @@ test("upload session URLs never reach the renderer, and interrupted YouTube requ
   await w.connectSocial({ kind: "youtube", token: "youtube-private-token" });
   const file = path.join(options.directory, "clip.mp4");
   fs.writeFileSync(file, "video");
-  const media = w.stageMedia(file);
+  const media = await w.stageMedia(file);
   w.schedule({
     accountId: "yt:c",
     sourceId: media.sourceId,
@@ -330,4 +330,106 @@ test("untrusted upload destinations cannot receive platform tokens", () => {
     secureUpload("https://www.googleapis.com/upload", ["www.googleapis.com"]),
     "https://www.googleapis.com/upload",
   );
+});
+
+test("automatic refresh rotates encrypted platform tokens and keeps refresh credentials out of snapshots", async (t) => {
+  let refreshed = 0;
+  const options = setup(t, async (url, r) => {
+    if (url.includes("/oauth/token/")) {
+      refreshed++;
+      assert.equal(r.body.get("client_secret"), "private-client-secret");
+      assert.equal(r.body.get("refresh_token"), "private-refresh-token");
+      return response({
+        access_token: "rotated-access-token",
+        refresh_token: "rotated-refresh-token",
+        expires_in: 86400,
+      });
+    }
+    if (url.includes("creator_info")) {
+      if (refreshed)
+        assert.equal(r.headers.Authorization, "Bearer rotated-access-token");
+      return response({
+        data: {
+          creator_username: "creator",
+          creator_nickname: "Creator",
+          privacy_level_options: ["SELF_ONLY"],
+          max_video_post_duration_sec: 300,
+        },
+      });
+    }
+    if (url.includes("/user/info"))
+      return response({ data: { user: { open_id: "abc" } } });
+    throw Error("Unexpected call");
+  });
+  const w = createWorkspace(options);
+  await w.connectSocial({
+    kind: "tiktok",
+    token: "initial-access-token",
+    clientId: "my-app",
+    clientSecret: "private-client-secret",
+    refreshToken: "private-refresh-token",
+  });
+  const file = path.join(options.directory, "workspace-v3.json"),
+    saved = JSON.parse(fs.readFileSync(file));
+  saved.accounts[0].expiresAt = 0;
+  fs.writeFileSync(file, JSON.stringify(saved));
+  const reopened = createWorkspace(options);
+  await reopened.refreshCreator("tt:abc");
+  await reopened.refreshCreator("tt:abc");
+  assert.equal(refreshed, 1);
+  assert.equal(reopened.snapshot().accounts[0].autoRefresh, true);
+  assert.ok(
+    !JSON.stringify(reopened.snapshot()).includes("private-client-secret"),
+  );
+  assert.ok(
+    !JSON.stringify(reopened.snapshot()).includes("rotated-access-token"),
+  );
+  assert.ok(!fs.readFileSync(file, "utf8").includes("rotated-refresh-token"));
+});
+
+test("a temporary TikTok status failure keeps checking without repeating publication", async (t) => {
+  let inits = 0,
+    polls = 0;
+  const options = setup(t, async (url) => {
+    if (url.includes("creator_info"))
+      return response({
+        data: {
+          creator_username: "creator",
+          privacy_level_options: ["SELF_ONLY"],
+          max_video_post_duration_sec: 300,
+        },
+      });
+    if (url.includes("/user/info"))
+      return response({ data: { user: { open_id: "abc" } } });
+    if (url.includes("/init/")) {
+      inits++;
+      return response({ data: { publish_id: "publish-1" } });
+    }
+    if (url.includes("/status/")) {
+      polls++;
+      if (polls === 1) throw Error("Network offline");
+      return response({
+        data: {
+          status: "PUBLISH_COMPLETE",
+          publicaly_available_post_id: ["77"],
+        },
+      });
+    }
+  });
+  const w = createWorkspace(options);
+  await w.connectSocial({ kind: "tiktok", token: "tiktok-private-token" });
+  w.schedule({
+    accountId: "tt:abc",
+    mediaType: "video",
+    caption: "A clip",
+    privacy: "SELF_ONLY",
+    imageUrl: "https://verified.example/video.mp4",
+    scheduledAt: new Date().toISOString(),
+  });
+  await w.tick();
+  assert.equal(w.snapshot().jobs[0].status, "processing");
+  assert.match(w.snapshot().jobs[0].error, /Still checking/);
+  await createWorkspace(options).tick();
+  assert.equal(createWorkspace(options).snapshot().jobs[0].status, "published");
+  assert.equal(inits, 1);
 });

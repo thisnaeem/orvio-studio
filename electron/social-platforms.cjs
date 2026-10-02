@@ -233,7 +233,7 @@ function createSocialPlatforms({ fetchImpl = fetch }) {
       const uploadURL = secureUpload(init.headers.get("location"), [
         "www.googleapis.com",
       ]);
-      save({ status: "publishing", uploadURL });
+      save({ status: "publishing" });
       const upload = await fetchImpl(uploadURL, {
         method: "PUT",
         headers: {

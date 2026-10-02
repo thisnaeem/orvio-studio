@@ -12,7 +12,8 @@ let downloadBlocker=null,lastDownloadCount=-1,pendingDevRestart=false;
 let productionBlocker=null,lastProductionStatus='';
 let chatMicUntil=0,chatMicOwner=null,captureOwner=null;
 let captureUntil=0,captureSource='',captureSystemAudio=false;
-protocol.registerSchemesAsPrivileged([{scheme:"orvio-media",privileges:{standard:true,secure:true,supportFetchAPI:true,stream:true}}]);
+// Canvas reads (AI image previews and video frames) need a CORS-enabled scheme.
+protocol.registerSchemesAsPrivileged([{scheme:"orvio-media",privileges:{standard:true,secure:true,supportFetchAPI:true,stream:true,corsEnabled:true}}]);
 let mainWindow,tray,workspace,quitting=false,islandWindow,movingWindow;
 const {bots,validateBot,parseBotArgs,createBotShortcuts}=require('./bot-shortcuts.cjs');
 const botWindows=new Map(),workspaceWindows=new Set();
@@ -214,7 +215,7 @@ handle('social:connect',input=>workspace.connectSocial(input));
 handle('social:caption',input=>workspace.generatePostCaption(input));
 handle('social:creator',id=>workspace.refreshCreator(id));
 handle('social:models',async()=>{const {supportsVision}=require('./social-caption.cjs');const config=workspace.chatConfig('');const models=config.provider==='local'?[]:await workspace.listModels(config);return models.map(id=>({id:'provider:'+id,name:id,vision:supportsVision({...config,model:id})}));});
-handle('social:media',async()=>{const result=await dialog.showOpenDialog(activeWindow(),{title:'Add posts to your queue',properties:['openFile','multiSelections'],filters:[{name:'Images and videos',extensions:['jpg','jpeg','png','webp','mp4','mov','webm']}]});if(result.canceled)return [];if(result.filePaths.length>50)throw Error('Choose up to 50 files at once.');return result.filePaths.map(file=>workspace.stageMedia(file));});
+handle('social:media',async()=>{const result=await dialog.showOpenDialog(activeWindow(),{title:'Add posts to your queue',properties:['openFile','multiSelections'],filters:[{name:'Images and videos',extensions:['jpg','jpeg','png','webp','mp4','mov','webm']}]});if(result.canceled)return [];if(result.filePaths.length>50)throw Error('Choose up to 50 files at once.');const media=[];for(const file of result.filePaths)media.push(await workspace.stageMedia(file));return media;});
 handle('social:prepare',id=>workspace.stageMedia(localStudio.file(String(id).replace(/^local:/,''))));
 handle('social:openPost',value=>{const url=new URL(value);if(url.protocol!=='https:'||url.username||url.password||!['www.instagram.com','instagram.com','www.facebook.com','facebook.com','www.youtube.com','youtube.com','youtu.be','www.tiktok.com','tiktok.com'].includes(url.hostname))throw Error('Invalid social post link.');return shell.openExternal(url.href);});
 handle('jobs:cancel',id=>workspace.cancel(id));

@@ -1,6 +1,6 @@
 # Orvio Studio
 
-A free Electron studio for Instagram and Facebook Page publishing. The app includes Unbounded typography, Hugeicons Free, a generated PNG brand mark, onboarding, customizable appearance, an integrated calendar and AI chat.
+A free Electron studio for Instagram, Facebook, TikTok and YouTube publishing. The app includes Unbounded typography, Hugeicons Free, a generated PNG brand mark, onboarding, customizable appearance, an integrated calendar and AI chat.
 
 ## Run and build
 
@@ -20,8 +20,8 @@ Browser preview: `npm run dev` at http://127.0.0.1:5188. Connections, encrypted 
 
 - Free tools with no subscription or checkout.
 - Connect Facebook Pages and linked Instagram professional profiles through Meta Graph API. View profile pictures and available counts.
-- Compose an image or video post, publish immediately or schedule it in a monthly calendar. A persistent background queue avoids blind duplicate retries.
-- Choose media on your PC using a configured Cloudinary unsigned upload preset, or enter a public media URL. Instagram needs the public URL for Graph publishing.
+- Compose text, images or videos with automatic post names and selectable vision AI captions. Post immediately or use a custom calendar and bulk scheduling across multiple channels. Instagram and Facebook videos publish as Reels.
+- Import media from your computer into a durable local queue, or use a public media URL. Instagram local uploads use Cloudinary; Facebook, TikTok video and YouTube support direct local uploads. Track history, post details, live links and last-published account activity.
 - Close to tray, pause/resume automations, optional start at login, single-instance handling and custom desktop window controls.
 - Three chat agents for studio help, captions and content strategy; use `/schedule`, `/connect` and `/calendar` to open tools from chat. AI providers: Gemini, OpenAI-compatible endpoints and local Ollama.
 - Read-only MCP server exposing connected profiles, publishing jobs and pause state to compatible local clients.
@@ -29,7 +29,7 @@ Browser preview: `npm run dev` at http://127.0.0.1:5188. Connections, encrypted 
 
 Meta retired the official Facebook Groups publishing API, so Orvio does not auto-post to Groups. Other limits: the computer must be awake, online and running Orvio; Meta permissions and account eligibility apply; AI provider usage may cost money. Live Meta, Cloudinary and AI calls need your own credentials. Automated tests use simulated provider responses.
 
-See [integration setup](docs/INTEGRATIONS.md), [MCP setup](docs/MCP.md) and [release operation](docs/RELEASES.md).
+See [social publishing and channel setup](docs/SOCIAL-PUBLISHING.md), [integration setup](docs/INTEGRATIONS.md), [MCP setup](docs/MCP.md) and [release operation](docs/RELEASES.md).
 
 ## Security and data
 

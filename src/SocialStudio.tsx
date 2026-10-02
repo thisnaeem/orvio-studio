@@ -92,6 +92,24 @@ function PlatformMark({ kind }: { kind?: string }) {
     </span>
   );
 }
+function AccountAvatar({ account }: { account: Account }) {
+  const [failedUrl, setFailedUrl] = useState("");
+  const name = account.pageName || account.username;
+  const initials = name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
+  return (
+    <span className="social-account-avatar" aria-hidden="true">
+      {account.pictureUrl && failedUrl !== account.pictureUrl ? (
+        <img src={account.pictureUrl} alt="" loading="lazy" onError={() => setFailedUrl(account.pictureUrl || "")} />
+      ) : (
+        <span className="social-account-initials">{initials || "?"}</span>
+      )}
+      <PlatformMark kind={account.kind} />
+    </span>
+  );
+}
+const matchesAccount = (account: Account, query: string) =>
+  [account.username, account.pageName, platformName(account.kind), account.id]
+    .join(" ").toLocaleLowerCase().includes(query.trim().toLocaleLowerCase());
 function MediaPreview({
   media,
   compact = false,
@@ -356,6 +374,11 @@ export function SocialAccounts({
     [selected, setSelected] = useState(""),
     [filter, setFilter] = useState("all"),
     [search, setSearch] = useState("");
+  const detail = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (selected)
+      detail.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [selected]);
   const account = workspace.accounts.find((a) => a.id === selected);
   const jobs = workspace.jobs
     .filter((j) => j.accountId === selected)
@@ -365,6 +388,9 @@ export function SocialAccounts({
         Date.parse(a.publishedAt || a.scheduledAt),
     );
   const last = jobs.find((j) => j.status === "published");
+  const visibleAccounts = workspace.accounts.filter(
+    (a) => (filter === "all" || a.kind === filter) && matchesAccount(a, search),
+  );
   return (
     <div className="social-accounts">
       <section className="social-heading">
@@ -405,7 +431,7 @@ export function SocialAccounts({
             <Icon name="search" size={16} />
             <input
               aria-label="Search connected accounts"
-              placeholder="Search accounts…"
+              placeholder="Search pages, names or platforms…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -435,15 +461,10 @@ export function SocialAccounts({
         </section>
       ) : (
         <div className="social-account-grid">
-          {workspace.accounts
-            .filter(
-              (a) =>
-                (filter === "all" || a.kind === filter) &&
-                (a.username + " " + a.pageName)
-                  .toLowerCase()
-                  .includes(search.toLowerCase()),
-            )
-            .map((a) => {
+          {!visibleAccounts.length && (
+            <p className="social-muted" role="status">No pages match your search. Try another name or platform.</p>
+          )}
+          {visibleAccounts.map((a) => {
               const posts = workspace.jobs.filter((j) => j.accountId === a.id),
                 lastPost = posts
                   .filter((j) => j.status === "published")
@@ -460,15 +481,7 @@ export function SocialAccounts({
                   aria-expanded={selected === a.id}
                 >
                   <div className="social-account-top">
-                    {a.pictureUrl ? (
-                      <img
-                        className="profile-photo"
-                        src={a.pictureUrl}
-                        alt=""
-                      />
-                    ) : (
-                      <PlatformMark kind={a.kind} />
-                    )}
+                    <AccountAvatar account={a} />
                     <span className="social-status published">Connected</span>
                   </div>
                   <span className="social-muted">{platformName(a.kind)}</span>
@@ -514,7 +527,7 @@ export function SocialAccounts({
         </div>
       )}
       {account && (
-        <section className="panel social-account-detail">
+        <section ref={detail} className="panel social-account-detail">
           <div className="social-heading">
             <div>
               <span className="mini-label">ACCOUNT DETAILS</span>
@@ -873,6 +886,7 @@ export function SocialComposer({
     },
   ]);
   const [active, setActive] = useState(0),
+    [channelSearch, setChannelSearch] = useState(""),
     [destinations, setDestinations] = useState<string[]>(
       initial?.accountId
         ? [initial.accountId]
@@ -909,8 +923,17 @@ export function SocialComposer({
     [brandContent, setBrandContent] = useState(false),
     [brandOrganic, setBrandOrganic] = useState(false);
   const generatedLoaded = useRef(false);
+  const stopAI = useRef(false);
+  useEffect(
+    () => () => {
+      stopAI.current = true;
+    },
+    [],
+  );
   const row = rows[active] || rows[0],
-    accounts = workspace.accounts.filter((a) => destinations.includes(a.id));
+    accounts = workspace.accounts.filter((a) => destinations.includes(a.id)),
+    visibleAccounts = workspace.accounts.filter((a) => matchesAccount(a, channelSearch)),
+    allVisibleSelected = visibleAccounts.length > 0 && visibleAccounts.every((a) => destinations.includes(a.id));
   const patch = (id: string, values: Partial<PostRow>) =>
     setRows((list) => list.map((r) => (r.id === id ? { ...r, ...values } : r)));
   useEffect(() => {
@@ -941,30 +964,46 @@ export function SocialComposer({
     setBusy(true);
     bridge()
       .socialPrepare(initial.generatedId)
-      .then((media: Media) =>
-        setRows((list) => list.map((r, i) => (i === 0 ? { ...r, media } : r))),
-      )
+      .then(async (media: Media) => {
+        if (media.mediaType === "video")
+          media.duration = await mediaDuration(media);
+        setRows((list) => list.map((r, i) => (i === 0 ? { ...r, media } : r)));
+      })
       .catch((e: unknown) => setError(friendlyError(e)))
       .finally(() => setBusy(false));
   }, [initial?.generatedId]);
   const generate = async (items: PostRow[]) => {
+    stopAI.current = false;
     setAiBusy(true);
     setError("");
-    try {
-      for (let i = 0; i < items.length; i++) {
-        setProgress(`Writing caption ${i + 1} of ${items.length}…`);
-        const item = items[i],
-          frames = item.media ? await mediaFrames(item.media) : [];
-        const result = await bridge().generatePostCaption({
-          brief: item.caption,
-          frames,
-          chatModel: model,
-          platforms: accounts.map((a) => platformName(a.kind)).join(", "),
-        });
-        patch(item.id, result);
+    let next = 0,
+      completed = 0;
+    setProgress(`Writing captions · 0 of ${items.length}`);
+    const worker = async () => {
+      while (!stopAI.current && next < items.length) {
+        const item = items[next++];
+        try {
+          const frames = item.media ? await mediaFrames(item.media) : [];
+          if (stopAI.current) break;
+          const result = await bridge().generatePostCaption({
+            brief: item.caption,
+            frames,
+            chatModel: model,
+            platforms: accounts.map((a) => platformName(a.kind)).join(", "),
+          });
+          patch(item.id, result);
+          completed++;
+          setProgress(`Writing captions · ${completed} of ${items.length}`);
+        } catch (e) {
+          stopAI.current = true;
+          setError(`${item.media?.name || "Caption"}: ${friendlyError(e)}`);
+        }
       }
-    } catch (e) {
-      setError(friendlyError(e));
+    };
+    try {
+      await Promise.all(
+        Array.from({ length: Math.min(2, items.length) }, worker),
+      );
     } finally {
       setAiBusy(false);
       setProgress("");
@@ -990,6 +1029,7 @@ export function SocialComposer({
         setRows((list) => [...list, ...newRows]);
         setActive(rows.length);
       }
+      setBusy(false);
       if (autoAI && workspace.ai.model) await generate(newRows);
     } catch (e) {
       setError(friendlyError(e));
@@ -1287,23 +1327,32 @@ export function SocialComposer({
               <button
                 type="button"
                 className="text-button"
-                disabled={busy || aiBusy}
+                disabled={busy || aiBusy || !visibleAccounts.length}
                 onClick={() =>
-                  setDestinations(
-                    destinations.length === workspace.accounts.length
-                      ? []
-                      : workspace.accounts.map((a) => a.id),
+                  setDestinations((ids) =>
+                    allVisibleSelected
+                      ? ids.filter((id) => !visibleAccounts.some((a) => a.id === id))
+                      : [...new Set([...ids, ...visibleAccounts.map((a) => a.id)])],
                   )
                 }
               >
-                {destinations.length === workspace.accounts.length
-                  ? "Clear"
-                  : "Select all"}
+                {allVisibleSelected ? "Clear" : channelSearch.trim() ? "Select results" : "Select all"}
               </button>
             </div>
+            {!!workspace.accounts.length && (
+              <>
+                <label className="social-search social-channel-search">
+                  <Icon name="search" size={16} />
+                  <input type="search" aria-label="Search pages to post to" placeholder="Search pages…" value={channelSearch} onChange={(e) => setChannelSearch(e.target.value)} />
+                </label>
+                <p className="social-channel-summary" role="status">
+                  {visibleAccounts.length} of {workspace.accounts.length} channels · {accounts.length} selected
+                </p>
+              </>
+            )}
             <div className="social-destination-list">
               {workspace.accounts.length ? (
-                workspace.accounts.map((a) => (
+                visibleAccounts.length ? visibleAccounts.map((a) => (
                   <button
                     type="button"
                     key={a.id}
@@ -1318,16 +1367,16 @@ export function SocialComposer({
                       )
                     }
                   >
-                    <PlatformMark kind={a.kind} />
+                    <AccountAvatar account={a} />
                     <span>
                       <b>{a.username}</b>
-                      <small>{platformName(a.kind)}</small>
+                      <small>{platformName(a.kind)}{a.pageName && a.pageName !== a.username ? ` · ${a.pageName}` : ""}</small>
                     </span>
                     <span className="social-check">
                       {destinations.includes(a.id) ? "✓" : ""}
                     </span>
                   </button>
-                ))
+                )) : <p className="social-muted">No pages match “{channelSearch.trim()}”.</p>
               ) : (
                 <p className="social-muted">
                   Connect a channel from Connections first.
@@ -1495,6 +1544,21 @@ export function SocialComposer({
           </aside>
         </div>
         <div className="social-composer-footer">
+          {aiBusy && (
+            <div className="social-caption-progress" role="status">
+              <span>{progress}</span>
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => {
+                  stopAI.current = true;
+                  setProgress("Finishing current captions…");
+                }}
+              >
+                Stop after current
+              </button>
+            </div>
+          )}
           {error && (
             <p className="error-message" role="alert">
               {error}
@@ -1549,6 +1613,10 @@ export function PostDetails({
   notify: (s: string) => void;
   onClose: () => void;
 }) {
+  const detail = useRef<HTMLElement>(null);
+  useEffect(() => {
+    detail.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [job.id]);
   const [editing, setEditing] = useState(false),
     [caption, setCaption] = useState(job.caption),
     [at, setAt] = useState(localInput(job.scheduledAt)),
@@ -1563,7 +1631,7 @@ export function PostDetails({
         .catch(() => {});
   }, [job.id]);
   return (
-    <section className="panel social-post-detail">
+    <section ref={detail} className="panel social-post-detail">
       <div className="social-heading">
         <div>
           <span className="mini-label">POST DETAILS</span>

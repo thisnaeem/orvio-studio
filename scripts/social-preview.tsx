@@ -20,6 +20,7 @@ const accounts = [
     kind: "instagram",
     username: "orvio.studio",
     pageName: "Orvio Studio",
+    pictureUrl: image,
     followers: 2450,
     connectedAt: new Date().toISOString(),
   },
@@ -28,6 +29,7 @@ const accounts = [
     kind: "facebook",
     username: "Orvio Studio",
     pageName: "Orvio Studio",
+    pictureUrl: "/orvio-logo.png",
     connectedAt: new Date().toISOString(),
   },
   {
