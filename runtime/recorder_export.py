@@ -1,6 +1,6 @@
 """Render recorder projects from original footage, then preserve the source audio."""
 import math, os, pathlib, subprocess, tempfile, bisect
-from PIL import Image, ImageDraw, ImageFilter, ImageOps, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageOps, ImageFont, ImageEnhance
 
 def dimensions(source_size, options):
     sw, sh = source_size
@@ -42,8 +42,8 @@ def background(size, options, image=None):
     return canvas
 
 class Composer:
-    def __init__(self, source_size, options, background_file=None):
-        self.o=options; self.size=dimensions(source_size, options); self.bg=background(self.size,options,background_file)
+    def __init__(self, source_size, options, background_file=None, elements=None):
+        self.fonts={};self.elements={key:Image.open(filename).convert('RGBA') for key,filename in (elements or {}).items()};self.o=options; self.size=dimensions(source_size, options); self.bg=background(self.size,options,background_file)
         w,h=self.size; padding=0 if options['background']=='none' else min(w,h)*options['padding']/100
         ratio=min((w-2*padding)/source_size[0],(h-2*padding)/source_size[1]); self.frame=(max(1,round(source_size[0]*ratio)),max(1,round(source_size[1]*ratio)))
         fw,fh=self.frame; self.position=(round((w-fw)/2),round((h-fh)/2)); radius=0 if options['background']=='none' else min(options['radius']*min(w,h)/1080,fw/2,fh/2)
@@ -55,6 +55,11 @@ class Composer:
     def draw(self, image, time, camera=None, timeline_time=None):
         if timeline_time is None: timeline_time=time
         frame=self.base.copy(); scale,x,y=zoom_at(time,self.o); iw,ih=image.size;cw,ch=iw/scale,ih/scale;left=max(0,min(iw-cw,x*iw-cw/2));top=max(0,min(ih-ch,y*ih-ch/2))
+        effect=self.o.get('effect','none')
+        if effect=='mono': image=ImageOps.grayscale(image).convert('RGB')
+        elif effect=='vivid': image=ImageEnhance.Contrast(ImageEnhance.Color(image).enhance(1.5)).enhance(1.1)
+        elif effect=='warm': image=Image.blend(image,ImageOps.colorize(ImageOps.grayscale(image),'#24180e','#ffe2b0'),.3)
+        elif effect=='cool': image=Image.blend(ImageEnhance.Color(image).enhance(.8),Image.new('RGB',image.size,'#729fff'),.08)
         image=image.crop((round(left),round(top),round(left+cw),round(top+ch))).resize(self.frame,Image.Resampling.BICUBIC);frame.paste(image,self.position,self.mask)
         if camera is not None and self.o['showCamera'] and timeline_time>=self.o.get('cameraStart',0) and (not self.o.get('cameraEnd') or timeline_time<=self.o['cameraEnd']):
             if self.o['cameraMirror']: camera=ImageOps.mirror(camera)
@@ -65,20 +70,47 @@ class Composer:
             margin=round(min(w,h)*.035);pos=(margin if 'left' in self.o['cameraPosition'] else w-cw-margin,margin if 'top' in self.o['cameraPosition'] else h-ch-margin);x=self.o.get('cameraX'); y=self.o.get('cameraY')
             if x is not None or y is not None: pos=(max(0,min(w-cw,round(x*w-cw/2))) if x is not None else pos[0],max(0,min(h-ch,round(y*h-ch/2))) if y is not None else pos[1])
             frame.paste(camera,pos,mask)
-        captions=[{**c,'x':.5,'y':self.o.get('captionY',.85),'size':self.o.get('captionSize',46),'color':self.o.get('captionColor','#ffffff'),'box':self.o.get('captionBox',True)} for c in self.o.get('captions',[])] if self.o.get('showCaptions',True) else []
+        captions=[{**c,'caption':True,'x':.5,'y':self.o.get('captionY',.85),'size':self.o.get('captionSize',46),'color':self.o.get('captionColor','#ffffff'),'box':self.o.get('captionBox',True)} for c in self.o.get('captions',[]) if c['start']<=timeline_time<c['end']] if self.o.get('showCaptions',True) else []
         for layer in self.o.get('texts',[])+captions:
             if not layer['start']<=timeline_time<=layer['end'] or not layer['text']: continue
-            font_size=max(8,round(layer['size']*min(self.size)/1080)); font=None
-            for filename in ['/System/Library/Fonts/Supplemental/Arial Bold.ttf','C:/Windows/Fonts/arialbd.ttf','/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf']:
-                try: font=ImageFont.truetype(filename,font_size); break
-                except OSError: pass
-            if font is None: font=ImageFont.load_default(size=font_size)
+            if layer.get('imageId'):
+                image=self.elements.get(layer['imageId'])
+                if image is not None:
+                    width=max(1,round(min(self.size)*layer['size']/100));height=max(1,round(width*image.height/image.width));overlay=image.resize((width,height),Image.Resampling.BICUBIC);frame.paste(overlay,(round(layer['x']*self.size[0]-width/2),round(layer['y']*self.size[1]-height/2)),overlay)
+                continue
+            layer=dict(layer)
+            style=self.o.get('captionStyle','clean') if layer.get('caption') else 'clean'
+            if layer.get('caption') and self.o.get('captionUppercase'): layer['text']=layer['text'].upper()
+            font_size=max(8,round(layer['size']*min(self.size)/1080));font=self.fonts.get(font_size)
+            if font is None:
+                for filename in ['/System/Library/Fonts/Supplemental/Arial Bold.ttf','C:/Windows/Fonts/arialbd.ttf','/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf']:
+                    try: font=ImageFont.truetype(filename,font_size); break
+                    except OSError: pass
+                if font is None: font=ImageFont.load_default(size=font_size)
+                self.fonts[font_size]=font
             overlay=Image.new('RGBA',self.size);draw=ImageDraw.Draw(overlay);x,y=layer['x']*self.size[0],layer['y']*self.size[1]
             bounds=draw.multiline_textbbox((x,y),layer['text'],font=font,anchor='mm',align='center',spacing=round(font_size*.3))
             if layer['box']:
                 pad=font_size*.5;draw.rounded_rectangle((bounds[0]-pad,bounds[1]-pad*.5,bounds[2]+pad,bounds[3]+pad*.5),radius=font_size*.2,fill=(17,19,24,204))
-            draw.multiline_text((x,y),layer['text'],font=font,anchor='mm',align='center',spacing=round(font_size*.3),fill=layer['color'])
+            if style in ('hormozi','tiktok'):
+                words=layer['text'].split(); index=min(len(words)-1,int(max(0,min(1,(timeline_time-layer['start'])/(layer['end']-layer['start'])))*len(words)))
+                widths=[draw.textlength(word,font=font) for word in words];gap=draw.textlength(' ',font=font);left=x-(sum(widths)+gap*(len(words)-1))/2
+                for i,word in enumerate(words):
+                    highlight=self.o.get('captionHighlight','#ffe65c')
+                    if style=='tiktok' and i==index: draw.rounded_rectangle((left-font_size*.15,y-font_size*.65,left+widths[i]+font_size*.15,y+font_size*.65),radius=font_size*.2,fill=highlight)
+                    color=('#ffffff' if style=='tiktok' else highlight) if i==index else layer['color']
+                    draw.text((left,y),word,font=font,anchor='lm',fill=color,stroke_width=max(1,round(font_size*.09)),stroke_fill='#111318');left+=widths[i]+gap
+            else:
+                draw.multiline_text((x,y),layer['text'],font=font,anchor='mm',align='center',spacing=round(font_size*.3),fill=layer['color'])
             frame=Image.alpha_composite(frame.convert('RGBA'),overlay).convert('RGB')
+        if self.o.get('transition','none')!='none':
+            offset=0
+            for clip in self.o.get('clips') or [{'start':self.o.get('start',0),'end':self.o.get('end') or self.o.get('cursorDuration') or 86400}]:
+                length=clip['end']-clip['start']
+                if offset<=timeline_time<=offset+length:
+                    amount=max(0,min(1,min(timeline_time-offset,offset+length-timeline_time)/min(self.o.get('transitionDuration',.35),length/2)))
+                    frame=Image.blend(Image.new('RGB',self.size,'white' if self.o['transition']=='white' else 'black'),frame,amount);break
+                offset+=length
         return frame
 
 def render(p, ffmpeg, imageio_ffmpeg, report):
@@ -88,10 +120,11 @@ def render(p, ffmpeg, imageio_ffmpeg, report):
     duration=metadata.get('duration') or imageio_ffmpeg.count_frames_and_secs(source)[1]
     end=options['end'] or duration
     if not math.isfinite(duration) or not 0<=start<end<=duration+.15: raise ValueError('Trim must be inside the recording duration.')
-    fps=min(60,metadata.get('fps') or 30); composer=Composer(metadata['size'],options,p.get('background'))
+    fps=min(60,metadata.get('fps') or 30); composer=Composer(metadata['size'],options,p.get('background'),p.get('elements'))
     clips=options.get('clips') or [{'start':start,'end':end}]
     for clip in clips:
         if not 0<=clip['start']<clip['end']<=duration+.15: raise ValueError('A clip is outside the source duration.')
+    options['clips']=clips
     total=sum(c['end']-c['start'] for c in clips); count=0; rendered_lengths=[]
     with tempfile.TemporaryDirectory(prefix='orvio-recording-') as folder:
         silent=str(pathlib.Path(folder,'video.mp4'));writer=imageio_ffmpeg.write_frames(silent,composer.size,fps=fps,codec='libx264',pix_fmt_in='rgb24',pix_fmt_out='yuv420p',macro_block_size=1,output_params=['-preset','veryfast','-threads','2']);writer.send(None)

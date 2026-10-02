@@ -11,6 +11,7 @@ export const toolBots:Record<string,ToolBot>={
  models:{name:'Sage',role:'Model librarian',intro:'Find and manage the models behind your creations.',accent:'#92aaff'},
  live:{name:'Beacon',role:'Broadcast producer',intro:'Bring your videos to a live audience.',accent:'#ef9b83'},
  captions:{name:'Glyph',role:'Caption editor',intro:'Make every word readable and every moment accessible.',accent:'#d69bea'},
+ 'video-editor':{name:'Cut',role:'Video editor',intro:'Shape your footage into something worth sharing.',accent:'#b092ff'},
  recorder:{name:'Frame',role:'Recording partner',intro:'Capture your screen, camera and next big idea.',accent:'#81c4a9'},
  voice:{name:'Echo',role:'Voice creator',intro:'Give your words a voice, in your language.',accent:'#e5abcf'},
  clipping:{name:'Slice',role:'Highlight editor',intro:'Find the moments worth sharing.',accent:'#e9a884'},

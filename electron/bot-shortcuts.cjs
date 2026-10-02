@@ -1,6 +1,6 @@
 const fs=require('node:fs/promises');
 const path=require('node:path');
-const bots=Object.freeze({seo:'Atlas','pc-helper':'Tidy',instagram:'Mingle',chat:'Orbi',integrations:'Relay',automations:'Tempo',studio:'Prisma',models:'Sage',live:'Beacon',captions:'Glyph',recorder:'Frame',voice:'Echo',clipping:'Slice',downloader:'Fetch'});
+const bots=Object.freeze({seo:'Atlas','pc-helper':'Tidy',instagram:'Mingle',chat:'Orbi',integrations:'Relay',automations:'Tempo',studio:'Prisma',models:'Sage',live:'Beacon',captions:'Glyph','video-editor':'Cut',recorder:'Frame',voice:'Echo',clipping:'Slice',downloader:'Fetch'});
 function validateBot(id){if(typeof id!=='string'||!Object.hasOwn(bots,id))throw Error('Choose a bot from your crew.');return id}
 function parseBotArgs(args){const value=args.find(v=>typeof v==='string'&&v.startsWith('--orvio-bot='))?.slice(12);return Object.hasOwn(bots,value)?value:null}
 const quoteShell=value=>"'"+String(value).replaceAll("'","'\\''")+"'";

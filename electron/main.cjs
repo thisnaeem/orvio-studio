@@ -11,7 +11,7 @@ let localStudio,production,modelHub,downloads,updateDownloadId,pcHelper,modelSca
 let downloadBlocker=null,lastDownloadCount=-1,pendingDevRestart=false;
 let productionBlocker=null,lastProductionStatus='';
 let chatMicUntil=0,chatMicOwner=null,captureOwner=null;
-let recorderCapture,recorderWindows;
+let recorderCapture,recorderWindows,recorderStock;
 let captureUntil=0,captureSource='',captureSystemAudio=false;
 // Canvas reads (AI image previews and video frames) need a CORS-enabled scheme.
 protocol.registerSchemesAsPrivileged([{scheme:"orvio-media",privileges:{standard:true,secure:true,supportFetchAPI:true,stream:true,corsEnabled:true}}]);
@@ -147,7 +147,12 @@ handle('models:import',async()=>{const result=await dialog.showOpenDialog(active
 handle('production:state',()=>production.state());
 handle('production:start',input=>production.start(input));
 handle('production:stop',()=>production.stop());
-handle('recorder:sources',async(input={})=>{const current=String(screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).id);const types=input.kind==='screen'?['screen']:input.kind==='window'?['window']:['screen','window'];const sources=await desktopCapturer.getSources({types,thumbnailSize:{width:1280,height:720}});return sources.map(s=>({id:s.id,name:s.name,displayId:s.display_id,isCurrent:s.display_id===current,thumbnail:s.thumbnail.toDataURL()}))});
+handle('stock:state',()=>recorderStock.state());
+handle('stock:save',(id,key)=>recorderStock.save(id,key));
+handle('stock:search',(id,query)=>recorderStock.search(id,query));
+handle('stock:import',(id,item)=>recorderStock.import(id,item));
+handle('stock:open',(id,url)=>recorderStock.open(id,url));
+handle('recorder:sources',async(input={})=>{const current=String(screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).id);const types=input.kind==='screen'?['screen']:input.kind==='window'?['window']:['screen','window'];const sources=await desktopCapturer.getSources({types,thumbnailSize:input.kind==='window'?{width:320,height:180}:{width:960,height:540}});return sources.map(s=>({id:s.id,name:s.name,displayId:s.display_id,isCurrent:s.display_id===current,thumbnail:s.thumbnail.toDataURL()}))});
 handle('recorder:arm',function(input){captureOwner=this.webContents;captureUntil=Date.now()+60000;captureSource=typeof input.source==='string'?input.source:'';captureSystemAudio=!!input.systemAudio;return true});
 handle('recorder:begin',input=>production.beginRecording(input));
 handle('recorder:append',(id,chunk,track)=>production.appendRecording(id,chunk,track));
@@ -282,6 +287,7 @@ app.whenReady().then(async()=>{
  workAgent=require('./work-agent.cjs').createWorkAgent({directory:app.getPath('userData'),modelHub,completeWork:(payload,signal)=>workspace.completeWork(payload,signal),browser:require('./work-browser.cjs').createWorkBrowser({BrowserWindow}),generateImage:input=>modelHub.generate(input),notify:state=>broadcast('work:changed',state)});
  pets=require('./pets.cjs').createPets({directory:app.getPath('userData'),modelHub,localStudio,notify:state=>{petWindow?.refresh();broadcast('pets:changed',state)}});
  petWindow=require('./pet-window.cjs').createPetWindow({app,BrowserWindow,screen,ipcMain,pets,open:page=>{showWindow();mainWindow.webContents.send('workspace:navigate',page)}});
+ recorderStock=require('./recorder-stock.cjs').createRecorderStock({directory:app.getPath('userData'),safeStorage,localStudio,openExternal:url=>shell.openExternal(url)});
  recorderWindows=require('./recorder-windows.cjs').createRecorderWindows({BrowserWindow,workspaceWindows,localStudio,packaged:app.isPackaged,directory:__dirname});
  recorderCapture=require('./recorder-capture.cjs').createRecorderCapture({directory:app.getPath('userData'),desktopCapturer,screen,nativeImage,clipboard,localStudio,BrowserWindow,ipcMain,onCapture:(asset,edit)=>{broadcast('recorder:screenshot-ready',{asset,edit});if(edit)recorderWindows.open(asset.id)},onError:message=>{showWindow();activeWindow()?.webContents.send('workspace:navigate','Recorder');broadcast('recorder:error',message)}});
  desktopSettings=require('./desktop-settings.cjs').createDesktopSettings({directory:app.getPath('userData'),globalShortcut,actions:{assistant:()=>{showWindow();mainWindow.webContents.send('workspace:navigate','Chat')},pet:()=>{if(pets.state().settings.enabled)petWindow.show();else{showWindow();mainWindow.webContents.send('workspace:navigate','Pets')}},dictation:()=>dictation.toggle().catch(()=>{}),screenshot:()=>recorderCapture.quick(),recording:()=>{if(production.state().recording)broadcast('recorder:stop');else{showWindow();activeWindow()?.webContents.send('workspace:navigate','Recorder')}}}});

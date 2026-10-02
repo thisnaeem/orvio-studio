@@ -62,3 +62,8 @@ test('captions use word timestamps and remain aligned through cuts and reorderin
  const project=normalizeProject({captions:grouped,captionModel:'whisper-small',captionLanguage:'ur',captionColor:'#ffe65c'});assert.equal(project.captions.length,2);assert.equal(project.captionModel,'whisper-small');
  assert.throws(()=>normalizeProject({captionModel:'unknown'}));assert.throws(()=>normalizeProject({captions:[{id:'bad',text:'Oops',start:5,end:2}]}));
 });
+test('effects, transitions, caption styles and image layers survive project normalization',()=>{
+ const imageId=randomUUID();const project=normalizeProject({effect:'vivid',transition:'black',transitionDuration:.4,captionStyle:'hormozi',captionHighlight:'#ffee11',captionUppercase:true,texts:[{id:'logo',imageId,text:'Logo',start:0,end:2,x:.3,y:.4,size:30,color:'#ffffff',box:false}]});
+ assert.equal(project.texts[0].imageId,imageId);assert.equal(project.captionStyle,'hormozi');assert.equal(project.transitionDuration,.4);
+ for(const patch of [{effect:'unknown'},{transitionDuration:99},{captionStyle:'unknown'},{texts:[{...project.texts[0],imageId:'../../secret'}]}])assert.throws(()=>normalizeProject(patch));
+});

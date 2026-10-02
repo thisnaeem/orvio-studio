@@ -1,6 +1,6 @@
 import {clamp,type RecorderOptions} from './recorder-render';
 export type Clip={id:string;start:number;end:number};
-export type TextLayer={id:string;text:string;start:number;end:number;x:number;y:number;size:number;color:string;box:boolean};
+export type TextLayer={imageId?:string;id:string;text:string;start:number;end:number;x:number;y:number;size:number;color:string;box:boolean};
 export const clipsFor=(o:RecorderOptions,duration:number):Clip[]=>o.clips.length?o.clips:[{id:'original',start:o.start,end:o.end||duration}];
 export const timelineDuration=(clips:Clip[])=>clips.reduce((sum,c)=>sum+c.end-c.start,0);
 export function sourceAt(time:number,clips:Clip[]){let offset=0;for(let i=0;i<clips.length;i++){const c=clips[i],length=c.end-c.start;if(time<offset+length||i===clips.length-1)return {time:c.start+clamp(time-offset,0,length),index:i};offset+=length}return {time:0,index:0}}

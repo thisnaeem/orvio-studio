@@ -1,6 +1,7 @@
 const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('studio',Object.freeze({
  platform:process.platform,
+ stockState:()=>ipcRenderer.invoke('stock:state'),stockSave:(id,key)=>ipcRenderer.invoke('stock:save',id,key),stockSearch:(id,query)=>ipcRenderer.invoke('stock:search',id,query),stockImport:(id,item)=>ipcRenderer.invoke('stock:import',id,item),stockOpen:(id,url)=>ipcRenderer.invoke('stock:open',id,url),
  composioState:()=>ipcRenderer.invoke('composio:state'),composioConfigure:key=>ipcRenderer.invoke('composio:configure',key),composioCatalog:input=>ipcRenderer.invoke('composio:catalog',input),composioConnect:id=>ipcRenderer.invoke('composio:connect',id),composioDisconnect:id=>ipcRenderer.invoke('composio:disconnect',id),composioApprove:(id,allow)=>ipcRenderer.invoke('composio:approve',id,allow),composioForget:()=>ipcRenderer.invoke('composio:forget'),onComposio:callback=>{const listener=(_event,state)=>callback(state);ipcRenderer.on('composio:changed',listener);return()=>ipcRenderer.removeListener('composio:changed',listener)},
 
  createBotShortcut:id=>ipcRenderer.invoke('bots:shortcut',id),openBot:id=>ipcRenderer.invoke('bots:open',id),openWorkspace:()=>ipcRenderer.invoke('bots:workspace'),

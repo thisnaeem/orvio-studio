@@ -1,0 +1,23 @@
+const fs=require('node:fs'),path=require('node:path'),{randomUUID}=require('node:crypto');
+function createRecorderStock({directory,safeStorage,localStudio,openExternal,fetch:request=fetch}){
+ const keyFile=path.join(directory,'stock-keys.json'),cacheFile=path.join(directory,'stock-search.json');let keys={},cache={};
+ try{keys=JSON.parse(safeStorage.decryptString(Buffer.from(fs.readFileSync(keyFile,'utf8'),'base64')))}catch{}
+ try{cache=JSON.parse(fs.readFileSync(cacheFile,'utf8'))}catch{}
+ const provider=id=>{if(!['pexels','pixabay'].includes(id))throw Error('Choose Pexels or Pixabay.');return id};
+ const trusted=(value,id,page=false)=>{const u=new URL(value);const hosts=page?(id==='pexels'?['www.pexels.com','pexels.com']:['pixabay.com','www.pixabay.com']):(id==='pexels'?['images.pexels.com']:['pixabay.com','cdn.pixabay.com']);if(u.protocol!=='https:'||u.username||u.password||!hosts.includes(u.hostname))throw Error('Invalid stock media address.');return u.href};
+ const publicResult=r=>({id:r.id,title:r.title,creator:r.creator,page:r.page,preview:r.preview});
+ async function bounded(response,max){if(!response.ok)throw Error(response.status===429?'Stock search limit reached. Try again later.':'Stock provider could not complete the request. Check your API key.');if(Number(response.headers.get('content-length'))>max)throw Error('This image is too large.');const chunks=[];let length=0;for await(const chunk of response.body){length+=chunk.length;if(length>max){await response.body.cancel?.().catch(()=>{});throw Error('This image is too large.')}chunks.push(Buffer.from(chunk))}return Buffer.concat(chunks)}
+ return {
+  state:()=>({pexels:!!keys.pexels,pixabay:!!keys.pixabay}),
+  save(id,key){provider(id);if(typeof key!=='string'||key.length>512||/[\r\n]/.test(key))throw Error('Enter a valid API key.');if(!safeStorage.isEncryptionAvailable())throw Error('Secure credential storage is unavailable on this device.');keys[id]=key.trim();fs.mkdirSync(directory,{recursive:true});fs.writeFileSync(keyFile,safeStorage.encryptString(JSON.stringify(keys)).toString('base64'),{mode:0o600});return this.state()},
+  async search(id,query){provider(id);if(!keys[id])throw Error(`Connect your ${id==='pexels'?'Pexels':'Pixabay'} API key first.`);if(typeof query!=='string'||!query.trim()||query.length>100)throw Error('Enter a search under 100 characters.');const key=id+':'+query.trim().toLowerCase(),hit=cache[key];if(hit&&Date.now()-hit.time<86400000)return hit.results.map(publicResult);
+   const u=new URL(id==='pexels'?'https://api.pexels.com/v1/search':'https://pixabay.com/api/');u.searchParams.set(id==='pexels'?'query':'q',query.trim());u.searchParams.set('per_page','20');if(id==='pixabay'){u.searchParams.set('key',keys[id]);u.searchParams.set('image_type','photo');u.searchParams.set('safesearch','true')}
+   let body;try{const response=await request(u,{headers:id==='pexels'?{Authorization:keys[id]}:{},signal:AbortSignal.timeout(20000),redirect:'error'});body=JSON.parse((await bounded(response,2*1024*1024)).toString())}catch(e){throw Error(e.message?.startsWith('Stock')?e.message:'Stock search failed. Check your connection and API key.')}
+   const results=(id==='pexels'?body.photos:body.hits||[]).slice(0,20).map(p=>({id:String(p.id),title:id==='pexels'?(p.alt||'Stock photo'):(p.tags||'Stock photo'),creator:id==='pexels'?p.photographer:p.user,page:trusted(id==='pexels'?p.url:p.pageURL,id,true),preview:trusted(id==='pexels'?p.src.medium:p.webformatURL,id),download:trusted(id==='pexels'?p.src.large2x:p.largeImageURL,id)}));
+   cache=Object.fromEntries(Object.entries(cache).filter(([,entry])=>Date.now()-entry.time<86400000).slice(-99));cache[key]={time:Date.now(),results};fs.mkdirSync(directory,{recursive:true});fs.writeFileSync(cacheFile,JSON.stringify(cache),{mode:0o600});return results.map(publicResult);
+  },
+  async import(id,itemId){provider(id);const item=Object.entries(cache).filter(([key])=>key.startsWith(id+':')).flatMap(([,entry])=>entry.results).find(r=>r.id===itemId);if(!item)throw Error('Search for this photo again.');const response=await request(trusted(item.download,id),{signal:AbortSignal.timeout(30000),redirect:'error'});if(!/^image\/(jpeg|png)/i.test(response.headers.get('content-type')||''))throw Error('Choose a JPEG or PNG photo.');const bytes=await bounded(response,20*1024*1024);const temp=path.join(directory,`stock-${randomUUID()}.${response.headers.get('content-type').includes('png')?'png':'jpg'}`);try{fs.writeFileSync(temp,bytes);return localStudio.import(temp,'image',`${item.title} · ${item.creator} / ${id}`)}finally{fs.rmSync(temp,{force:true})}},
+  open(id,url){provider(id);return openExternal(trusted(url,id,true))}
+ };
+}
+module.exports={createRecorderStock};

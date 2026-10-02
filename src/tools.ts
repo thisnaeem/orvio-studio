@@ -1,5 +1,5 @@
 import type {IconName} from './icons';
-export type Page='SEO'|'Studio'|'Pets'|'Home'|'All tools'|'Instagram'|'Automations'|'Settings'|'Chat'|'Integrations'|'Images'|'Downloader'|'Voice'|'Clipping'|'Live'|'Captions'|'Recorder'|'Models'|'Videos'|'PC Helper';
+export type Page='SEO'|'Studio'|'Pets'|'Home'|'All tools'|'Instagram'|'Automations'|'Settings'|'Chat'|'Integrations'|'Images'|'Downloader'|'Voice'|'Clipping'|'Live'|'Captions'|'Recorder'|'Models'|'Videos'|'PC Helper'|'Video Editor';
 export type StudioTool={id:string;name:Page;description:string;category:string;icon:IconName;color:string;label:string};
 // Extend this registry and add the tool's route to grow the workspace.
 export const studioTools:StudioTool[]=[
@@ -14,6 +14,7 @@ export const studioTools:StudioTool[]=[
 {id:'models',name:'Models',description:'Manage text, image, video, voice, lip-sync and 3D models.',category:'Creativity',icon:'sparkles',color:'purple',label:'Your local model library'},
 {id:'live',name:'Live',description:'Stream a local video to YouTube with quality and looping controls.',category:'Creativity',icon:'workflow',color:'rose',label:'Your broadcast studio'},
 {id:'captions',name:'Captions',description:'Automatic local transcription, editable timing and styled captions.',category:'Creativity',icon:'edit',color:'purple',label:'Make every word count'},
+{id:'video-editor',name:'Video Editor',description:'Edit videos, style captions and publish to your channels.',category:'Creativity',icon:'video',color:'purple',label:'Create your next video'},
 {id:'recorder',name:'Recorder',description:'Record your screen, a window or camera with microphone audio.',category:'Creativity',icon:'image',color:'green',label:'Capture your next story'},
 {id:'voice',name:'Voice',description:'Multilingual local speech and voice cloning.',category:'Creativity',icon:'sparkles',color:'purple',label:'Download a voice'},
 {id:'clipping',name:'Clipping',description:'Find highlights, edit clips and publish.',category:'Creativity',icon:'workflow',color:'rose',label:'AI video highlights'},

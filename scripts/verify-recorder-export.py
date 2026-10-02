@@ -60,3 +60,21 @@ from captions import render as render_subtitles
 render_subtitles({'source':str(source),'output':str(folder/'edited.srt'),'format':'srt','timelineDuration':8,'segments':[{'start':5,'end':7,'text':'Edited timeline'}]},ffmpeg,imageio_ffmpeg)
 assert '00:00:05,000 --> 00:00:07,000' in (folder/'edited.srt').read_text()
 print('PASS: captions are timed and burned into the MP4; SRT uses the edited timeline duration.')
+# Export fidelity for the editor's new effects, transitions, caption highlights and graphic layers.
+base={**caption_options,'captions':[],'texts':[],'autoZoom':False,'transition':'none','effect':'mono'}
+mono=Composer((640,360),base).draw(plain,0,timeline_time=.5).getpixel((360,360))
+assert max(mono)-min(mono)<2,mono
+for style in ['hormozi','tiktok']:
+    styled={**caption_options,'captionStyle':style,'captionHighlight':'#ffcc00','captionUppercase':True,'transition':'none'}
+    compositor=Composer((640,360),styled)
+    assert compositor.draw(plain,0,timeline_time=.1).tobytes()!=compositor.draw(plain,0,timeline_time=.8).tobytes(),'Highlight did not advance'
+transition=Composer((640,360),{**base,'transition':'black','transitionDuration':.2})
+assert transition.draw(plain,0,timeline_time=0).getpixel((360,360))==(0,0,0)
+assert transition.draw(plain,0,timeline_time=.3).getpixel((360,360))!=(0,0,0)
+logo=folder/'logo.png';Image.new('RGBA',(40,40),(255,0,255,255)).save(logo)
+layer={**cut_options['texts'][0],'imageId':'logo','size':25,'x':.5,'y':.5}
+compositor=Composer((640,360),{**base,'texts':[layer]},elements={'logo':str(logo)})
+assert compositor.draw(plain,0,timeline_time=.5).getpixel((360,360))==(255,0,255)
+assert compositor.draw(plain,0,timeline_time=1.5).getpixel((360,360))!=(255,0,255)
+render({'source':str(source),'output':str(folder/'effects-and-layers.mp4'),'elements':{'logo':str(logo)},'options':{**caption_options,'texts':[layer],'effect':'vivid','transition':'black','transitionDuration':.2,'captionStyle':'tiktok','captionHighlight':'#a855ff'}},ffmpeg,imageio_ffmpeg,lambda value:None)
+print('PASS: color effects, boundary fades, advancing caption highlights and timed image layers render into MP4.')
