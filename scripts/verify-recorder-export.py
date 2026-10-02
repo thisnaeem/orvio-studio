@@ -41,3 +41,22 @@ result=render({'source':str(source),'output':str(follow_output),'options':follow
 assert abs(result['duration']-2)<.1
 assert 'Audio: aac' in subprocess.run([ffmpeg,'-i',str(follow_output)],capture_output=True).stderr.decode()
 print('PASS: continuous cursor follow, trim-aware easing, disabling zoom and MP4 export with audio.')
+cut_options={**follow,'clips':[{'id':'a','start':0,'end':.75},{'id':'b','start':2,'end':3.25}],'start':0,'end':0,'volume':.5,'texts':[{'id':'title','text':'A clearer story','start':0,'end':1,'x':.5,'y':.5,'size':90,'color':'#ffffff','box':True}]}
+cut_output=folder/'timeline-edit.mp4'
+cut_result=render({'source':str(source),'background':str(root/'public/recorder-backgrounds/silk.png'),'output':str(cut_output),'options':{**cut_options,'background':'image'}},ffmpeg,imageio_ffmpeg,lambda value:None)
+assert abs(cut_result['duration']-2)<.1,cut_result
+assert 'Audio: aac' in subprocess.run([ffmpeg,'-i',str(cut_output)],capture_output=True).stderr.decode()
+comp=Composer((640,360),cut_options);plain=Image.new('RGB',(640,360),'green')
+assert comp.draw(plain,0,timeline_time=.5).tobytes()!=comp.draw(plain,0,timeline_time=1.5).tobytes(),'Timed text was not applied'
+muted_output=folder/'muted.mp4'
+render({'source':str(source),'output':str(muted_output),'options':{**cut_options,'volume':0}},ffmpeg,imageio_ffmpeg,lambda value:None)
+assert 'Audio:' not in subprocess.run([ffmpeg,'-i',str(muted_output)],capture_output=True).stderr.decode()
+print('PASS: timeline cuts concatenate correctly, timed text renders, image backgrounds export, audio volume and mute work.')
+caption_options={**cut_options,'texts':[],'captions':[{'id':'caption-1','text':'Every moment matters','start':0,'end':1}],'showCaptions':True,'captionSize':60,'captionColor':'#ffe65c','captionBox':True,'captionY':.8}
+caption_comp=Composer((640,360),caption_options)
+assert caption_comp.draw(plain,0,timeline_time=.5).tobytes()!=caption_comp.draw(plain,0,timeline_time=1.5).tobytes(),'Caption timing was lost'
+render({'source':str(source),'output':str(folder/'captioned-edit.mp4'),'options':caption_options},ffmpeg,imageio_ffmpeg,lambda value:None)
+from captions import render as render_subtitles
+render_subtitles({'source':str(source),'output':str(folder/'edited.srt'),'format':'srt','timelineDuration':8,'segments':[{'start':5,'end':7,'text':'Edited timeline'}]},ffmpeg,imageio_ffmpeg)
+assert '00:00:05,000 --> 00:00:07,000' in (folder/'edited.srt').read_text()
+print('PASS: captions are timed and burned into the MP4; SRT uses the edited timeline duration.')

@@ -38,3 +38,27 @@ test('capture editors are separate trusted windows, reused and safely closed',()
  windows.open(id);assert.equal(created.length,1);let prevented=false;win.emit('close',{preventDefault(){prevented=true}});assert.equal(prevented,true);assert.deepEqual(win.sent,['recorder:editor-close']);assert.equal(win.destroyed,undefined);
  assert.throws(()=>windows.close({}));windows.close(win);assert.equal(workspaceWindows.size,0);windows.open(id);windows.shutdown();assert.equal(workspaceWindows.size,0);
 });
+test('timeline projects validate clip cuts, text timing and camera coordinates',()=>{
+ const result=normalizeProject({clips:[{id:'first',start:0,end:1},{id:'second',start:2,end:4}],texts:[{id:'title',text:'Hello',start:0,end:2,x:.5,y:.8,size:42,color:'#ffffff',box:true}],volume:.5,backgroundPreset:'silk',cameraX:.3,cameraY:.7});
+ assert.equal(result.clips.length,2);assert.equal(result.texts[0].text,'Hello');assert.equal(result.volume,.5);assert.equal(result.backgroundPreset,'silk');
+ for(const patch of [{clips:[{id:'x',start:3,end:1}]},{clips:[{id:'x',start:0,end:1},{id:'x',start:1,end:2}]},{texts:[{...result.texts[0],end:-1}]},{texts:[{...result.texts[0],text:'x'.repeat(501)}]},{backgroundPreset:'../../private'},{volume:2},{cameraX:NaN}])assert.throws(()=>normalizeProject(patch));
+});
+test('timeline split, deletion and reordering map playback to the correct source',()=>{
+ const ts=require('typescript'),vm=require('node:vm'),module={exports:{}};
+ const code=ts.transpileModule(fs.readFileSync(path.join(__dirname,'../src/recorder-timeline.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+ vm.runInNewContext(code,{module,exports:module.exports,require:()=>({clamp:(n,a=0,b=1)=>Math.max(a,Math.min(b,n))})});const {splitClips,sourceAt,timelineAt,timelineDuration}=module.exports;
+ const clips=splitClips([{id:'a',start:0,end:10}],0,4,'b');assert.equal(clips.length,2);assert.equal(timelineDuration(clips),10);
+ const remaining=[clips[1]];assert.equal(sourceAt(2,remaining).time,6);assert.equal(timelineDuration(remaining),6);assert.equal(timelineAt(6,0,remaining),2);
+ const reordered=[clips[1],clips[0]];assert.equal(sourceAt(7,reordered).time,1);assert.equal(sourceAt(7,reordered).index,1);assert.equal(splitClips(clips,0,.01,'c'),clips);
+});
+test('captions use word timestamps and remain aligned through cuts and reordering',()=>{
+ const ts=require('typescript'),vm=require('node:vm'),module={exports:{}};
+ const code=ts.transpileModule(fs.readFileSync(path.join(__dirname,'../src/recorder-captions.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+ vm.runInNewContext(code,{module,exports:module.exports});const {groupTranscript,mapCaptions,remapCaptions}=module.exports;
+ const grouped=groupTranscript([{start:0,end:3,text:'One two three',words:[{start:0,end:1,text:'One'},{start:1,end:2,text:'two'},{start:2,end:3,text:'three'}]}],2);
+ assert.equal(grouped.length,2);assert.equal(grouped[0].text,'One two');assert.equal(grouped[1].start,2);
+ const mapped=mapCaptions(grouped,[{id:'b',start:2,end:3}]);assert.equal(mapped.length,1);assert.equal(mapped[0].text,'three');assert.equal(mapped[0].start,0);assert.equal(mapped[0].end,1);
+ const reordered=remapCaptions(grouped,[{id:'a',start:0,end:3}],[{id:'b',start:2,end:3},{id:'a',start:0,end:2}]);assert.equal(reordered[0].text,'three');assert.equal(reordered[1].text,'One two');assert.equal(reordered[1].start,1);
+ const project=normalizeProject({captions:grouped,captionModel:'whisper-small',captionLanguage:'ur',captionColor:'#ffe65c'});assert.equal(project.captions.length,2);assert.equal(project.captionModel,'whisper-small');
+ assert.throws(()=>normalizeProject({captionModel:'unknown'}));assert.throws(()=>normalizeProject({captions:[{id:'bad',text:'Oops',start:5,end:2}]}));
+});

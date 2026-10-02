@@ -65,7 +65,8 @@ class Composer:
             margin=round(min(w,h)*.035);pos=(margin if 'left' in self.o['cameraPosition'] else w-cw-margin,margin if 'top' in self.o['cameraPosition'] else h-ch-margin);x=self.o.get('cameraX'); y=self.o.get('cameraY')
             if x is not None or y is not None: pos=(max(0,min(w-cw,round(x*w-cw/2))) if x is not None else pos[0],max(0,min(h-ch,round(y*h-ch/2))) if y is not None else pos[1])
             frame.paste(camera,pos,mask)
-        for layer in self.o.get('texts',[]):
+        captions=[{**c,'x':.5,'y':self.o.get('captionY',.85),'size':self.o.get('captionSize',46),'color':self.o.get('captionColor','#ffffff'),'box':self.o.get('captionBox',True)} for c in self.o.get('captions',[])] if self.o.get('showCaptions',True) else []
+        for layer in self.o.get('texts',[])+captions:
             if not layer['start']<=timeline_time<=layer['end'] or not layer['text']: continue
             font_size=max(8,round(layer['size']*min(self.size)/1080)); font=None
             for filename in ['/System/Library/Fonts/Supplemental/Arial Bold.ttf','C:/Windows/Fonts/arialbd.ttf','/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf']:

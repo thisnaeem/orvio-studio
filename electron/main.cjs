@@ -147,7 +147,7 @@ handle('models:import',async()=>{const result=await dialog.showOpenDialog(active
 handle('production:state',()=>production.state());
 handle('production:start',input=>production.start(input));
 handle('production:stop',()=>production.stop());
-handle('recorder:sources',async()=>{const sources=await desktopCapturer.getSources({types:['screen','window'],thumbnailSize:{width:480,height:270}});return sources.map(s=>({id:s.id,name:s.name,displayId:s.display_id,thumbnail:s.thumbnail.toDataURL()}))});
+handle('recorder:sources',async(input={})=>{const current=String(screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).id);const types=input.kind==='screen'?['screen']:input.kind==='window'?['window']:['screen','window'];const sources=await desktopCapturer.getSources({types,thumbnailSize:{width:1280,height:720}});return sources.map(s=>({id:s.id,name:s.name,displayId:s.display_id,isCurrent:s.display_id===current,thumbnail:s.thumbnail.toDataURL()}))});
 handle('recorder:arm',function(input){captureOwner=this.webContents;captureUntil=Date.now()+60000;captureSource=typeof input.source==='string'?input.source:'';captureSystemAudio=!!input.systemAudio;return true});
 handle('recorder:begin',input=>production.beginRecording(input));
 handle('recorder:append',(id,chunk,track)=>production.appendRecording(id,chunk,track));
@@ -183,7 +183,7 @@ handle('files:images',url=>fileDownloader.images(url));
 handle('files:reveal',id=>shell.showItemInFolder(localStudio.file(id)));
 handle('local:download',input=>localStudio.download(input));
 handle('local:voice',input=>localStudio.voice(input));
-handle('local:transcribe',id=>localStudio.transcribe(id));
+handle('local:transcribe',(id,input)=>localStudio.transcribe(id,input));
 handle('local:clip',input=>localStudio.clip(input));
 handle('local:prepare',(id,accountId)=>workspace.prepareMedia(localStudio.file(id),accountId));
 handle('local:import',async kind=>{if(!['audio','image','video'].includes(kind))throw Error('Choose a media type.');const audio=kind==='audio',image=kind==='image';const result=await dialog.showOpenDialog(activeWindow(),{properties:['openFile'],filters:[{name:audio?'Audio':image?'Image':'Video',extensions:audio?['wav','mp3','m4a','flac']:image?['png','jpg','jpeg']:['mp4','mov','webm','mkv']}]});return result.canceled?null:localStudio.import(result.filePaths[0],kind);});

@@ -19,6 +19,12 @@ def srt(segments):
     return '\n\n'.join(f"{i+1}\n{stamp(s['start'])} --> {stamp(s['end'])}\n{s['text']}" for i,s in enumerate(segments))+'\n'
 
 def render(p,ffmpeg,imageio_ffmpeg):
+    if p.get('format')=='srt' and p.get('timelineDuration') is not None:
+        duration=float(p['timelineDuration'])
+        if not math.isfinite(duration) or not 0<duration<=86400: raise ValueError('Invalid subtitle timeline duration.')
+        segments=validate(p['segments'],duration)
+        pathlib.Path(p['output']).write_text(srt(segments),encoding='utf-8')
+        return {'captions':len(segments)}
     probe=imageio_ffmpeg.read_frames(p['source'])
     try: meta=next(probe)
     finally: probe.close()

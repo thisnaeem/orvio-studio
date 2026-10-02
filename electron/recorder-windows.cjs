@@ -8,7 +8,7 @@ function createRecorderWindows({BrowserWindow,workspaceWindows,localStudio,packa
    if(!asset||!['image','video'].includes(asset.kind))throw Error('Choose a screenshot or recording.');
    const existing=windows.get(id);
    if(existing&&!existing.isDestroyed()){existing.restore();existing.show();existing.focus();return true}
-   const win=new BrowserWindow({width:1320,height:900,minWidth:900,minHeight:650,title:`${asset.title} · Orvio Editor`,backgroundColor:'#111318',show:false,webPreferences:{preload:path.join(directory,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
+   const win=new BrowserWindow({width:1320,height:900,minWidth:900,minHeight:650,title:`${asset.title} · Orvio Editor`,backgroundColor:'#111318',show:false,...(process.platform==='darwin'?{titleBarStyle:'hiddenInset',trafficLightPosition:{x:16,y:19}}:{frame:false}),webPreferences:{preload:path.join(directory,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
    windows.set(id,win);workspaceWindows.add(win);
    win.on('closed',()=>{windows.delete(id);workspaceWindows.delete(win)});
    win.on('close',event=>{event.preventDefault();win.webContents.send('recorder:editor-close')});
