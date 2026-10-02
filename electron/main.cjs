@@ -152,7 +152,7 @@ handle('recorder:arm',function(input){captureOwner=this.webContents;captureUntil
 handle('recorder:begin',input=>production.beginRecording(input));
 handle('recorder:append',(id,chunk,track)=>production.appendRecording(id,chunk,track));
 handle('recorder:finish',id=>{captureUntil=0;const result=production.finishRecording(id);captureOwner=null;return result});
-handle('recorder:abort',id=>{captureUntil=0;return production.abortRecording(id)});
+handle('recorder:abort',id=>{captureUntil=0;captureOwner=null;return production.abortRecording(id)});
 handle('recorder:state',()=>({...recorderCapture.projects.state(),shortcut:desktopSettings.state().shortcuts.screenshot,recordingShortcut:desktopSettings.state().shortcuts.recording}));
 handle('recorder:settings',input=>recorderCapture.projects.settings(input));
 handle('recorder:project',id=>{localStudio.file(id);return recorderCapture.projects.get(id)});

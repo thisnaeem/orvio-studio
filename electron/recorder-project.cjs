@@ -4,11 +4,12 @@ const defaults = {background:'gradient',color:'#5865e8',color2:'#b8d9e8',padding
 function rectangle(value){
  if(!value)return null;
  const {x,y,width,height}=value;
- if(![x,y,width,height].every(Number.isFinite)||x<0||y<0||width<=0||height<=0||x+width>1.001||y+height>1.001)throw Error('Select a valid capture area.');
+ if(![x,y,width,height].every(Number.isFinite)||x<0||y<0||width<=0||height<=0||x+width>1.000001||y+height>1.000001)throw Error('Select a valid capture area.');
  return {x,y,width,height};
 }
 function normalizeProject(input={}){
  const result={...defaults};
+ if(!input||typeof input!=='object')throw Error('Choose valid editing options.');
  for(const [key,min,max] of [['padding',0,24],['radius',0,60],['shadow',0,80],['cameraSize',10,45],['start',0,86400],['end',0,86400]]){
   if(input[key]!==undefined){if(!Number.isFinite(input[key])||input[key]<min||input[key]>max)throw Error(`Choose a valid ${key}.`);result[key]=input[key]}
  }
@@ -18,7 +19,7 @@ function normalizeProject(input={}){
  for(const key of ['cameraMirror','showCamera','autoZoom'])if(typeof input[key]==='boolean')result[key]=input[key];
  for(const key of ['cameraId','backgroundId'])if(input[key]){if(typeof input[key]!=='string'||!/^[-a-f0-9]{36}$/.test(input[key]))throw Error('Choose media from the library.');result[key]=input[key]}
  const zooms=input.zooms||[];
- if(!Array.isArray(zooms)||zooms.length>2000)throw Error('Use up to 2,000 zoom moments.');
+ if(!Array.isArray(zooms)||zooms.length>2000||zooms.some(z=>!z||typeof z!=='object'))throw Error('Use up to 2,000 zoom moments.');
  result.zooms=zooms.map(z=>{if(![z.start,z.end,z.x,z.y,z.scale].every(Number.isFinite)||z.start<0||z.end<=z.start||z.end>86400||z.x<0||z.x>1||z.y<0||z.y>1||z.scale<1||z.scale>3)throw Error('Choose valid zoom timing and focus.');return {start:z.start,end:z.end,x:z.x,y:z.y,scale:z.scale}}).sort((a,b)=>a.start-b.start);
  for(let i=1;i<result.zooms.length;i++)if(result.zooms[i].start<result.zooms[i-1].end)throw Error('Zoom moments must not overlap.');
  return result;
