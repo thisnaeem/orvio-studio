@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const defaults = {background:'gradient',color:'#5865e8',color2:'#b8d9e8',padding:8,radius:18,shadow:30,aspect:'auto',resolution:1080,cameraPosition:'bottom-right',cameraSize:22,cameraShape:'circle',cameraMirror:true,showCamera:true,autoZoom:true,start:0,end:0,zooms:[],zoomMode:'cursor',cursor:[],cursorDuration:0,zoomStrength:1.7};
+const defaults = {background:'gradient',color:'#5865e8',color2:'#b8d9e8',padding:8,radius:18,shadow:30,aspect:'auto',resolution:1080,cameraPosition:'bottom-right',cameraSize:22,cameraShape:'circle',cameraMirror:true,showCamera:true,autoZoom:true,start:0,end:0,zooms:[],zoomMode:'cursor',cursor:[],cursorDuration:0,zoomStrength:1.7,clips:[],texts:[],volume:1,cameraStart:0,cameraEnd:0};
 function rectangle(value){
  if(!value)return null;
  const {x,y,width,height}=value;
@@ -10,7 +10,7 @@ function rectangle(value){
 function normalizeProject(input={}){
  const result={...defaults};
  if(!input||typeof input!=='object')throw Error('Choose valid editing options.');
- for(const [key,min,max] of [['padding',0,24],['radius',0,60],['shadow',0,80],['cameraSize',10,45],['start',0,86400],['end',0,86400],['cursorDuration',0,86400],['zoomStrength',1,3]]){
+ for(const [key,min,max] of [['padding',0,24],['radius',0,60],['shadow',0,80],['cameraSize',10,45],['start',0,86400],['end',0,86400],['cursorDuration',0,86400],['zoomStrength',1,3],['volume',0,1],['cameraStart',0,86400],['cameraEnd',0,86400]]){
   if(input[key]!==undefined){if(!Number.isFinite(input[key])||input[key]<min||input[key]>max)throw Error(`Choose a valid ${key}.`);result[key]=input[key]}
  }
  if(result.end&&result.end<=result.start)throw Error('Trim end must be after the start.');
@@ -22,6 +22,12 @@ function normalizeProject(input={}){
  const cursor=input.cursor||[];
  if(!Array.isArray(cursor)||cursor.length>150000)throw Error('Invalid cursor recording.');
  result.cursor=cursor.map((p,i)=>{if(!p||![p.time,p.x,p.y].every(Number.isFinite)||p.time<0||p.time>86400||p.x<0||p.x>1||p.y<0||p.y>1||(i&&p.time<=cursor[i-1].time))throw Error('Invalid cursor recording.');return {time:p.time,x:p.x,y:p.y}});
+ for(const key of ['cameraX','cameraY'])if(input[key]!==undefined){if(!Number.isFinite(input[key])||input[key]<0||input[key]>1)throw Error('Invalid camera position.');result[key]=input[key]}
+ if(input.backgroundPreset){if(!['silk','dunes','midnight'].includes(input.backgroundPreset))throw Error('Choose a background preset.');result.backgroundPreset=input.backgroundPreset}
+ const validId=id=>typeof id==='string'&&/^[a-zA-Z0-9-]{1,64}$/.test(id);
+ if(input.clips!==undefined){if(!Array.isArray(input.clips)||input.clips.length>500)throw Error('Use up to 500 clips.');const ids=new Set();result.clips=input.clips.map(c=>{if(!c||!validId(c.id)||ids.has(c.id)||![c.start,c.end].every(Number.isFinite)||c.start<0||c.end-c.start<.05||c.end>86400)throw Error('Invalid clip range.');ids.add(c.id);return {id:c.id,start:c.start,end:c.end}})}
+ if(input.texts!==undefined){if(!Array.isArray(input.texts)||input.texts.length>100)throw Error('Use up to 100 text layers.');const ids=new Set();result.texts=input.texts.map(t=>{if(!t||!validId(t.id)||ids.has(t.id)||typeof t.text!=='string'||t.text.length>500||![t.start,t.end,t.x,t.y,t.size].every(Number.isFinite)||t.start<0||t.end<=t.start||t.end>86400||t.x<0||t.x>1||t.y<0||t.y>1||t.size<16||t.size>120||!/^#[0-9a-f]{6}$/i.test(t.color))throw Error('Invalid text layer.');ids.add(t.id);return {id:t.id,text:t.text,start:t.start,end:t.end,x:t.x,y:t.y,size:t.size,color:t.color,box:!!t.box}})}
+ if(result.cameraEnd&&result.cameraEnd<=result.cameraStart)throw Error('Webcam end must be after its start.');
  const zooms=input.zooms||[];
  if(!Array.isArray(zooms)||zooms.length>2000||zooms.some(z=>!z||typeof z!=='object'))throw Error('Use up to 2,000 zoom moments.');
  result.zooms=zooms.map(z=>{if(![z.start,z.end,z.x,z.y,z.scale].every(Number.isFinite)||z.start<0||z.end<=z.start||z.end>86400||z.x<0||z.x>1||z.y<0||z.y>1||z.scale<1||z.scale>3)throw Error('Choose valid zoom timing and focus.');return {start:z.start,end:z.end,x:z.x,y:z.y,scale:z.scale}}).sort((a,b)=>a.start-b.start);

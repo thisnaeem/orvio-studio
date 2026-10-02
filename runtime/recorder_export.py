@@ -1,6 +1,6 @@
 """Render recorder projects from original footage, then preserve the source audio."""
 import math, os, pathlib, subprocess, tempfile, bisect
-from PIL import Image, ImageDraw, ImageFilter, ImageOps
+from PIL import Image, ImageDraw, ImageFilter, ImageOps, ImageFont
 
 def dimensions(source_size, options):
     sw, sh = source_size
@@ -52,16 +52,32 @@ class Composer:
         if options['shadow'] and options['background']!='none':
             shade=Image.new('RGBA',self.size); opacity=round(options['shadow']/80*150); shadow_mask=Image.new('L',self.size);shadow_mask.paste(self.mask,self.position);shadow_mask=shadow_mask.filter(ImageFilter.GaussianBlur(min(w,h)*.025))
             shade.paste((0,0,0,opacity),(0,0,w,h));shade.putalpha(shadow_mask.point(lambda value:round(value*opacity/255)));self.base=Image.alpha_composite(self.bg.convert('RGBA'),shade).convert('RGB')
-    def draw(self, image, time, camera=None):
+    def draw(self, image, time, camera=None, timeline_time=None):
+        if timeline_time is None: timeline_time=time
         frame=self.base.copy(); scale,x,y=zoom_at(time,self.o); iw,ih=image.size;cw,ch=iw/scale,ih/scale;left=max(0,min(iw-cw,x*iw-cw/2));top=max(0,min(ih-ch,y*ih-ch/2))
         image=image.crop((round(left),round(top),round(left+cw),round(top+ch))).resize(self.frame,Image.Resampling.BICUBIC);frame.paste(image,self.position,self.mask)
-        if camera is not None and self.o['showCamera']:
+        if camera is not None and self.o['showCamera'] and timeline_time>=self.o.get('cameraStart',0) and (not self.o.get('cameraEnd') or timeline_time<=self.o['cameraEnd']):
             if self.o['cameraMirror']: camera=ImageOps.mirror(camera)
             w,h=self.size; cw=round(min(w,h)*self.o['cameraSize']/100);ch=cw if self.o['cameraShape']=='circle' else round(cw*.75);camera=ImageOps.fit(camera,(cw,ch),Image.Resampling.BICUBIC)
             mask=Image.new('L',(cw,ch));draw=ImageDraw.Draw(mask)
             if self.o['cameraShape']=='circle': draw.ellipse((0,0,cw-1,ch-1),fill=255)
             else: draw.rounded_rectangle((0,0,cw-1,ch-1),radius=cw*.12,fill=255)
-            margin=round(min(w,h)*.035);pos=(margin if 'left' in self.o['cameraPosition'] else w-cw-margin,margin if 'top' in self.o['cameraPosition'] else h-ch-margin);frame.paste(camera,pos,mask)
+            margin=round(min(w,h)*.035);pos=(margin if 'left' in self.o['cameraPosition'] else w-cw-margin,margin if 'top' in self.o['cameraPosition'] else h-ch-margin);x=self.o.get('cameraX'); y=self.o.get('cameraY')
+            if x is not None or y is not None: pos=(max(0,min(w-cw,round(x*w-cw/2))) if x is not None else pos[0],max(0,min(h-ch,round(y*h-ch/2))) if y is not None else pos[1])
+            frame.paste(camera,pos,mask)
+        for layer in self.o.get('texts',[]):
+            if not layer['start']<=timeline_time<=layer['end'] or not layer['text']: continue
+            font_size=max(8,round(layer['size']*min(self.size)/1080)); font=None
+            for filename in ['/System/Library/Fonts/Supplemental/Arial Bold.ttf','C:/Windows/Fonts/arialbd.ttf','/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf']:
+                try: font=ImageFont.truetype(filename,font_size); break
+                except OSError: pass
+            if font is None: font=ImageFont.load_default(size=font_size)
+            overlay=Image.new('RGBA',self.size);draw=ImageDraw.Draw(overlay);x,y=layer['x']*self.size[0],layer['y']*self.size[1]
+            bounds=draw.multiline_textbbox((x,y),layer['text'],font=font,anchor='mm',align='center',spacing=round(font_size*.3))
+            if layer['box']:
+                pad=font_size*.5;draw.rounded_rectangle((bounds[0]-pad,bounds[1]-pad*.5,bounds[2]+pad,bounds[3]+pad*.5),radius=font_size*.2,fill=(17,19,24,204))
+            draw.multiline_text((x,y),layer['text'],font=font,anchor='mm',align='center',spacing=round(font_size*.3),fill=layer['color'])
+            frame=Image.alpha_composite(frame.convert('RGBA'),overlay).convert('RGB')
         return frame
 
 def render(p, ffmpeg, imageio_ffmpeg, report):
@@ -71,28 +87,45 @@ def render(p, ffmpeg, imageio_ffmpeg, report):
     duration=metadata.get('duration') or imageio_ffmpeg.count_frames_and_secs(source)[1]
     end=options['end'] or duration
     if not math.isfinite(duration) or not 0<=start<end<=duration+.15: raise ValueError('Trim must be inside the recording duration.')
-    fps=min(60,metadata.get('fps') or 30); composer=Composer(metadata['size'],options,p.get('background'));camera_reader=None
-    reader=imageio_ffmpeg.read_frames(source,input_params=['-ss',str(start)]);meta=next(reader)
-    if p.get('camera') and options['showCamera']:
-        camera_reader=imageio_ffmpeg.read_frames(p['camera'],input_params=['-ss',str(start)]);cam_meta=next(camera_reader);cam_index=-1;camera=None
+    fps=min(60,metadata.get('fps') or 30); composer=Composer(metadata['size'],options,p.get('background'))
+    clips=options.get('clips') or [{'start':start,'end':end}]
+    for clip in clips:
+        if not 0<=clip['start']<clip['end']<=duration+.15: raise ValueError('A clip is outside the source duration.')
+    total=sum(c['end']-c['start'] for c in clips); count=0; rendered_lengths=[]
     with tempfile.TemporaryDirectory(prefix='orvio-recording-') as folder:
-        silent=str(pathlib.Path(folder,'video.mp4'));writer=imageio_ffmpeg.write_frames(silent,composer.size,fps=fps,codec='libx264',pix_fmt_in='rgb24',pix_fmt_out='yuv420p',macro_block_size=1,output_params=['-preset','veryfast','-threads','2']);writer.send(None);count=0
+        silent=str(pathlib.Path(folder,'video.mp4'));writer=imageio_ffmpeg.write_frames(silent,composer.size,fps=fps,codec='libx264',pix_fmt_in='rgb24',pix_fmt_out='yuv420p',macro_block_size=1,output_params=['-preset','veryfast','-threads','2']);writer.send(None)
         try:
-            for i, raw in enumerate(reader):
-                time=start+i/fps
-                if time>=end: break
-                image=Image.frombytes('RGB',meta['size'],raw)
-                if camera_reader:
-                    target=math.floor(i/fps*(cam_meta.get('fps') or fps))
-                    while cam_index<target:
-                        try: camera=Image.frombytes('RGB',cam_meta['size'],next(camera_reader));cam_index+=1
-                        except StopIteration: cam_index=target;break
-                writer.send(composer.draw(image,time,camera if camera_reader else None).tobytes());count+=1
-                if i%max(1,round(fps))==0: report({'message':f'Rendering {min(100,round((time-start)/(end-start)*100))}%','received':time-start,'total':end-start})
-        finally:
-            writer.close();reader.close()
-            if camera_reader: camera_reader.close()
+            for clip in clips:
+                reader=imageio_ffmpeg.read_frames(source,input_params=['-ss',str(clip['start'])],output_params=['-vf',f'fps={fps}']);meta=next(reader);camera_reader=None;segment_count=0
+                if p.get('camera') and options['showCamera']:
+                    camera_reader=imageio_ffmpeg.read_frames(p['camera'],input_params=['-ss',str(clip['start'])]);cam_meta=next(camera_reader);cam_index=-1;camera=None
+                try:
+                    for i,raw in enumerate(reader):
+                        time=clip['start']+i/fps
+                        if time>=clip['end']: break
+                        image=Image.frombytes('RGB',meta['size'],raw)
+                        if camera_reader:
+                            target=math.floor(i/fps*(cam_meta.get('fps') or fps))
+                            while cam_index<target:
+                                try: camera=Image.frombytes('RGB',cam_meta['size'],next(camera_reader));cam_index+=1
+                                except StopIteration: cam_index=target;break
+                        writer.send(composer.draw(image,time,camera if camera_reader else None,count/fps).tobytes());count+=1;segment_count+=1
+                        if count%max(1,round(fps))==0: report({'message':f'Rendering {min(100,round(count/fps/total*100))}%','received':count/fps,'total':total})
+                finally:
+                    reader.close()
+                    if camera_reader: camera_reader.close()
+                rendered_lengths.append(segment_count/fps)
+        finally: writer.close()
         if not count: raise ValueError('The recording contained no frames in this trim.')
-        result=subprocess.run([ffmpeg,'-hide_banner','-loglevel','error','-y','-i',silent,'-ss',str(start),'-i',source,'-map','0:v:0','-map','1:a:0?','-c:v','copy','-c:a','aac','-t',str(count/fps),'-movflags','+faststart',p['output']],capture_output=True)
+        has_audio='Audio:' in subprocess.run([ffmpeg,'-hide_banner','-i',source],capture_output=True,timeout=30).stderr.decode(errors='replace')
+        args=[ffmpeg,'-hide_banner','-loglevel','error','-y','-i',silent]
+        if has_audio and options.get('volume',1)>0:
+            filters=[]
+            for index,(clip,length) in enumerate(zip(clips,rendered_lengths)):
+                filters.append(f"[1:a:0]atrim=start={clip['start']}:end={clip['end']},asetpts=PTS-STARTPTS,apad,atrim=duration={length}[a{index}]")
+            filters.append(''.join(f'[a{i}]' for i in range(len(clips)))+f"concat=n={len(clips)}:v=0:a=1,volume={options.get('volume',1)}[audio]")
+            args+=['-i',source,'-filter_complex',';'.join(filters),'-map','0:v:0','-map','[audio]','-c:a','aac']
+        else: args+=['-map','0:v:0']
+        result=subprocess.run(args+['-c:v','copy','-t',str(count/fps),'-movflags','+faststart',p['output']],capture_output=True)
         if result.returncode: raise ValueError(result.stderr.decode(errors='replace')[-1200:])
     return {'duration':count/fps,'width':composer.size[0],'height':composer.size[1],'fps':fps}
