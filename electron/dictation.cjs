@@ -22,13 +22,13 @@ function createDictation({app,BrowserWindow,screen,ipcMain,clipboard,systemPrefe
   }catch(e){close();throw e}finally{opening=false}
  }
  function handle(name,fn){ipcMain.handle(name,(event,...args)=>{if(!window||event.sender!==window.webContents||event.senderFrame!==window.webContents.mainFrame)throw Error('Untrusted dictation request');return fn(...args)})}
- async function recognize(s,bytes){const result=await localStudio.dictationTranscribe(bytes,s.config);return result.segments.map(row=>row.text).join(' ').trim()}
- handle('dictation:arm',()=>{const s=session;if(!s)throw Error('Dictation cancelled.');const model=s.config.dictationModel;if(model==='mms')throw Error('Choose Whisper or Parakeet for live dictation. MMS remains available for other speech tools.');if(!localStudio.state().models.find(m=>m.id===model)?.installed)throw Error('Download the selected speech model in Settings → Desktop & shortcuts.');s.armed=true;return {hold:s.hold,released:s.released,liveInsert:s.config.liveInsert,autoStop:s.config.silenceStop,warning:s.warning||''}});
+ async function recognize(s,bytes){const result=s.config.dictationModel==='mms'?await localStudio.petTranscribe(bytes,'mms',s.config.mmsLanguage):await localStudio.dictationTranscribe(bytes,s.config);return result.segments.map(row=>row.text).join(' ').trim()}
+ handle('dictation:arm',async()=>{const s=session;if(!s)throw Error('Dictation cancelled.');const model=s.config.dictationModel;if(!(model==='mms'?localStudio.state().mmsInstalled.includes(s.config.mmsLanguage):localStudio.state().models.find(m=>m.id===model)?.installed))throw Error('Download the selected speech model in Settings → Desktop & shortcuts.');if((await s.fieldReady).protected)throw Error('Dictation is disabled in password fields.');if(session!==s)throw Error('Dictation cancelled.');s.armed=true;return {supportsLive:model!=='mms',hold:s.hold,released:s.released,liveInsert:s.config.liveInsert,autoStop:s.config.silenceStop,warning:s.warning||''}});
  handle('dictation:cancel',close);
  handle('dictation:partial',async bytes=>{
   const s=session;if(!s?.armed||s.processing||s.pending)return {text:s?.lastText||''};
   s.pending=(async()=>{const text=await recognize(s,bytes);if(session!==s||s.cancelled)return {text:''};s.lastText=text;s.lastLength=bytes.byteLength;const info=await s.fieldReady;
-   if(text&&s.config.liveInsert&&info.live){const applied=await s.field.request('replace',text);s.wrote=s.wrote||applied.ok;if(!applied.ok)s.liveBlocked=true}
+   if(text&&s.config.liveInsert&&info.live&&!s.liveBlocked){const applied=await s.field.request('replace',text);s.wrote=s.wrote||applied.ok;if(!applied.ok)s.liveBlocked=true}
    return {text,inserted:s.wrote&&!s.liveBlocked,liveUnavailable:!info.live||s.liveBlocked};
   })();try{return await s.pending}finally{s.pending=null}
  });
@@ -42,6 +42,7 @@ function createDictation({app,BrowserWindow,screen,ipcMain,clipboard,systemPrefe
    if(session!==s||s.cancelled)return 'Dictation cancelled.';
    const info=await s.fieldReady,checked=await s.field.request('check');
    if(info.protected)return 'Dictation is disabled in password fields.';
+   if(s.liveBlocked){clipboard.writeText(output);return 'Text copied. The field changed; your edits were preserved.'}
    if(s.wrote){const applied=await s.field.request(command&&!['newline','paragraph'].includes(command)?'rollback':'replace',output);if(!applied.ok){clipboard.writeText(output);return 'Text copied. The field changed; your edits were preserved.'}if(!command||['newline','paragraph'].includes(command)){s.wrote=false;s.field.close();clipboard.writeText(output);return note||'Inserted into your text field.'}}
    if(info.tracked&&!checked.ok){clipboard.writeText(output);return 'Text copied. Focus changed; paste where you want it.'}
    const target=await s.targetPromise;
