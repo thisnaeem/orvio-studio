@@ -19,7 +19,17 @@ function graphClient({accessToken,version,fetchImpl=fetch}){
   async createImageContainer({accountId,imageUrl,caption,mediaType='image'}){const url=new URL(imageUrl);if(url.protocol!=='https:'||url.username||url.password)throw new Error('Media must have a public HTTPS URL');if(typeof caption!=='string'||caption.length>2200)throw new Error('Caption must be at most 2,200 characters');return request(`${id(accountId)}/media`,mediaType==='video'?{media_type:'REELS',video_url:url.href,caption}:{image_url:url.href,caption},'POST');},
   containerStatus:containerId=>request(id(containerId),{fields:'status_code,status'}),
   publishContainer:({accountId,containerId})=>request(`${id(accountId)}/media_publish`,{creation_id:id(containerId)},'POST'),
-  publishPage:({pageId,mediaType,imageUrl,caption,title})=>request(`${id(pageId)}/${mediaType==='video'?'videos':'photos'}`,mediaType==='video'?{file_url:imageUrl,description:caption,title}:{url:imageUrl,caption},'POST'),
+  publishPage:({pageId,mediaType,imageUrl,caption})=>{if(mediaType==='video')throw Error('Use the Reels publishing flow for videos.');return request(`${id(pageId)}/${mediaType==='text'?'feed':'photos'}`,mediaType==='text'?{message:caption}:{url:imageUrl,caption},'POST')},
+  beginPageReel:pageId=>request(`${id(pageId)}/video_reels`,{upload_phase:'start'},'POST'),
+  async uploadPageReel({videoId,imageUrl,filePath}){
+   const url=`https://rupload.facebook.com/video-upload/${version}/${id(videoId)}`;
+   const blob=filePath?await openAsBlob(filePath):null;
+   const response=await fetchImpl(url,{method:'POST',headers:{Authorization:`OAuth ${accessToken}`,...(blob?{offset:'0',file_size:String(blob.size),'Content-Type':'application/octet-stream'}:{file_url:imageUrl})},...(blob?{body:blob}:{}),redirect:'error',signal:AbortSignal.timeout(300000)});
+   const result=await response.json();if(!response.ok||!result.success)throw Error(`Meta Reel upload failed (${result.error?.code||response.status}). Check video format and Page permissions.`);return result;
+  },
+  finishPageReel:({pageId,videoId,caption})=>request(`${id(pageId)}/video_reels`,{upload_phase:'finish',video_id:id(videoId),video_state:'PUBLISHED',description:caption},'POST'),
+  pageReelStatus:videoId=>request(id(videoId),{fields:'status,permalink_url'}),
+  async postDetails(mediaId,kind){return request(mediaId,{fields:kind==='instagram'?'id,permalink,timestamp':'id,permalink_url,created_time'})},
   async publishPagePhotoLocal({pageId,filePath,caption}){
    const body=new FormData();
    body.set('source',await openAsBlob(filePath,{type:path.extname(filePath).toLowerCase()==='.png'?'image/png':'image/jpeg'}),path.basename(filePath));
