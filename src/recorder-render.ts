@@ -19,11 +19,6 @@ export function zoomAt(time:number,o:RecorderOptions){
  if(o.autoZoom&&o.zoomMode==='cursor'&&o.cursor?.length){const end=o.end||o.cursorDuration||o.cursor[o.cursor.length-1].time;const amount=clamp(Math.min((time-o.start)/.6,(end-time)/.6)),ease=amount*amount*(3-2*amount),p=cursorAt(time,o.cursor);return {scale:1+(o.zoomStrength-1)*ease,x:.5+(p.x-.5)*ease,y:.5+(p.y-.5)*ease}}
  if(o.zoomMode==='cursor')return {scale:1,x:.5,y:.5};
 const z=o.autoZoom?o.zooms.find(z=>time>=z.start&&time<=z.end):null;if(!z)return {scale:1,x:.5,y:.5};const edge=Math.min(.45,(z.end-z.start)/3);let amount=clamp(Math.min((time-z.start)/edge,(z.end-time)/edge));amount=amount*amount*(3-2*amount);return {scale:1+(z.scale-1)*amount,x:.5+(z.x-.5)*amount,y:.5+(z.y-.5)*amount}}
-export function automaticZooms(points:Point[],duration:number):Zoom[]{
- const zooms:Zoom[]=[];let anchor:Point|null=null,lastEnd=0;
- for(const p of points){if(p.x<0||p.x>1||p.y<0||p.y>1){anchor=null;continue}if(!anchor||Math.hypot(p.x-anchor.x,p.y-anchor.y)>.04){anchor=p;continue}if(p.time-anchor.time<.7||p.time<lastEnd+.8||p.time<.8)continue;const start=Math.max(lastEnd+.1,p.time-.4),end=Math.min(duration,start+3);if(end-start<.9)continue;zooms.push({start,end,x:clamp(p.x),y:clamp(p.y),scale:1.7});lastEnd=end;anchor=null;if(zooms.length>=2000)break}
- return zooms;
-}
 export function renderFrame(canvas:HTMLCanvasElement,source:CanvasImageSource,sw:number,sh:number,o:RecorderOptions,time=0,camera?:CanvasImageSource,background?:CanvasImageSource){
  const ctx=canvas.getContext('2d');if(!ctx||!sw||!sh)return;const w=canvas.width,h=canvas.height;
  if(o.background==='image'&&background){const b=background as HTMLImageElement,bw=b.naturalWidth||w,bh=b.naturalHeight||h,scale=Math.max(w/bw,h/bh);ctx.drawImage(background,(w-bw*scale)/2,(h-bh*scale)/2,bw*scale,bh*scale)}else{ctx.fillStyle=o.background==='none'?'#111318':o.color;if(o.background==='gradient'){const gradient=ctx.createLinearGradient(0,0,0,h);gradient.addColorStop(0,o.color);gradient.addColorStop(1,o.color2);ctx.fillStyle=gradient}ctx.fillRect(0,0,w,h)}

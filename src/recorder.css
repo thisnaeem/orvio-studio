@@ -82,3 +82,9 @@
 .rec-advanced{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}.rec-advanced summary{cursor:pointer;font-size:10px;color:var(--muted)}.rec-advanced>.secondary{display:flex;justify-content:center;width:100%;margin:10px 0;font-size:10px}
 .rec-window-loading{display:grid;place-items:center;min-height:80dvh}
 @media(max-width:1000px){.rec-detached{padding:16px}.rec-detached .rec-editor-grid{grid-template-columns:minmax(0,1fr) 260px;gap:14px}.rec-detached .rec-editor-header h2{font-size:17px}.rec-detached .rec-stage{padding:12px}}
+.rec-studio label.rec-check,.rec-editor label.rec-check{flex-direction:row}
+.rec-editor label.rec-toggle{flex-wrap:nowrap;justify-content:space-between;line-height:1.7}
+.rec-toggle input[type=checkbox]{appearance:none;-webkit-appearance:none;width:34px;height:20px;min-width:34px;padding:0;border:0;border-radius:12px;order:1;background:radial-gradient(circle at 10px 10px,#fff 6px,transparent 7px),var(--muted);cursor:pointer}
+.rec-toggle input[type=checkbox]:checked{background:radial-gradient(circle at 24px 10px,#fff 6px,transparent 7px),var(--accent)}
+.rec-toggle input[type=checkbox]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.rec-toggle input[type=checkbox]:disabled{opacity:.4;cursor:not-allowed}
