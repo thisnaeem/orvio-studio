@@ -17,6 +17,12 @@ def run(p):
     if action in ('install_model','install_whisper','install_mms','install_spatial','install_lipsync') or (action=='install_voice' and p.get('model')=='chatterbox'):
         from download_progress import install_hub_progress
         install_hub_progress(emit,p.get('model'))
+    if action=='install_parakeet':
+        from dictation_speech import install
+        return install(root)
+    if action=='dictation':
+        from dictation_speech import transcribe
+        return transcribe(p)
     if action in ('install_spatial','generate_spatial'):
         from spatial import generate
         return generate(p,emit)
