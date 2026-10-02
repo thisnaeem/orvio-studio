@@ -1,12 +1,24 @@
 export type Zoom = {start:number;end:number;x:number;y:number;scale:number};
 export type Point = {time:number;x:number;y:number};
-export type RecorderOptions = {background:string;color:string;color2:string;padding:number;radius:number;shadow:number;aspect:string;resolution:number;cameraPosition:string;cameraSize:number;cameraShape:string;cameraMirror:boolean;showCamera:boolean;autoZoom:boolean;start:number;end:number;zooms:Zoom[];cameraId?:string;backgroundId?:string};
-export const defaultOptions:RecorderOptions = {background:'gradient',color:'#5865e8',color2:'#b8d9e8',padding:8,radius:18,shadow:30,aspect:'auto',resolution:1080,cameraPosition:'bottom-right',cameraSize:22,cameraShape:'circle',cameraMirror:true,showCamera:true,autoZoom:true,start:0,end:0,zooms:[]};
+export type RecorderOptions = {background:string;color:string;color2:string;padding:number;radius:number;shadow:number;aspect:string;resolution:number;cameraPosition:string;cameraSize:number;cameraShape:string;cameraMirror:boolean;showCamera:boolean;autoZoom:boolean;start:number;end:number;zooms:Zoom[];zoomMode:'cursor'|'moments';cursor:Point[];cursorDuration:number;zoomStrength:number;cameraId?:string;backgroundId?:string};
+export const defaultOptions:RecorderOptions = {background:'gradient',color:'#5865e8',color2:'#b8d9e8',padding:8,radius:18,shadow:30,aspect:'auto',resolution:1080,cameraPosition:'bottom-right',cameraSize:22,cameraShape:'circle',cameraMirror:true,showCamera:true,autoZoom:true,start:0,end:0,zooms:[],zoomMode:'cursor',cursor:[],cursorDuration:0,zoomStrength:1.7};
 export const backgrounds = [{name:'Aurora',color:'#5865e8',color2:'#b8d9e8'},{name:'Sunset',color:'#ee8065',color2:'#f7d6a0'},{name:'Forest',color:'#265c53',color2:'#b7d4b4'},{name:'Midnight',color:'#111c34',color2:'#525b8a'},{name:'Rose',color:'#bd73a5',color2:'#ead3e5'},{name:'Cloud',color:'#dce4f0',color2:'#f9fafc'}];
 export const clamp=(n:number,min=0,max=1)=>Math.max(min,Math.min(max,n));
 export function outputSize(w:number,h:number,o:RecorderOptions){const ratio=o.aspect==='auto'?w/h:({'16:9':16/9,'9:16':9/16,'1:1':1,'4:3':4/3} as Record<string,number>)[o.aspect];return {width:Math.max(2,Math.round((ratio>=1?o.resolution*ratio:o.resolution)/2)*2),height:Math.max(2,Math.round((ratio>=1?o.resolution:o.resolution/ratio)/2)*2)}}
 export function frameRect(w:number,h:number,sw:number,sh:number,o:RecorderOptions){const pad=o.background==='none'?0:Math.min(w,h)*o.padding/100,scale=Math.min((w-pad*2)/sw,(h-pad*2)/sh),width=Math.max(1,Math.round(sw*scale)),height=Math.max(1,Math.round(sh*scale));return {x:Math.round((w-width)/2),y:Math.round((h-height)/2),width,height}}
-export function zoomAt(time:number,o:RecorderOptions){const z=o.autoZoom?o.zooms.find(z=>time>=z.start&&time<=z.end):null;if(!z)return {scale:1,x:.5,y:.5};const edge=Math.min(.45,(z.end-z.start)/3);let amount=clamp(Math.min((time-z.start)/edge,(z.end-time)/edge));amount=amount*amount*(3-2*amount);return {scale:1+(z.scale-1)*amount,x:.5+(z.x-.5)*amount,y:.5+(z.y-.5)*amount}}
+export function smoothCursor(points:Point[]):Point[]{
+ const result:Point[]=[];
+ for(const p of points){if(![p.time,p.x,p.y].every(Number.isFinite)||p.time<0)continue;const last=result[result.length-1];if(last&&p.time<=last.time)continue;const a=last?1-Math.exp(-(p.time-last.time)/.12):1;result.push({time:p.time,x:last?last.x+(clamp(p.x)-last.x)*a:clamp(p.x),y:last?last.y+(clamp(p.y)-last.y)*a:clamp(p.y)})}
+ return result;
+}
+export function cursorAt(time:number,points:Point[]){
+ let lo=0,hi=points.length-1;while(lo<hi){const mid=Math.floor((lo+hi)/2);if(points[mid].time<time)lo=mid+1;else hi=mid}
+ const b=points[lo],a=points[Math.max(0,lo-1)],t=clamp((time-a.time)/(b.time-a.time||1));return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};
+}
+export function zoomAt(time:number,o:RecorderOptions){
+ if(o.autoZoom&&o.zoomMode==='cursor'&&o.cursor?.length){const end=o.end||o.cursorDuration||o.cursor[o.cursor.length-1].time;const amount=clamp(Math.min((time-o.start)/.6,(end-time)/.6)),ease=amount*amount*(3-2*amount),p=cursorAt(time,o.cursor);return {scale:1+(o.zoomStrength-1)*ease,x:.5+(p.x-.5)*ease,y:.5+(p.y-.5)*ease}}
+ if(o.zoomMode==='cursor')return {scale:1,x:.5,y:.5};
+const z=o.autoZoom?o.zooms.find(z=>time>=z.start&&time<=z.end):null;if(!z)return {scale:1,x:.5,y:.5};const edge=Math.min(.45,(z.end-z.start)/3);let amount=clamp(Math.min((time-z.start)/edge,(z.end-time)/edge));amount=amount*amount*(3-2*amount);return {scale:1+(z.scale-1)*amount,x:.5+(z.x-.5)*amount,y:.5+(z.y-.5)*amount}}
 export function automaticZooms(points:Point[],duration:number):Zoom[]{
  const zooms:Zoom[]=[];let anchor:Point|null=null,lastEnd=0;
  for(const p of points){if(p.x<0||p.x>1||p.y<0||p.y>1){anchor=null;continue}if(!anchor||Math.hypot(p.x-anchor.x,p.y-anchor.y)>.04){anchor=p;continue}if(p.time-anchor.time<.7||p.time<lastEnd+.8||p.time<.8)continue;const start=Math.max(lastEnd+.1,p.time-.4),end=Math.min(duration,start+3);if(end-start<.9)continue;zooms.push({start,end,x:clamp(p.x),y:clamp(p.y),scale:1.7});lastEnd=end;anchor=null;if(zooms.length>=2000)break}

@@ -1,3 +1,4 @@
+import {RecorderEditorWindow} from './RecorderEditorWindow';
 import {BotAvatar} from './BotAvatar';
 import {toolBots} from './tool-bots';
 import {StorageSettings} from './StorageSettings';
@@ -38,6 +39,7 @@ const RecorderStudio=lazy(()=>import('./ProductionStudio').then(m=>({default:m.R
 const LocalStudio=lazy(()=>import('./LocalStudio').then(m=>({default:m.LocalStudio})));
 const DownloadManager=lazy(()=>import('./DownloadManager').then(m=>({default:m.DownloadManager})));
 clearLegacyDemo();
+const recorderEditorId=new URLSearchParams(window.location.hash.slice(1)).get('recorder-editor');
 const launchBotId=new URLSearchParams(window.location.hash.slice(1)).get('bot');
 const launchBot=studioTools.find(tool=>tool.id===launchBotId);
 function App(){
@@ -88,4 +90,4 @@ return <><AppFeedback/><RequiredUpdate workspace={workspace} phase={updatePhase}
 </>}
 function ToolCard({tool,onOpen}:{tool:typeof studioTools[number];onOpen:()=>void}){return <button className="tool-card panel" onClick={onOpen}><div className="tool-card-top"><BotAvatar id={tool.id} size={66}/><Icon name="external" size={18}/></div><span className="tool-category">{tool.category}</span><h3>{toolBots[tool.id].name} · {tool.name}</h3><p>{toolBots[tool.id].intro}</p><div className="tool-card-bottom"><span><i/>{tool.label}</span><Icon name="arrow" size={17}/></div></button>}
 function Empty({icon,title,text,action,onAction}:{icon:IconName;title:string;text:string;action?:string;onAction?:()=>void}){return <section className="empty-state panel"><div className="empty-art"><span/><div><Icon name={icon} size={38}/></div><i><Icon name="sparkles" size={17}/></i></div><h2>{title}</h2><p>{text}</p>{action&&<button className="primary" onClick={onAction}><Icon name="plus" size={17}/>{action}</button>}</section>}
-createRoot(document.getElementById('root')!).render(<React.StrictMode><PageBoundary>{(window as any).dictation?<Dictation/>:(window as any).pet?<PetCompanion/>:(window as any).island?<Island/>:<App/>}</PageBoundary></React.StrictMode>);
+createRoot(document.getElementById('root')!).render(<React.StrictMode><PageBoundary>{recorderEditorId?<RecorderEditorWindow id={recorderEditorId}/>:(window as any).dictation?<Dictation/>:(window as any).pet?<PetCompanion/>:(window as any).island?<Island/>:<App/>}</PageBoundary></React.StrictMode>);

@@ -1,5 +1,5 @@
 """Render recorder projects from original footage, then preserve the source audio."""
-import math, os, pathlib, subprocess, tempfile
+import math, os, pathlib, subprocess, tempfile, bisect
 from PIL import Image, ImageDraw, ImageFilter, ImageOps
 
 def dimensions(source_size, options):
@@ -11,6 +11,15 @@ def dimensions(source_size, options):
 
 def zoom_at(time, options):
     if not options['autoZoom']: return 1, .5, .5
+    points=options.get('cursor',[])
+    if options.get('zoomMode')=='cursor':
+        if not points: return 1,.5,.5
+        end=options['end'] or options.get('cursorDuration') or points[-1]['time']
+        amount=max(0,min(1,(time-options['start'])/.6,(end-time)/.6)); ease=amount*amount*(3-2*amount)
+        index=min(len(points)-1,bisect.bisect_left(points,time,key=lambda p:p['time']))
+        a,b=points[max(0,index-1)],points[index]; t=max(0,min(1,(time-a['time'])/(b['time']-a['time'] or 1)))
+        x=a['x']+(b['x']-a['x'])*t; y=a['y']+(b['y']-a['y'])*t
+        return 1+(options.get('zoomStrength',1.7)-1)*ease,.5+(x-.5)*ease,.5+(y-.5)*ease
     for z in options['zooms']:
         if z['start'] <= time <= z['end']:
             edge = min(.45, (z['end']-z['start']) / 3)

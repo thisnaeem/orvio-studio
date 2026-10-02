@@ -63,3 +63,22 @@
 .rec-studio button:disabled,.rec-editor button:disabled{opacity:.45;cursor:not-allowed}.rec-studio button:focus-visible,.rec-editor button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 @media(max-width:1100px){.rec-capture-grid{grid-template-columns:minmax(260px,.9fr) minmax(0,1fr);gap:16px}.rec-preview-footer{flex-direction:column;align-items:stretch}.rec-preview-footer .rec-actions{justify-content:flex-end}.rec-editor-grid{grid-template-columns:minmax(0,1fr) 240px}.rec-heading{align-items:flex-start}.rec-heading h2{font-size:22px}}
 @media(max-width:850px){.rec-heading,.rec-editor-header{flex-direction:column;align-items:stretch}.rec-heading .rec-tabs>button{flex:1}.rec-capture-grid{grid-template-columns:1fr}.rec-preview-column{position:static}.rec-editor-grid{grid-template-columns:1fr}.rec-inspector{position:static;max-height:none}.rec-stage canvas{max-height:55vh}.rec-inspector .rec-backgrounds{grid-template-columns:repeat(6,minmax(0,1fr))}.rec-trim>small{display:none}.rec-shortcut-note{flex-wrap:wrap}}
+/* Capture controls and a dedicated editing workspace. */
+.rec-tabs button,.rec-actions button,.rec-play-row button{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.rec-modes button{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 5px}
+.rec-studio svg,.rec-editor svg{flex-shrink:0}
+.rec-detached{min-height:100dvh;padding:24px;background:var(--bg);color:var(--text)}
+.rec-detached .rec-editor{max-width:1800px;margin:auto}
+.rec-detached .rec-editor-header{margin-bottom:22px;padding-bottom:20px;border-bottom:1px solid var(--line);flex-wrap:nowrap}
+.rec-detached .rec-editor-header h2{font-size:21px;margin:5px 0 9px;letter-spacing:-.7px}
+.rec-detached .rec-editor-header .mini-label{font-size:9px}
+.rec-detached .rec-editor-grid{grid-template-columns:minmax(0,1fr) 300px;gap:22px}
+.rec-detached .rec-stage{min-height:360px;height:calc(100dvh - 350px);background:radial-gradient(ellipse at center,var(--surface),var(--bg));padding:24px}
+.rec-detached .rec-stage canvas{max-height:100%;max-width:100%;object-fit:contain}
+.rec-detached .rec-inspector{max-height:calc(100dvh - 155px);top:20px;padding:18px}
+.rec-follow-badge{display:inline-flex;align-items:center;gap:7px;margin-left:auto;background:var(--accent-soft);color:var(--accent);padding:6px 9px;border-radius:7px;font-size:9px}
+.rec-follow-intro{padding:22px 0 8px}.rec-follow-intro>svg{color:var(--accent)}.rec-follow-intro h3{font-size:14px;line-height:1.6;margin:10px 0}.rec-follow-intro p{color:var(--muted);font-size:10px;line-height:1.9}
+.rec-toggle{padding:12px;border:1px solid var(--accent-line);border-radius:10px;background:var(--accent-soft)}
+.rec-advanced{border-top:1px solid var(--line);margin-top:22px;padding-top:18px}.rec-advanced summary{cursor:pointer;font-size:10px;color:var(--muted)}.rec-advanced>.secondary{display:flex;justify-content:center;width:100%;margin:10px 0;font-size:10px}
+.rec-window-loading{display:grid;place-items:center;min-height:80dvh}
+@media(max-width:1000px){.rec-detached{padding:16px}.rec-detached .rec-editor-grid{grid-template-columns:minmax(0,1fr) 260px;gap:14px}.rec-detached .rec-editor-header h2{font-size:17px}.rec-detached .rec-stage{padding:12px}}
