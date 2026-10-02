@@ -5,7 +5,7 @@ PARAKEET_REPO='csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8'
 FILES=['encoder.int8.onnx','decoder.int8.onnx','joiner.int8.onnx','tokens.txt']
 def install(root):
     from huggingface_hub import snapshot_download
-    snapshot_download(PARAKEET_REPO,allow_patterns=FILES,local_dir=str(pathlib.Path(root)/'parakeet'))
+    snapshot_download(PARAKEET_REPO,revision='2bda32ec70b097a55adaa07d9a7173915b43cc78',allow_patterns=FILES,local_dir=str(pathlib.Path(root)/'parakeet'))
     return {'ready':True}
 def transcribe(p):
     model=p.get('model','whisper');root=pathlib.Path(p['models']);engine=_engines.get(model)

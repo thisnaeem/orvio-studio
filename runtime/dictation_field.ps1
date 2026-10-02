@@ -1,4 +1,6 @@
 # One plain-text target per process. Never logs field content.
+[Console]::InputEncoding=[System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false)
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
 $field=$null; $original=''; $last=''; $selectionStart=0; $selectionLength=0; $canLive=$false; $pattern=$null
