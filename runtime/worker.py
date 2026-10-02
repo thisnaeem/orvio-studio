@@ -75,6 +75,9 @@ def run(p):
         return {'segments':result,'duration':info.duration,'language':info.language}
     import imageio_ffmpeg
     ffmpeg=imageio_ffmpeg.get_ffmpeg_exe()
+    if action=='recording_export':
+        from recorder_export import render
+        return render(p,ffmpeg,imageio_ffmpeg,lambda value:emit('PROGRESS',value))
     if action=='captions':
         from captions import render
         return render(p,ffmpeg,imageio_ffmpeg)
