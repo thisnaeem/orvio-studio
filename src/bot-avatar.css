@@ -1,0 +1,36 @@
+/* Stable silhouettes; only facial expression animates. SVG fill-box origins
+   move when descendant eyes animate, which made nested body transforms jitter. */
+.bot-av{display:inline-grid;place-items:center;line-height:0;--bot-delay:0s}
+.bot-av svg{display:block;overflow:visible}
+.bot-av-float,.bot-av-body,.bot-av-look,.bot-av-eyes{transform-box:view-box;transform-origin:50px 50px}
+.bot-av-closed,.bot-av-mouth{transform-box:fill-box;transform-origin:center}
+.bot-av-shadow{fill:#000;opacity:.12}
+.bot-av-closed,.bot-av-mouth,.bot-av-zz{opacity:0;transition:opacity .2s}
+.bot-av-look{transform:translate(calc(var(--look-x,0px)*1.4),calc(var(--look-y,0px)*1.4));transition:transform .18s ease-out}
+.bot-av-eyes,.bot-av-eye{transition:opacity .15s}
+.bot-av-float,.bot-av-body,.bot-av-shadow{transform:none;animation:none}
+
+.bot-av[data-animated=true] .bot-av-eye{animation:bot-blink 4.8s var(--bot-delay) infinite}
+
+/* The hit target never moves. Hover changes expression without restarting
+   the float animation or chasing the pointer with animated SVG children. */
+.bot-av{vertical-align:middle;isolation:isolate}
+.bot-av svg{pointer-events:none}
+:is(button,a,[role=button]):hover .bot-av .bot-av-mouth,.bot-av:hover .bot-av-mouth{opacity:1}
+
+.bot-av[data-mood=happy] .bot-av-eye{opacity:0;animation:none}
+.bot-av[data-mood=happy] .bot-av-closed,.bot-av[data-mood=happy] .bot-av-mouth{opacity:1;transform:scaleY(-1)}
+.bot-av[data-mood=happy] .bot-av-mouth{transform:none}
+.bot-av[data-animated=true][data-mood=working] .bot-av-eyes{animation:bot-scan 1.6s ease-in-out infinite}
+.bot-av[data-mood=listening] .bot-av-mouth{opacity:1}
+.bot-av[data-mood=sleeping] .bot-av-eye{opacity:0;animation:none}
+.bot-av[data-mood=sleeping] .bot-av-closed{opacity:1}
+.bot-av[data-mood=sleeping] .bot-av-zz{opacity:1}
+.bot-av[data-animated=true][data-mood=sleeping] .bot-av-zz text{animation:bot-zz 2.4s ease-out infinite}
+.bot-av[data-animated=true][data-mood=sleeping] .bot-av-zz text+text{animation-delay:1.2s}
+
+@keyframes bot-blink{0%,90%,100%{opacity:1}93%{opacity:.12}96%{opacity:1}}
+@keyframes bot-scan{0%,100%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
+@keyframes bot-zz{0%{transform:translate(0,4px);opacity:0}30%{opacity:1}100%{transform:translate(4px,-8px);opacity:0}}
+
+@media (prefers-reduced-motion:reduce){.bot-av *{animation:none!important;transition:none!important}}

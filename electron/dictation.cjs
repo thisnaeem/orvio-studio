@@ -3,18 +3,19 @@ const winFocus="Add-Type -TypeDefinition 'using System; using System.Runtime.Int
 async function foreground(){if(process.platform==='darwin'){const value=(await execute('/usr/bin/osascript',['-e','tell application "System Events" to tell first application process whose frontmost is true to return (unix id as text) & "|" & name'],{timeout:10000})).stdout.trim();const [identity,...name]=value.split('|');return {identity,name:name.join('|')}}if(process.platform==='win32'){const script=winFocus.replace('[OrvioFocus]::GetForegroundWindow().ToInt64()',"$h=[OrvioFocus]::GetForegroundWindow(); $p=Get-Process | Where-Object {$_.MainWindowHandle -eq $h} | Select-Object -First 1; @{identity=$h.ToInt64().ToString();name=$p.ProcessName} | ConvertTo-Json -Compress");return JSON.parse((await execute('powershell.exe',['-NoProfile','-NonInteractive','-Command',script],{windowsHide:true,timeout:10000})).stdout)}throw Error('Global dictation supports Windows and macOS.')}
 async function key(command){const mac={paste:'keystroke "v" using command down',undo:'keystroke "z" using command down',redo:'keystroke "z" using {command down, shift down}','delete-word':'key code 51 using option down','select-all':'keystroke "a" using command down',backspace:'key code 51',bold:'keystroke "b" using command down',italic:'keystroke "i" using command down'};const win={paste:'^v',undo:'^z',redo:'^y','delete-word':'^{BACKSPACE}','select-all':'^a',backspace:'{BACKSPACE}',bold:'^b',italic:'^i'};if(!mac[command])throw Error('Unsupported edit command');if(process.platform==='darwin')await execute('/usr/bin/osascript',['-e','tell application "System Events" to '+mac[command]],{timeout:10000});else await execute('powershell.exe',['-NoProfile','-NonInteractive','-Command',"Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('"+win[command]+"')"],{windowsHide:true,timeout:10000})}
 async function paste(clipboard,text,target){let clean=String(text);if(!clean)return 'No speech was detected.';if(/terminal|powershell|cmd|iterm|console/i.test(target?.name||''))clean=clean.replace(/[\r\n]+/g,' ');clipboard.writeText(clean);if(!target||(await foreground()).identity!==target.identity)return 'Text copied. Your focused app changed; paste when ready.';await key('paste');return 'Paste requested · text is also on your clipboard.'}
-function createDictation({app,BrowserWindow,screen,ipcMain,clipboard,systemPreferences,localStudio,modelHub,settings,pausePet,resumePet,python,resources,fieldFactory=require('./dictation-field.cjs').createFieldBridge,watch=require('./dictation-hotkey.cjs').watchRelease,getForeground=foreground,sendKey=key,pasteText=paste,waitKeys=require('./dictation-hotkey.cjs').waitShortcutUp}){
+function createDictation({app,BrowserWindow,screen,ipcMain,clipboard,systemPreferences,localStudio,modelHub,settings,pausePet,resumePet,python,resources,platform=process.platform,fieldFactory=require('./dictation-field.cjs').createFieldBridge,watch=require('./dictation-hotkey.cjs').watchRelease,getForeground=foreground,sendKey=key,pasteText=paste,waitKeys=require('./dictation-hotkey.cjs').waitShortcutUp}){
  let window=null,session=null,opening=false;
- function close(){const old=session;session=null;if(old){old.cancelled=true;old.stopWatch?.();void old.field?.request('rollback').finally(()=>old.field.close())}window?.destroy();window=null;resumePet()}
- function finish(){if(!session)return;session.released=true;session.stopWatch?.();if(session.armed)window?.webContents.send('dictation:finish')}
+ function close(){const old=session,owned=window;session=null;window=null;if(old){old.cancelled=true;old.stopWatch?.();if(old.wrote&&!old.completed)void old.field?.request('rollback').finally(()=>old.field.close());else old.field?.close()}owned?.destroy();resumePet()}
+ function finish(s=session){if(!s||session!==s||s.completed||s.released)return;s.released=true;s.stopWatch?.();if(s.armed)window?.webContents.send('dictation:finish')}
  function permission(contents,permission,details){return !!window&&contents===window.webContents&&!!session?.armed&&permission==='media'&&(!details?.mediaTypes||details.mediaTypes.every(t=>t==='audio'))&&(!details?.mediaType||details.mediaType==='audio')}
  async function start(hold=false){
-  if(opening||session?.processing)return;if(window){if(session?.completed)close();else{finish();return}}opening=true;
+  if(opening||session?.processing||(hold&&session?.hold&&!session.released&&!session.completed))return;if(window){if(session?.completed)close();else{finish();return}}opening=true;
   const s={config:settings.state(),released:false,armed:false,processing:false,cancelled:false,live:false,wrote:false,lastText:'',lastLength:0};session=s;
   try{
    pausePet();s.field=fieldFactory({python,resources});s.fieldReady=s.field.request('capture').then(info=>{s.info=info;return info});
-   if(hold)try{s.stopWatch=watch({python,resources,shortcut:s.config.shortcuts.dictation,onRelease:finish,onError:message=>{s.warning=message;window?.webContents.send('dictation:notice',message)}})}catch(e){s.warning=e.message;s.released=true}
-   s.targetPromise=getForeground().catch(()=>null);
+   if(hold)try{s.stopWatch=watch({python,resources,shortcut:s.config.shortcuts.dictation,onRelease:()=>finish(s),onError:message=>{if(session!==s||s.completed)return;s.warning=message;window?.webContents.send('dictation:notice',message)}})}catch(e){s.warning=e.message;s.released=true}
+   s.targetPromise=platform==='darwin'?s.fieldReady.then(info=>info.identity&&info.identity!=='0'?{identity:info.identity,name:info.name||'Focused app'}:null):getForeground().catch(()=>null);
+   await s.fieldReady;if(session!==s||s.cancelled)return;
    const area=screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
    window=new BrowserWindow({x:Math.round(area.x+area.width/2-260),y:area.y+area.height-170,width:520,height:150,show:false,transparent:true,frame:false,alwaysOnTop:true,skipTaskbar:true,focusable:false,resizable:false,hasShadow:false,webPreferences:{autoplayPolicy:'no-user-gesture-required',preload:path.join(__dirname,'dictation-preload.cjs'),sandbox:true,nodeIntegration:false,contextIsolation:true,backgroundThrottling:false}});
    const owned=window;owned.webContents.setWindowOpenHandler(()=>({action:'deny'}));owned.webContents.on('will-navigate',e=>e.preventDefault());owned.once('ready-to-show',()=>owned.showInactive());owned.on('closed',()=>{if(window===owned){window=null;close()}});
@@ -23,17 +24,20 @@ function createDictation({app,BrowserWindow,screen,ipcMain,clipboard,systemPrefe
  }
  function handle(name,fn){ipcMain.handle(name,(event,...args)=>{if(!window||event.sender!==window.webContents||event.senderFrame!==window.webContents.mainFrame)throw Error('Untrusted dictation request');return fn(...args)})}
  async function recognize(s,bytes){const result=s.config.dictationModel==='mms'?await localStudio.petTranscribe(bytes,'mms',s.config.mmsLanguage):await localStudio.dictationTranscribe(bytes,s.config);return result.segments.map(row=>row.text).join(' ').trim()}
- handle('dictation:arm',async()=>{const s=session;if(!s)throw Error('Dictation cancelled.');const model=s.config.dictationModel;if(!(model==='mms'?localStudio.state().mmsInstalled.includes(s.config.mmsLanguage):localStudio.state().models.find(m=>m.id===model)?.installed))throw Error('Download the selected speech model in Settings → Desktop & shortcuts.');if((await s.fieldReady).protected)throw Error('Dictation is disabled in password fields.');if(session!==s)throw Error('Dictation cancelled.');s.armed=true;return {supportsLive:model!=='mms',hold:s.hold,released:s.released,liveInsert:s.config.liveInsert,autoStop:s.config.silenceStop,warning:s.warning||''}});
+ handle('dictation:arm',async()=>{const s=session;if(!s)throw Error('Dictation cancelled.');const model=s.config.dictationModel;if(!(model==='mms'?localStudio.state().mmsInstalled.includes(s.config.mmsLanguage):localStudio.state().models.find(m=>m.id===model)?.installed))throw Error('Download the selected speech model in Settings → Transcription.');const access=await s.fieldReady;if(access.permission===false)throw Error(`Enable ${app.isPackaged?'Orvio Studio':'Electron'} in Accessibility to allow live typing and automatic paste.`);if(access.protected)throw Error('Dictation is disabled in password fields.');if(session!==s)throw Error('Dictation cancelled.');s.armed=true;return {supportsLive:model!=='mms',hold:s.hold,released:s.released,liveInsert:s.config.liveInsert,autoStop:s.config.silenceStop,warning:s.warning||''}});
  handle('dictation:cancel',close);
+ // Renderer startup failures must leave a restartable session, not a stuck recorder.
+ handle('dictation:idle',async()=>{const s=session;if(!s||s.processing||s.completed)return;s.armed=false;s.completed=true;s.released=true;s.cancelled=true;s.stopWatch?.();if(s.pending)await s.pending.catch(()=>{});if(s.wrote)await s.field?.request('rollback');s.field?.close()});
+ handle('dictation:open-access',()=>{if(platform==='darwin')systemPreferences.isTrustedAccessibilityClient(true);return {appName:app.isPackaged?'Orvio Studio':'Electron'}});
  handle('dictation:partial',async bytes=>{
   const s=session;if(!s?.armed||s.processing||s.pending)return {text:s?.lastText||''};
   s.pending=(async()=>{const text=await recognize(s,bytes);if(session!==s||s.cancelled)return {text:''};s.lastText=text;s.lastLength=bytes.byteLength;const info=await s.fieldReady;
-   if(text&&s.config.liveInsert&&info.live&&!s.liveBlocked){const applied=await s.field.request('replace',text);s.wrote=s.wrote||applied.ok;if(!applied.ok)s.liveBlocked=true}
+   if(text&&s.config.liveInsert&&info.live&&!s.liveBlocked){const applied=await s.field.request('replace',text);s.wrote=s.wrote||applied.ok;if(!applied.ok){if(applied.reason==='unsupported'&&!s.wrote)info.live=false;else s.liveBlocked=true}}
    return {text,inserted:s.wrote&&!s.liveBlocked,liveUnavailable:!info.live||s.liveBlocked};
   })();try{return await s.pending}finally{s.pending=null}
  });
  handle('dictation:finish',async bytes=>{
-  const s=session;if(!s?.armed||s.processing)throw Error('Dictation is not recording.');s.processing=true;s.armed=false;s.stopWatch?.();
+  const s=session;if(!s?.armed||s.processing)throw Error('Dictation is not recording.');s.processing=true;s.armed=false;s.released=true;s.stopWatch?.();
   try{
    if(s.pending)await s.pending.catch(()=>{});const text=s.lastLength===bytes.byteLength?s.lastText:await recognize(s,bytes);if(session!==s||s.cancelled)return 'Dictation cancelled.';if(!text)return 'No speech detected.';
    const {editCommand,rewrite,applySnippets}=require('./dictation-text.cjs');const command=s.config.voiceCommands?editCommand(text):null;let output=text,note='';
@@ -50,9 +54,16 @@ function createDictation({app,BrowserWindow,screen,ipcMain,clipboard,systemPrefe
    if(session!==s||s.cancelled)return 'Dictation cancelled.';
    if(info.tracked&&!(await s.field.request('check')).ok){clipboard.writeText(output);return 'Text copied. Focus changed; paste where you want it.'}
    if(command&&!['newline','paragraph'].includes(command)){if(!target||(await getForeground()).identity!==target.identity)return 'Command skipped: focus changed.';await sendKey(command);s.wrote=false;return 'Edit command applied.'}
+   if(platform==='darwin'){
+    clipboard.writeText(/terminal|powershell|cmd|iterm|console/i.test(target?.name||'')?output.replace(/[\r\n]+/g,' '):output);const delivery=await s.field.request('paste');
+    if(delivery.ok)return [note,delivery.verified===false?'Paste requested · text is also on your clipboard.':'Inserted into your text field.'].filter(Boolean).join(' ');
+    if(delivery.reason==='permission')return 'Enable Orvio Accessibility access in System Settings. Your words are on the clipboard.';
+    if(delivery.reason==='focus')return 'Text copied. The original field is no longer focused.';
+    return 'Typing connection unavailable. Your words are on the clipboard; restart dictation to reconnect.';
+   }
    return [note,await pasteText(clipboard,output,target)].filter(Boolean).join(' ');
-  }catch(error){if(s.lastText){clipboard.writeText(s.lastText);return 'Text copied. Automatic insertion was unavailable.'}throw error}finally{s.processing=false;if(session===s){s.stopWatch?.();s.field?.close();s.completed=true}}
+  }catch(error){if(s.lastText){clipboard.writeText(s.lastText);return 'Text copied. Insertion failed: '+String(error?.message||'keyboard access unavailable').replace(/https?:\/\/\S+/g,'').slice(0,160)}throw error}finally{s.processing=false;if(session===s){s.stopWatch?.();s.field?.close();s.completed=true}}
  });
- return {toggle:()=>start(false),shortcut:()=>start(settings.state().dictationMode!=='toggle'),close,permission,busy:()=>!!window,requestAccess(){return process.platform!=='darwin'||systemPreferences.isTrustedAccessibilityClient(true)}};
+ return {toggle:()=>start(false),shortcut:()=>start(settings.state().dictationMode!=='toggle'),close,permission,busy:()=>!!window,requestAccess(){return platform!=='darwin'||systemPreferences.isTrustedAccessibilityClient(true)}};
 }
 module.exports={createDictation};

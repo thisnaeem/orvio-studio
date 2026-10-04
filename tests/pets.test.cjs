@@ -29,3 +29,4 @@ test('late pet disarm is harmless across closing, reopening and frame replacemen
  invoke('disarm',current);invoke('disarm',{sender:current.sender,senderFrame:null});assert.equal(controller.permission(current.sender,'media',{mediaType:'audio'}),true);
  invoke('disarm',reloaded);assert.equal(controller.permission(current.sender,'media',{mediaType:'audio'}),false);
 });
+test('code-drawn bot companions persist alongside existing pets',t=>{const {pet,directory,modelHub,localStudio}=fixture(t);for(const animal of ['chat','voice','recorder','video-editor','cat']){pet.save({animal});const restored=createPets({directory,modelHub,localStudio});assert.equal(restored.state().settings.animal,animal)}});

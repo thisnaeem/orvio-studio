@@ -7,9 +7,10 @@ import {backgrounds,clamp,defaultOptions,outputSize,renderFrame,type RecorderOpt
 import {mapCaptions,remapCaptions,groupTranscript,type Caption} from './recorder-captions';
 import {clipsFor,sourceAt,timelineAt,timelineDuration,splitClips,timecode,type TextLayer} from './recorder-timeline';
 import './recorder-editor.css';
-import silkBackground from '../public/recorder-backgrounds/silk.png?url';
-import dunesBackground from '../public/recorder-backgrounds/dunes.png?url';
-import midnightBackground from '../public/recorder-backgrounds/midnight.png?url';
+// Files in public/ are copied as-is; resolve against Vite's './' base so dev and packaged file:// both work.
+const silkBackground=import.meta.env.BASE_URL+'recorder-backgrounds/silk.png';
+const dunesBackground=import.meta.env.BASE_URL+'recorder-backgrounds/dunes.png';
+const midnightBackground=import.meta.env.BASE_URL+'recorder-backgrounds/midnight.png';
 export type CaptureAsset={id:string;title:string;kind:string;preview:string;cameraId?:string;cameraPreview?:string;duration?:number};
 const wallpapers=[{id:'silk',name:'Silk'},{id:'dunes',name:'Dunes'},{id:'midnight',name:'Midnight'}];
 export const wallpaperURL=(id:string)=>({silk:silkBackground,dunes:dunesBackground,midnight:midnightBackground} as Record<string,string>)[id];
