@@ -178,3 +178,23 @@ body{@apply [font-size:1rem];@apply [line-height:1.5]}h1,h2,h3{@apply [letter-sp
 .app[data-bot-window=true] .main-shell { @apply !ml-0 !w-full; }
 
 .desktop-preferences .toggle-row{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;text-align:left}.desktop-preferences .toggle-row input{width:16px;height:16px;margin:0;flex-shrink:0;accent-color:var(--accent)}
+
+/* Settings owns a full-height secondary navigation rail. */
+.app[data-settings=true] .main-shell{height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.app[data-settings=true] .topbar{height:64px;min-height:64px;flex-shrink:0}
+.app[data-settings=true] main{padding:0;margin:0;max-width:none;width:100%;min-height:0;flex:1;overflow:hidden;display:flex}
+.app[data-settings=true] .settings-hub{display:grid;grid-template-columns:240px minmax(0,1fr);gap:0;width:100%;height:100%;min-height:0}
+.app[data-settings=true] .settings-menu{position:static;align-self:stretch;height:100%;min-height:0;display:flex;flex-direction:column;gap:4px;overflow-y:auto;padding:22px 12px;border:0;border-right:1px solid var(--line);border-radius:0;background:var(--surface);box-shadow:none}
+.app[data-settings=true] .settings-menu button{min-height:54px;flex-shrink:0;display:flex;text-align:left;padding:12px;gap:12px}
+.app[data-settings=true] .settings-menu small{display:block}
+.app[data-settings=true] .settings-content{height:100%;min-height:0;overflow-y:auto;padding:32px clamp(20px,4vw,64px) 80px}
+.app[data-settings=true] .settings-content>.settings-content-head{margin-bottom:28px}
+.app[data-settings=true] .settings-panel{border-radius:0;border:0;border-bottom:1px solid var(--line);background:transparent;box-shadow:none;padding:24px 0}
+.shortcut-picker{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:8px}
+.shortcut-capture{display:flex;align-items:center;gap:6px;min-height:42px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);font:inherit}
+.shortcut-capture[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
+.shortcut-capture kbd{font:inherit;font-size:11px;border:1px solid var(--line);border-bottom-width:3px;border-radius:5px;padding:4px 8px;background:var(--bg)}
+.shortcut-picker small{width:100%;color:var(--muted);font-size:9px}
+.tool-card-top>svg.tool-function-icon{display:block;color:var(--accent)}
+@media(max-width:700px){.app[data-settings=true] .settings-hub{grid-template-columns:170px minmax(0,1fr)}.app[data-settings=true] .settings-menu{padding:12px 6px}.app[data-settings=true] .settings-menu small{display:none}.app[data-settings=true] .settings-content{padding:20px 16px 50px}.app[data-settings=true] .settings-menu button>svg:last-child{display:none}}
+.app[data-settings=true] .settings-hub{max-width:none;margin:0}

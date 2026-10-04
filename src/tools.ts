@@ -13,10 +13,12 @@ export const studioTools:StudioTool[]=[
 {id:'studio',name:'Studio',description:'Create images, videos, lip-sync and 3D objects with local models.',category:'Creativity',icon:'image',color:'purple',label:'Local image generation'},
 {id:'models',name:'Models',description:'Manage text, image, video, voice, lip-sync and 3D models.',category:'Creativity',icon:'sparkles',color:'purple',label:'Your local model library'},
 {id:'live',name:'Live',description:'Stream a local video to YouTube with quality and looping controls.',category:'Creativity',icon:'workflow',color:'rose',label:'Your broadcast studio'},
-{id:'captions',name:'Captions',description:'Automatic local transcription, editable timing and styled captions.',category:'Creativity',icon:'edit',color:'purple',label:'Make every word count'},
+{id:'captions',name:'Captions',description:'Automatic local transcription, editable timing and styled captions.',category:'Creativity',icon:'captions',color:'purple',label:'Make every word count'},
 {id:'video-editor',name:'Video Editor',description:'Edit videos, style captions and publish to your channels.',category:'Creativity',icon:'video',color:'purple',label:'Create your next video'},
-{id:'recorder',name:'Recorder',description:'Record your screen, a window or camera with microphone audio.',category:'Creativity',icon:'image',color:'green',label:'Capture your next story'},
-{id:'voice',name:'Voice',description:'Multilingual local speech and voice cloning.',category:'Creativity',icon:'sparkles',color:'purple',label:'Download a voice'},
+{id:'recorder',name:'Recorder',description:'Record your screen, a window or camera with microphone audio.',category:'Creativity',icon:'camera',color:'green',label:'Capture your next story'},
+{id:'voice',name:'Voice',description:'Multilingual local speech and voice cloning.',category:'Creativity',icon:'mic',color:'purple',label:'Download a voice'},
 {id:'clipping',name:'Clipping',description:'Find highlights, edit clips and publish.',category:'Creativity',icon:'workflow',color:'rose',label:'AI video highlights'},
 {id:'downloader',name:'Downloader',description:'Queue files, images, video and audio with pause and resume.',category:'Creativity',icon:'download',color:'green',label:'Your download manager'},
 ];
+
+export const toolTitle=(page:Page)=>({Chat:'Assistant',Integrations:'Connections',Automations:'Publishing',Instagram:'Social accounts',Models:'Model library','All tools':'Tools'} as Partial<Record<Page,string>>)[page]||page;
